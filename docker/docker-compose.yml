@@ -1,0 +1,35 @@
+name: repaircalc
+
+services:
+  frontend:
+    image: repaircalc-frontend:${IMAGE_TAG:-local}
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_DATA_MODE: ${VITE_DATA_MODE:-demo}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
+    environment:
+      # No backend is included. In API mode point to a reachable REST service.
+      API_UPSTREAM: ${DOCKER_API_UPSTREAM:-http://127.0.0.1:9}
+    expose:
+      - "8080"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=32m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

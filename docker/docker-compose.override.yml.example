@@ -1,0 +1,8 @@
+# Copy to docker-compose.override.yml or run make init-config.
+# The real override file is local-only and ignored by Git.
+services:
+  frontend:
+    ports:
+      - "${FRONTEND_HOST:-127.0.0.1}:${FRONTEND_PORT:-8080}:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
