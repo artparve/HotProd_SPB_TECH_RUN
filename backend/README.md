@@ -61,6 +61,25 @@ $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}'
 
 Дополнительно проверен упакованный JAR в профиле `local` с отдельной PostgreSQL через Docker CLI: liveness 200, readiness 503 без опубликованных данных, тестовый маршрут 404, UUID в заголовке и stdout. Временные контейнер и Java-процесс после проверки остановлены.
 
+## Подготовленный каталог — BE-09
+
+В `data/catalog-v1.json` находятся 12 **тестовых** карточек с UUID, исходными записями и явными пометками учебных цен/свойств. `data/work-mappings-v1.json` содержит ручные тестовые назначения из `work-taxonomy-v1`. У обоев `packageSize=null`; ширина, длина и раппорт сохранены отдельно. Нормы из фикстур не являются нормативами производителя.
+
+После запуска PostgreSQL и передачи DB-переменных выполните из `backend`:
+
+```powershell
+.\mvnw.cmd package
+& "$env:JAVA_HOME/bin/java" -jar target/repaircalc-backend-0.1.0-SNAPSHOT.jar --repaircalc.command=import-catalog --repaircalc.catalog.file=data/catalog-v1.json --repaircalc.catalog.mappings=data/work-mappings-v1.json
+```
+
+Команда запускается без HTTP-сервера и закрывает контекст после выполнения. Успешная публикация и повтор завершаются с exit code 0; ошибка — с ненулевым кодом. Обычный запуск приложения данные автоматически не загружает.
+
+Проверка упакованной команды через Docker CLI: публикация — exit 0, повтор — exit 0/no-op, отсутствующий файл — ненулевой exit; в БД остаются один release, 12 ревизий и одна активная версия. HTTP-сервер в CLI-режиме не запускается.
+
+Каталог v1: `schemaVersion`, `version`, `dataClass="test"`, `products`. Карточки содержат поля Product без `works` и исходные `sources: [{namespace, externalId, raw}]`. Соответствия v1: `schemaVersion`, `version`, `taxonomyVersion`, `mappings: [{productId, works, evidence}]`.
+
+Публикация сериализована PostgreSQL advisory lock и выполняется одной транзакцией. Опубликованные ревизии, исходные записи и назначения защищены от изменений триггерами. Повтор той же версии и fingerprint не создаёт дубли и не активирует старый release заново. Изменение каталога требует новой версии каталога, изменение файла назначений — новой версии назначений. Fingerprint учитывает SHA-256 байтов обоих файлов и версию импортера. Ошибка сохраняет предыдущую активную публикацию; внешний ID нельзя незаметно перепривязать к другому UUID.
+
 ## Выполненные задачи
 
 | Задачи | Результат | Проверки |
@@ -71,5 +90,6 @@ $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}'
 | BE-07 | PostgreSQL/Flyway/JPA, schema V1, обязательный Testcontainers pipeline | `mvnw.cmd verify`: PASS (19 unit/API/config + 5 PostgreSQL IT, 0 skipped) |
 | BE-08 | V2: версии каталога, стабильные UUID, исходные JSONB, ревизии и защита публикации | `mvnw.cmd verify`: PASS (19 unit/API/config + 11 PostgreSQL IT, включая 6 catalog persistence tests) |
 | BE-09, схема назначений | V3: work-taxonomy-v1 и несколько проверяемых назначений товара | `mvnw.cmd verify`: PASS (19 unit/API/config + 20 PostgreSQL IT, включая 9 work mapping tests) |
+| BE-09, импорт | Строгий JSON, консольный импорт 12 карточек, атомарная публикация и повтор | `mvnw.cmd verify`: PASS (19 unit/API/config + 30 PostgreSQL IT, включая 10 import tests) |
 
 Решения по стеку: [ADR-001](docs/adr/001-backend-foundation.md). Общий backlog находится в `../docs/BACKEND_IMPLEMENTATION_PLAN.md`.

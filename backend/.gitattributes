@@ -4,3 +4,7 @@ mvnw.cmd text eol=crlf
 *.xml text eol=lf
 *.yml text eol=lf
 *.md text eol=lf
+*.json text eol=lf
+*.sql text eol=lf
+*.mjs text eol=lf
+*.ps1 text eol=lf
