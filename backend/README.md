@@ -18,7 +18,7 @@ Linux/macOS: `./mvnw verify`. Wrapper загружает фиксированн�
 По умолчанию включён профиль `local`, адрес `127.0.0.1:8000` соответствует существующему Vite proxy. Профиль `deploy` слушает `0.0.0.0:8000`. Адрес и порт переопределяются через `SERVER_ADDRESS` и `SERVER_PORT`; профиль — через `SPRING_PROFILES_ACTIVE`. Примеры находятся в `.env.example`: Spring Boot не читает `.env` автоматически, переменные нужно передать процессу.
 
 - `GET /actuator/health/liveness`: HTTP 200, если процесс работает.
-- `GET /actuator/health/readiness`: HTTP 503 до реализации публикации каталога и правил (BE-09/BE-11). Индикатор `calculationData` намеренно закрыт на этапе M1.
+- `GET /actuator/health/readiness`: HTTP 503 до реализации публикации расчётных правил (BE-11). Доступность витрины проверяется независимо.
 - В рабочей реализации BE-07 readiness также проверяет БД. Служебные env/config/beans endpoints отключены, детали health скрыты.
 
 Профиль `test` находится только в test resources и использует случайный порт. Учётные данные и локальные `.env` не коммитятся.
@@ -80,6 +80,22 @@ $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}'
 
 Публикация сериализована PostgreSQL advisory lock и выполняется одной транзакцией. Опубликованные ревизии, исходные записи и назначения защищены от изменений триггерами. Повтор той же версии и fingerprint не создаёт дубли и не активирует старый release заново. Изменение каталога требует новой версии каталога, изменение файла назначений — новой версии назначений. Fingerprint учитывает SHA-256 байтов обоих файлов и версию импортера. Ошибка сохраняет предыдущую активную публикацию; внешний ID нельзя незаметно перепривязать к другому UUID.
 
+## API витрины — BE-10
+
+После публикации каталога запустите обычный backend: `.\mvnw.cmd spring-boot:run`. `GET http://127.0.0.1:8000/api/v1/products` возвращает массив Product по существующему OpenAPI. Сортировка — по UUID; цена — десятичная строка с двумя знаками. Неизвестные packageSize/wet/highLoad/unheated остаются `null`; неизвестные optional consumption/rollWidth/rollLength/rapport опускаются.
+
+Запрос фиксирует один опубликованный release и читает только его неизменяемые ревизии/назначения; таксономия назначений берётся из его manifest. До публикации или при недоступности БД ответ — безопасный `503 {"code":"catalog_unavailable","message":"Catalog is temporarily unavailable."}`. Опубликованный пустой каталог даёт `200 []`. Общая readiness продолжает возвращать 503 до BE-11.
+
+Полная проверка Java + реального HTTP-ответа существующей frontend Zod-схемой (нужны Node и установленные frontend dependencies), из `backend`:
+
+```powershell
+.\scripts\verify-contract.ps1
+```
+
+Скрипт удаляет только прежний `target/contracts/products-response.json`, выполняет обязательный Maven verify/PostgreSQL IT и проверяет свежий HTTP-ответ через `src/test/js/catalog-contract.mjs --fixtures`. Ошибка Maven, отсутствие свежего ответа или несовместимость Zod завершают проверку с ошибкой. Отдельный `mvnw.cmd verify` сохраняет независимость Java-сборки от Node.
+
+Проверка собранного JAR через Docker CLI: обычный старт не загружает данные (`503 catalog_unavailable`); после консольного импорта тот же запущенный сервер возвращает 12 товаров без перезапуска. Ответ принят frontend Zod-схемой, повтор импорта завершился exit 0/no-op. Liveness — 200, общая readiness — 503 до публикации правил; `X-Request-ID` присутствует. Временные PostgreSQL-контейнер и Java-процесс остановлены.
+
 ## Выполненные задачи
 
 | Задачи | Результат | Проверки |
@@ -91,5 +107,6 @@ $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}'
 | BE-08 | V2: версии каталога, стабильные UUID, исходные JSONB, ревизии и защита публикации | `mvnw.cmd verify`: PASS (19 unit/API/config + 11 PostgreSQL IT, включая 6 catalog persistence tests) |
 | BE-09, схема назначений | V3: work-taxonomy-v1 и несколько проверяемых назначений товара | `mvnw.cmd verify`: PASS (19 unit/API/config + 20 PostgreSQL IT, включая 9 work mapping tests) |
 | BE-09, импорт | Строгий JSON, консольный импорт 12 карточек, атомарная публикация и повтор | `mvnw.cmd verify`: PASS (19 unit/API/config + 30 PostgreSQL IT, включая 10 import tests) |
+| BE-10 | Опубликованный snapshot, GET /api/v1/products, безопасный 503, frontend-контракт | `scripts/verify-contract.ps1`: PASS — 24 unit/API/config + 36 PostgreSQL IT (0 skipped), реальный HTTP-ответ с 12 товарами принят существующим `productSchema` через Node |
 
 Решения по стеку: [ADR-001](docs/adr/001-backend-foundation.md). Общий backlog находится в `../docs/BACKEND_IMPLEMENTATION_PLAN.md`.
