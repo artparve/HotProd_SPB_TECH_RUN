@@ -12,6 +12,10 @@ server:
     include-stacktrace: never
     include-exception: false
 
+logging:
+  pattern:
+    level: '%5p [requestId=%X{requestId}]'
+
 management:
   endpoints:
     access:
