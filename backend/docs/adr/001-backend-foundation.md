@@ -8,7 +8,8 @@
 - Java 21, `maven.compiler.release=21`, Enforcer отклоняет JDK ниже 21. Сборка и runtime проверяются на JDK 21.
 - Spring Boot parent/plugin 4.1.2; Spring MVC и Jakarta Validation. Версии Spring, Jackson и прочих библиотек управляются Boot BOM.
 - Maven Wrapper 3.3.4 фиксирует Maven 3.10.0. Коммитятся оба скрипта и конфигурация wrapper; бинарный Maven distribution хранится вне Git.
-- Следующая часть хранилища: PostgreSQL 17.11, Spring Data JPA, Flyway, Testcontainers. JDBC driver, Flyway и test tools используют версии Boot BOM.
+- Хранилище: PostgreSQL 17.11, Spring Data JPA, Flyway, Testcontainers. JDBC driver, Flyway и test tools используют версии Boot BOM.
+- Будущие Docker runtime и CI используют Java 21; Maven в CI запускается через тот же Wrapper. Полная Compose-интеграция и CI относятся к следующим этапам.
 - Миграции владеют схемой; Hibernate только проверяет её. HTTP DTO отделены от persistence и расчётных объектов.
 - Приложение группируется по функциональным областям. Пакеты создаются вместе с рабочим кодом, пустые заглушки модулей не нужны.
 

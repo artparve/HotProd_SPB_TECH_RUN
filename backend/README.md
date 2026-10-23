@@ -9,7 +9,6 @@
 ```powershell
 $env:JAVA_HOME = 'C:\Program Files\Java\jdk-21.0.10'
 .\mvnw.cmd verify
-.\mvnw.cmd spring-boot:run
 ```
 
 Linux/macOS: `./mvnw verify`. Wrapper загружает фиксированную версию Maven; первая сборка требует доступа к Maven Central. Установленный глобально Maven не требуется.
@@ -20,7 +19,7 @@ Linux/macOS: `./mvnw verify`. Wrapper загружает фиксированн�
 
 - `GET /actuator/health/liveness`: HTTP 200, если процесс работает.
 - `GET /actuator/health/readiness`: HTTP 503 до реализации публикации каталога и правил (BE-09/BE-11). Индикатор `calculationData` намеренно закрыт на этапе M1.
-- Проверка БД добавляется в BE-07. Служебные env/config/beans endpoints отключены, детали health скрыты.
+- В рабочей реализации BE-07 readiness также проверяет БД. Служебные env/config/beans endpoints отключены, детали health скрыты.
 
 Профиль `test` находится только в test resources и использует случайный порт. Учётные данные и локальные `.env` не коммитятся.
 
@@ -30,6 +29,38 @@ Linux/macOS: `./mvnw verify`. Wrapper загружает фиксированн�
 
 Каждый запрос получает новый серверный UUID в `X-Request-ID`; клиентский заголовок не используется как идентификатор. ID доступен в MDC и stdout-логах до завершения запроса, затем удаляется. Completion-лог содержит метод и HTTP-статус; URL, тело и параметры запроса не записываются.
 
+## PostgreSQL и миграции — BE-07
+
+Подготовлены JPA, PostgreSQL driver, Flyway и Testcontainers с версиями из Boot BOM. Миграция `V1__create_repaircalc_schema.sql` создаёт схему `repaircalc`; история Flyway находится в `public`. Hibernate использует `ddl-auto=validate`, `open-in-view` отключён. До появления сущностей в BE-08 проверка их таблиц не заявляется.
+
+Для локальной БД выделен порт `55432`. Команды выполняются в PowerShell из `backend` после запуска Linux engine Docker:
+
+```powershell
+docker version
+# Задайте собственный пароль в переменной DB_PASSWORD текущего процесса.
+if (-not $env:DB_PASSWORD) { throw 'Set DB_PASSWORD before starting PostgreSQL' }
+$env:POSTGRES_PASSWORD = $env:DB_PASSWORD
+docker run --detach --name repaircalc-postgres --publish 127.0.0.1:55432:5432 --env POSTGRES_DB=repaircalc --env POSTGRES_USER=repaircalc --env POSTGRES_PASSWORD --mount source=repaircalc-pgdata,target=/var/lib/postgresql/data postgres:17.11
+$env:DB_URL = 'jdbc:postgresql://127.0.0.1:55432/repaircalc'
+$env:DB_USER = 'repaircalc'
+.\mvnw.cmd spring-boot:run
+```
+
+Повторный запуск существующего контейнера: `docker start repaircalc-postgres`. Профиль `deploy` требует явные `DB_URL`, `DB_USER` и `DB_PASSWORD`. При недоступности БД во время запуска Flyway завершает запуск с ошибкой; потеря БД после старта отражается в readiness, liveness остаётся независимым.
+
+`mvnw.cmd test` выполняет unit/API/config tests без БД. `mvnw.cmd verify` дополнительно запускает обязательные `*IT` через Maven Failsafe. Каждому PostgreSQL IT-классу принадлежит отдельный `postgres:17.11` контейнер; параметры подключения передаёт `@ServiceConnection`. Они проверяют схему/историю, повтор миграции, JPA-соединение, readiness при доступной БД и после её остановки. Неисправный Docker вызывает ошибку, тесты не пропускаются.
+
+Для нестандартного Docker context перед `verify` можно передать его endpoint текущему Java-процессу:
+
+```powershell
+$env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}').Trim()
+.\mvnw.cmd verify
+```
+
+**Статус BE-07: готово.** `mvnw.cmd verify`: PASS, 19 unit/API/config tests и 5 интеграционных тестов на настоящем PostgreSQL 17.11, без пропусков. Docker CLI и сервер работают; миграция чистой БД, повтор миграции и потеря БД после запуска подтверждены.
+
+Дополнительно проверен упакованный JAR в профиле `local` с отдельной PostgreSQL через Docker CLI: liveness 200, readiness 503 без опубликованных данных, тестовый маршрут 404, UUID в заголовке и stdout. Временные контейнер и Java-процесс после проверки остановлены.
+
 ## Выполненные задачи
 
 | Задачи | Результат | Проверки |
@@ -37,5 +68,6 @@ Linux/macOS: `./mvnw verify`. Wrapper загружает фиксированн�
 | BE-02, BE-04 | Java 21, Boot 4.1.2, Maven Wrapper 3.10.0, Enforcer | `mvnw.cmd verify`: PASS (1 тест); `validate` на Java 17: ожидаемый отказ Enforcer |
 | BE-05 | Local/test/deploy config, liveness/readiness, ограниченный health | `mvnw.cmd -Dtest=RepairCalcApplicationTest,HealthEndpointsTest verify`: PASS (4 теста, включая реальный HTTP) |
 | BE-06 | ApiError, DTO/method validation, безопасные ошибки и UUID/MDC | `mvnw.cmd verify`: PASS (17 тестов, включая 13 MVC/filter tests и проверку request ID в stdout) |
+| BE-07 | PostgreSQL/Flyway/JPA, schema V1, обязательный Testcontainers pipeline | `mvnw.cmd verify`: PASS (19 unit/API/config + 5 PostgreSQL IT, 0 skipped) |
 
 Решения по стеку: [ADR-001](docs/adr/001-backend-foundation.md). Общий backlog находится в `../docs/BACKEND_IMPLEMENTATION_PLAN.md`.
