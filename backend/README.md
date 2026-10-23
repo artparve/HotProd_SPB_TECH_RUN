@@ -69,5 +69,6 @@ $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}'
 | BE-05 | Local/test/deploy config, liveness/readiness, ограниченный health | `mvnw.cmd -Dtest=RepairCalcApplicationTest,HealthEndpointsTest verify`: PASS (4 теста, включая реальный HTTP) |
 | BE-06 | ApiError, DTO/method validation, безопасные ошибки и UUID/MDC | `mvnw.cmd verify`: PASS (17 тестов, включая 13 MVC/filter tests и проверку request ID в stdout) |
 | BE-07 | PostgreSQL/Flyway/JPA, schema V1, обязательный Testcontainers pipeline | `mvnw.cmd verify`: PASS (19 unit/API/config + 5 PostgreSQL IT, 0 skipped) |
+| BE-08 | V2: версии каталога, стабильные UUID, исходные JSONB, ревизии и защита публикации | `mvnw.cmd verify`: PASS (19 unit/API/config + 11 PostgreSQL IT, включая 6 catalog persistence tests) |
 
 Решения по стеку: [ADR-001](docs/adr/001-backend-foundation.md). Общий backlog находится в `../docs/BACKEND_IMPLEMENTATION_PLAN.md`.
