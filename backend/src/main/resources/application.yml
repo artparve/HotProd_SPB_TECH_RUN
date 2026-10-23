@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: repaircalc-backend
+  profiles:
+    default: local
+
+server:
+  port: ${SERVER_PORT:8000}
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+
+management:
+  endpoints:
+    access:
+      default: none
+    web:
+      exposure:
+        include: health
+    jmx:
+      exposure:
+        exclude: '*'
+  endpoint:
+    health:
+      access: read-only
+      show-details: never
+      show-components: never
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,calculationData
