@@ -18,7 +18,7 @@ Linux/macOS: `./mvnw verify`. Wrapper загружает фиксированн�
 По умолчанию включён профиль `local`, адрес `127.0.0.1:8000` соответствует существующему Vite proxy. Профиль `deploy` слушает `0.0.0.0:8000`. Адрес и порт переопределяются через `SERVER_ADDRESS` и `SERVER_PORT`; профиль — через `SPRING_PROFILES_ACTIVE`. Примеры находятся в `.env.example`: Spring Boot не читает `.env` автоматически, переменные нужно передать процессу.
 
 - `GET /actuator/health/liveness`: HTTP 200, если процесс работает.
-- `GET /actuator/health/readiness`: HTTP 503 до реализации публикации расчётных правил (BE-11). Доступность витрины проверяется независимо.
+- `GET /actuator/health/readiness`: HTTP 200 при доступной БД и совместимой опубликованной паре каталога/правил; иначе 503. Доступность витрины проверяется независимо.
 - В рабочей реализации BE-07 readiness также проверяет БД. Служебные env/config/beans endpoints отключены, детали health скрыты.
 
 Профиль `test` находится только в test resources и использует случайный порт. Учётные данные и локальные `.env` не коммитятся.
@@ -84,15 +84,15 @@ $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}'
 
 После публикации каталога запустите обычный backend: `.\mvnw.cmd spring-boot:run`. `GET http://127.0.0.1:8000/api/v1/products` возвращает массив Product по существующему OpenAPI. Сортировка — по UUID; цена — десятичная строка с двумя знаками. Неизвестные packageSize/wet/highLoad/unheated остаются `null`; неизвестные optional consumption/rollWidth/rollLength/rapport опускаются.
 
-Запрос фиксирует один опубликованный release и читает только его неизменяемые ревизии/назначения; таксономия назначений берётся из его manifest. До публикации или при недоступности БД ответ — безопасный `503 {"code":"catalog_unavailable","message":"Catalog is temporarily unavailable."}`. Опубликованный пустой каталог даёт `200 []`. Общая readiness продолжает возвращать 503 до BE-11.
+Запрос фиксирует один опубликованный release и читает только его неизменяемые ревизии/назначения; таксономия назначений берётся из его manifest. До публикации или при недоступности БД ответ — безопасный `503 {"code":"catalog_unavailable","message":"Catalog is temporarily unavailable."}`. Опубликованный пустой каталог даёт `200 []`. Отсутствие правил не блокирует витрину.
 
-Полная проверка Java + реального HTTP-ответа существующей frontend Zod-схемой (нужны Node и установленные frontend dependencies), из `backend`:
+Полная проверка Java + реальных HTTP-ответов витрины и калькулятора существующими frontend Zod-схемами (нужны Node и установленные frontend dependencies), из `backend`:
 
 ```powershell
 .\scripts\verify-contract.ps1
 ```
 
-Скрипт удаляет только прежний `target/contracts/products-response.json`, выполняет обязательный Maven verify/PostgreSQL IT и проверяет свежий HTTP-ответ через `src/test/js/catalog-contract.mjs --fixtures`. Ошибка Maven, отсутствие свежего ответа или несовместимость Zod завершают проверку с ошибкой. Отдельный `mvnw.cmd verify` сохраняет независимость Java-сборки от Node.
+Скрипт удаляет только прежние `target/contracts/products-response.json` и `product-estimates-response.json`, выполняет обязательный Maven verify/PostgreSQL IT и проверяет свежие ответы через `catalog-contract.mjs` и `calculation-contract.mjs`. Витрина из 12 товаров принимается `productSchema`; 11 реальных расчётов принимаются `estimateSchema` с дополнительными проверками состава, одной строки, точных денежных итогов и упаковочных инвариантов. Ошибка Maven, отсутствие свежего ответа или несовместимость Zod завершают проверку с ошибкой. Отдельный `mvnw.cmd verify` сохраняет независимость Java-сборки от Node.
 
 Проверка собранного JAR через Docker CLI: обычный старт не загружает данные (`503 catalog_unavailable`); после консольного импорта тот же запущенный сервер возвращает 12 товаров без перезапуска. Ответ принят frontend Zod-схемой, повтор импорта завершился exit 0/no-op. Liveness — 200, общая readiness — 503 до публикации правил; `X-Request-ID` присутствует. Временные PostgreSQL-контейнер и Java-процесс остановлены.
 
@@ -124,6 +124,22 @@ $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}'
 
 `mvnw.cmd verify` — PASS: 74 unit/API/config + 52 PostgreSQL IT. Проверены независимые эталоны всех стратегий, раппорт 0/>0, слишком длинное полотно, неизвестные/противоречивые данные, дробные точки и 13 знаков потребности без промежуточного округления.
 
+## API калькулятора и готовность — BE-14
+
+После публикации каталога и его правил запустите обычное приложение и выполните:
+
+```powershell
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/product/ac1f222a-f5e9-3b5d-a91e-c943b053e92e/calc -ContentType 'application/json' -Body '{"area":20,"perimeter":18,"height":2.7,"reserve":10,"layers":2,"quantity":6}'
+```
+
+Результат содержит ровно одну строку (`roomId=product`, `roomName=Расчёт товара`), `mode=api`, UUID/UTC-время, версии catalog/rules, `model=not-used` и `labor=0.00`. Для указанной плитки: need=22, quantity=16, purchased=23.04, remainder=1.04, materials=total=`34560.00`. Цена и фасовка берутся с сервера. Все шесть полей обязательны; layers и число розеток должны быть целыми, дробные метры кабеля допустимы.
+
+Повреждённый JSON даёт 400, неизвестный товар — 404, неверный ввод/неполные данные — 422. Неполный лак остаётся заблокирован. Каталог, правила или БД недоступны — безопасный 503. Одна операция фиксирует неизменяемые snapshots каталога и совместимых правил; смена публикации между запросами к БД не смешивает версии. Новый каталог без своих правил сохраняет работу витрины и возвращает 503 для расчётов/readiness; после импорта совместимых правил readiness становится 200 без перезапуска. Liveness независим.
+
+Итоговая `scripts/verify-contract.ps1` — PASS: **80 unit/API/config + 60 PostgreSQL IT, 0 skipped**, Node/productSchema для 12 товаров и Node/estimateSchema для 11 расчётов. Восемь новых HTTP IT проверяют числа, ошибки, точность дробной потребности, readiness, публикацию между запросами, сохранность прежнего snapshot и остановку принадлежащей тесту БД. Foundation-тесты явно заменяют только бизнес-индикатор, продолжая проверять настоящую БД; новые API IT используют полный production-контекст.
+
+Дополнительная проверка собранного JAR через Docker CLI — PASS: публикации каталога/правил exit 0, повтор правил exit 0/no-op, отсутствующий файл — ненулевой exit. CLI не запускает HTTP. Тот же работающий сервер после публикации правил меняет readiness с 503 на 200; его 11 ответов приняты frontend Zod, неполная карточка даёт 422. Повтор и ошибка сохраняют единственный rule_set. Временные процесс и контейнер остановлены.
+
 ## Выполненные задачи
 
 | Задачи | Результат | Проверки |
@@ -139,5 +155,6 @@ $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}'
 | BE-11 | V4, versioned typed RuleSet, источники/тарифы, строгий CLI loader и атомарная публикация | `mvnw.cmd verify`: PASS (24 unit/API/config + 52 PostgreSQL IT, 0 skipped) |
 | BE-12 | Чистые Geometry/Money/Unit, запас и точное округление упаковок | `mvnw.cmd verify`: PASS (38 unit/API/config + 52 PostgreSQL IT, 0 skipped) |
 | BE-13 | Семь стратегий, формулы/источники и явные учебные ограничения | `mvnw.cmd verify`: PASS (74 unit/API/config + 52 PostgreSQL IT, 0 skipped) |
+| BE-14 | ProductCalc API, согласованный snapshot, readiness и frontend-контракты | `scripts/verify-contract.ps1`: PASS (80 unit/API/config + 60 PostgreSQL IT, 0 skipped; 12 товаров + 11 расчётов приняты Zod) |
 
 Решения по стеку: [ADR-001](docs/adr/001-backend-foundation.md). Общий backlog находится в `../docs/BACKEND_IMPLEMENTATION_PLAN.md`.

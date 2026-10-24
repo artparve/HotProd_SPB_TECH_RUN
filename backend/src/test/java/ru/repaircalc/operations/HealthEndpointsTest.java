@@ -15,6 +15,7 @@ import ru.repaircalc.ingestion.CatalogImportService;
 import ru.repaircalc.catalog.CatalogReadService;
 import ru.repaircalc.rules.RuleSetImportService;
 import ru.repaircalc.rules.RuleSetReadService;
+import ru.repaircalc.calculation.CalculationSnapshotService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,6 +30,8 @@ class HealthEndpointsTest {
     private RuleSetImportService ruleImporter;
     @MockitoBean
     private RuleSetReadService rules;
+    @MockitoBean
+    private CalculationSnapshotService snapshots;
 
     private final HttpClient client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5)).build();

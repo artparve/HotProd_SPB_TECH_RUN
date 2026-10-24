@@ -23,6 +23,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.List;
 import java.util.stream.Stream;
+import ru.repaircalc.calculation.domain.CalculationException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
@@ -70,6 +71,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     ResponseEntity<ApiError> handleDomainException(DomainException exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
                 .body(new ApiError(exception.code(), exception.getMessage(), exception.fields()));
+    }
+
+    @ExceptionHandler(CalculationException.class)
+    ResponseEntity<ApiError> handleCalculationException(CalculationException exception) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
+                .body(new ApiError(exception.code(), exception.getMessage(), exception.fields()));
+    }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    ResponseEntity<ApiError> handleProductNotFound(ProductNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiError("product_not_found", "The requested product was not found."));
     }
 
     @ExceptionHandler(Exception.class)

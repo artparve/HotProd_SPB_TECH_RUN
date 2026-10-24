@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -23,7 +24,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.convention.TestBean;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import ru.repaircalc.operations.CalculationDataHealthIndicator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,8 +44,8 @@ class PostgreSQLFoundationIT {
     @Value("${local.server.port}")
     private int port;
 
-    @TestBean(methodName = "publishedCalculationData")
-    private CalculationDataHealthIndicator calculationData;
+    @TestBean(name = "calculationData", methodName = "publishedCalculationData")
+    private HealthIndicator calculationData;
 
     @Test
     void migratesFreshPostgresAndKeepsHistoryInPublic() throws Exception {
@@ -114,13 +114,9 @@ class PostgreSQLFoundationIT {
         }
     }
 
-    private static CalculationDataHealthIndicator publishedCalculationData() {
-        return new CalculationDataHealthIndicator() {
-            @Override
-            public Health health() {
-                return Health.up().build();
-            }
-        };
+    private static HealthIndicator publishedCalculationData() {
+        // This foundation test isolates database health; product API IT exercises the real data indicator.
+        return () -> Health.up().build();
     }
 
     @TestConfiguration(proxyBeanMethods = false)

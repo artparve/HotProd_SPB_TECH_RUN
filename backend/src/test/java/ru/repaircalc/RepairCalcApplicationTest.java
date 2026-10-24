@@ -8,6 +8,7 @@ import ru.repaircalc.ingestion.CatalogImportService;
 import ru.repaircalc.catalog.CatalogReadService;
 import ru.repaircalc.rules.RuleSetImportService;
 import ru.repaircalc.rules.RuleSetReadService;
+import ru.repaircalc.calculation.CalculationSnapshotService;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -20,6 +21,8 @@ class RepairCalcApplicationTest {
     private RuleSetImportService ruleImporter;
     @MockitoBean
     private RuleSetReadService rules;
+    @MockitoBean
+    private CalculationSnapshotService snapshots;
 
     @Test
     void startsApplicationContext() {

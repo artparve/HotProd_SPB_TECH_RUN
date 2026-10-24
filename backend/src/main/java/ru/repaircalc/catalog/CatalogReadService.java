@@ -15,6 +15,7 @@ import ru.repaircalc.catalog.persistence.ProductRevisionEntity;
 import ru.repaircalc.catalog.persistence.ProductRevisionRepository;
 import ru.repaircalc.catalog.persistence.ProductWorkRepository;
 import ru.repaircalc.common.web.ServiceUnavailableException;
+import tools.jackson.databind.json.JsonMapper;
 
 @Service
 @Transactional(readOnly = true)
@@ -24,19 +25,28 @@ public class CatalogReadService {
     private final CatalogReleaseRepository releases;
     private final ProductRevisionRepository revisions;
     private final ProductWorkRepository productWorks;
+    private final JsonMapper json;
 
     public CatalogReadService(CatalogReleaseRepository releases, ProductRevisionRepository revisions,
-                              ProductWorkRepository productWorks) {
+                              ProductWorkRepository productWorks, JsonMapper json) {
         this.releases = releases;
         this.revisions = revisions;
         this.productWorks = productWorks;
+        this.json = json;
     }
 
     public List<ProductView> listProducts() {
+        return activeSnapshot().products();
+    }
+
+    public CatalogSnapshot activeSnapshot() {
         try {
             // Published content is immutable: retain this release ID across every subsequent query.
-            UUID releaseId = releases.findByActiveTrue().map(CatalogReleaseEntity::getId)
+            var release = releases.findByActiveTrue()
                     .orElseThrow(CatalogReadService::unavailable);
+            UUID releaseId = release.getId();
+            String taxonomy = json.readTree(release.getManifest()).path("taxonomyVersion").asText();
+            if (taxonomy.isBlank()) { throw unavailable(); }
             var products = revisions.findByReleaseIdOrderByProductIdAsc(releaseId);
             Map<UUID, List<String>> worksByProduct = new HashMap<>();
             for (var assignment : productWorks
@@ -45,10 +55,11 @@ public class CatalogReadService {
                 worksByProduct.computeIfAbsent(identity.getProductId(), ignored -> new ArrayList<>())
                         .add(identity.getWorkCode());
             }
-            return products.stream()
+            var views = products.stream()
                     .map(product -> view(product, worksByProduct.getOrDefault(product.getProductId(), List.of())))
                     .toList();
-        } catch (DataAccessException exception) {
+            return new CatalogSnapshot(releaseId, release.getVersion(), release.getFingerprint(), taxonomy, views);
+        } catch (DataAccessException | tools.jackson.core.JacksonException exception) {
             throw unavailable();
         }
     }
