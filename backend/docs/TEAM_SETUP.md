@@ -79,9 +79,21 @@ Launcher собирает JAR через Maven Wrapper командой `package
 
 ### IntelliJ IDEA
 
-Подключите `backend/pom.xml` как Maven project. В **Project SDK** выберите JDK 21, а в настройках **Maven Runner → JRE** — тот же JDK 21. JDK 17 не подходит для этого backend; настройки SDK корневого проекта могут отличаться от `JAVA_HOME` терминала.
+Откройте в IDEA **корень репозитория**. Для запуска кнопкой Run в проект добавлена общая конфигурация [Backend local](../../.run/Backend_local.run.xml): она использует Maven Wrapper, JDK из `JAVA_HOME` и цель `spring-boot:run`. Отдельно регистрировать JDK в Project SDK для этой Maven-конфигурации не требуется. В `JAVA_HOME`, доступном **самому процессу IDEA**, должен быть JDK 21 или новее; переменная, заданная только внутри терминала, не меняет окружение уже запущенной IDE. После постоянного изменения `JAVA_HOME` перезапустите IDEA.
 
-Для запуска через терминал IDEA используйте launcher выше. При прямом запуске `RepairCalcApplication` передайте его процессу DB-переменные из локальной конфигурации: сам Spring Boot `.env.local` не читает. Пользовательские файлы `.idea` менять или коммитить для launcher не требуется.
+Перед первым запуском подготовьте PostgreSQL и учебные данные из терминала в корне репозитория:
+
+```powershell
+.\backend\run-local.cmd -InitializeData -PrepareOnly
+```
+
+Эта команда создаёт или запускает локальную БД, сохраняет настройки в `backend/.env.local`, собирает приложение и явно импортирует данные; HTTP-сервер она не запускает и порт 8000 не занимает. При следующих запусках подготовка с теми же файлами безопасна: импорт возвращает no-op. Docker с Linux engine должен работать.
+
+Затем выберите **Backend local** в списке конфигураций рядом с кнопкой **Run** и нажмите **Run**. Рабочая папка конфигурации — `backend`; профиль `local`, используемый по умолчанию, читает находящийся в ней `.env.local`. Обычный запуск через Run данные не импортирует. Остановка — кнопка **Stop** в IDEA. Одновременно запускать сервер launcher-командой и через IDEA на одном порту не нужно.
+
+Если **Backend local** не появился, переоткройте проект, чтобы IDEA перечитала `.run`. Подключите `backend/pom.xml` через **Add as Maven Project**, если backend ещё не отображается в окне Maven, и дождитесь импорта.
+
+Для прямого запуска или отладки `RepairCalcApplication` из редактора дополнительно выберите **JDK 21 в Project SDK**, импортируйте `backend/pom.xml` как Maven project и задайте рабочую папку Java-конфигурации `$PROJECT_DIR$/backend`. Корневой проект может использовать JDK 17 независимо от `JAVA_HOME`; для backend JDK 17 не подходит. Профиль `local` загрузит `.env.local` из рабочей папки; без него передайте DB-переменные процессу явно. Профиль `deploy` локальный файл не загружает и требует явного окружения.
 
 ### Ручной запуск — альтернатива launcher
 
@@ -89,7 +101,7 @@ Launcher собирает JAR через Maven Wrapper командой `package
 
 #### 1. JDK, Docker и окружение
 
-Замените путь JDK и пароль своими значениями. Переменные действуют в текущем терминале; `.env.example` и `.env` Spring Boot автоматически не читает.
+Замените путь JDK и пароль своими значениями. Переменные действуют в текущем терминале; `.env.example` и `.env` Spring Boot автоматически не читает. Профиль `local` отдельно загружает `.env.local` из рабочей папки (`backend`); переменные окружения имеют приоритет над этим файлом.
 
 ```powershell
 cd backend
@@ -271,7 +283,8 @@ node --experimental-strip-types src/test/js/calculation-contract.mjs target/cont
 
 | Признак | Действие |
 | --- | --- |
-| Enforcer требует JDK 21 / UnsupportedClassVersionError | Проверьте `JAVA_HOME`; на Windows вызывайте `java.exe`/`javac.exe` из его `bin`. В IDEA проверьте Project SDK и Maven Runner JRE — JDK 21 |
+| Enforcer требует JDK 21 / UnsupportedClassVersionError | Проверьте `JAVA_HOME`; на Windows вызывайте `java.exe`/`javac.exe` из его `bin`. Для IDEA **Backend local** нужен JDK 21 в окружении самой IDE; после изменения перезапустите её. Для прямого Java-запуска проверьте также Project SDK |
+| В IDEA нет конфигурации Backend local / backend не распознан | Откройте корень репозитория, переоткройте проект для загрузки `.run` и подключите `backend/pom.xml` через Add as Maven Project |
 | PowerShell не находит команду `java` | Используйте `run-local.cmd` или прямой вызов `& "$env:JAVA_HOME\bin\java.exe"`; добавлять Java в глобальный PATH для launcher не нужно |
 | Docker показывает только Client / Testcontainers не находит daemon | Запустите Docker и Linux engine; проверьте `docker version` и endpoint текущего context, как в командах окружения |
 | Имя контейнера уже занято | Запустите существующий `repaircalc-postgres`, не создавайте второй с тем же именем |

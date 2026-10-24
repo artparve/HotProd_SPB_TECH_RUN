@@ -20,6 +20,12 @@ Launcher использует Java из `JAVA_HOME`, создаёт локаль
 
 Повторный старт: `.\backend\run-local.cmd`. Контейнер `repaircalc-postgres` и volume `repaircalc-pgdata` используются повторно, обычный запуск ничего не импортирует. `-PrepareOnly` выполняет подготовку без HTTP-сервера; его можно сочетать с `-InitializeData`. Launcher собирает с `-DskipTests`; полная проверка — `mvnw.cmd verify`.
 
+## Запуск из IntelliJ IDEA
+
+В репозитории сохранена конфигурация **Backend local**: выберите её в списке Run и нажмите Run. Она запускает `spring-boot:run` из `backend` через Maven Wrapper с JDK из `JAVA_HOME`, независимо от SDK корневого проекта. После изменения `JAVA_HOME` перезапустите IDEA, чтобы она получила новое окружение.
+
+Перед первым запуском подготовьте локальную БД: `.\backend\run-local.cmd -InitializeData -PrepareOnly` из корня. При следующих запусках достаточно работающего контейнера `repaircalc-postgres`. Профиль `local` сам читает `backend/.env.local`, если рабочий каталог — `backend`; обычный запуск ничего не импортирует. Для прямого Java Run/Debug из редактора дополнительно подключите `backend/pom.xml` как Maven project и выберите SDK 21. Подробности — [TEAM_SETUP](docs/TEAM_SETUP.md#intellij-idea).
+
 ## Сборка
 
 Из каталога `backend`:
@@ -33,7 +39,7 @@ Linux/macOS: `./mvnw verify`. Wrapper загружает фиксированн�
 
 ## Конфигурация и health
 
-По умолчанию включён профиль `local`, адрес `127.0.0.1:8000` соответствует существующему Vite proxy. Профиль `deploy` слушает `0.0.0.0:8000`. Адрес и порт переопределяются через `SERVER_ADDRESS` и `SERVER_PORT`; профиль — через `SPRING_PROFILES_ACTIVE`. Примеры находятся в `.env.example`: Spring Boot не читает `.env` автоматически, переменные нужно передать процессу.
+По умолчанию включён профиль `local`, адрес `127.0.0.1:8000` соответствует существующему Vite proxy. Профиль `deploy` слушает `0.0.0.0:8000`. Адрес и порт переопределяются через `SERVER_ADDRESS` и `SERVER_PORT`; профиль — через `SPRING_PROFILES_ACTIVE`. Примеры находятся в `.env.example`: локальный профиль явно импортирует `.env.local` из рабочего каталога `backend`. Переменные окружения имеют приоритет. Профили `deploy` и `test` этот файл не читают; для deploy переменные передаются процессу явно.
 
 - `GET /actuator/health/liveness`: HTTP 200, если процесс работает.
 - `GET /actuator/health/readiness`: HTTP 200 при доступной БД и совместимой опубликованной паре каталога/правил; иначе 503. Доступность витрины проверяется независимо.
@@ -173,6 +179,12 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/product/ac1f222
 Воспроизведён отказ `spring-boot:run`: PostgreSQL на `127.0.0.1:55432` отсутствовала. JDK 21 был задан в `JAVA_HOME`, но `java` не находилась через PATH; в IDEA корневой проект использовал JDK 17. Добавлены `run-local.cmd` и `scripts/run-local.ps1`: явные локальные настройки, запуск/ожидание PostgreSQL через Docker CLI, проверка пароля, сборка и запуск через `JAVA_HOME`. Режим deploy и обычный Spring startup не изменены.
 
 Проверки: `scripts/verify-contract.ps1` — PASS, **80 unit/API/config + 60 PostgreSQL IT, 0 skipped**, frontend-контракты 12 товаров/11 расчётов. Через launcher выполнены подготовка с `-InitializeData -PrepareOnly`, обычный HTTP-старт без импорта и повторная подготовка после перезапуска БД: импорты стали no-op, UUID/fingerprints/active не изменились. Реальные HTTP-ответы launcher приняты обеими frontend-схемами; liveness/readiness — 200, плитка — 16 упаковок / `34560.00`. Отдельно подтверждены exit 1 для отсутствующего JDK, занятого HTTP-порта и неверного пароля БД. Пароль не попадает в команды или Git; `.env.local` игнорируется. Локальная PostgreSQL оставлена для дальнейшей работы, данные хранятся в `repaircalc-pgdata`.
+
+## Исправление запуска из IDEA — 24 октября 2026
+
+Добавлена общая `.run/Backend_local.run.xml` для IDEA Community: Maven Wrapper, `JAVA_HOME`, рабочая папка `backend`, цель `spring-boot:run`. Профиль `local` явно импортирует `.env.local`; секреты в Run Configuration не записываются. Локально подключён `backend/pom.xml` к Maven-проектам IDEA; пользовательские `.idea` и настройки SDK не входят в коммит.
+
+Проверена команда из XML-конфигурации с удалёнными DB/Spring-переменными окружения: Java 21, local profile, порт 8000, liveness/readiness 200, 12 карточек, расчёт плитки 16 упаковок / `34560.00`. Проверочный сервер остановлен, порт 8000 оставлен свободным для Run в IDEA. `scripts/verify-contract.ps1` — PASS: 80 unit/API/config + 60 PostgreSQL IT, без пропусков; оба frontend-контракта прошли. Профиль deploy без явного окружения не использует локальный файл и ожидаемо отклоняет запуск без JDBC URL. Нажатие кнопки Run в графическом интерфейсе автоматически не проверялось.
 
 ## Выполненные задачи
 
