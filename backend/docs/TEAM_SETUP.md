@@ -15,20 +15,56 @@
 
 Docker Desktop с установленным CLI можно запустить командой `docker desktop start --detach`. После запуска дождитесь, чтобы `docker version` показывал версию Server.
 
-После распаковки/получения ветки найдите рядом `backend`, `frontend` и `docs`. Все следующие команды запуска выполняются **из `backend`**. У каждого участника свои локальная БД и пароль.
+После распаковки/получения ветки найдите рядом `backend`, `frontend` и `docs`. Быстрый Windows-запуск ниже выполняется **из корня репозитория**; ручные команды — **из `backend`**. У каждого участника свои локальная БД и пароль.
 
 ## Windows — PowerShell
 
-### 1. JDK, Docker и окружение
+### Быстрый локальный запуск
+
+Укажите установленный JDK 21 в `JAVA_HOME` и запустите Docker с Linux engine. Launcher использует `java.exe` из `JAVA_HOME`: команда `java` в `PATH` не требуется. Docker CLI должен быть доступен.
+
+Первый запуск, **из корня репозитория**:
+
+```powershell
+$env:JAVA_HOME = 'C:\path\to\jdk-21'
+.\backend\run-local.cmd -InitializeData
+```
+
+Повторный запуск из корня:
+
+```powershell
+.\backend\run-local.cmd
+```
+
+Если открыт новый терминал и `JAVA_HOME` не задан постоянно, снова задайте его перед командой.
+
+`run-local.cmd` вызывает `backend/scripts/run-local.ps1`. Скрипт создаёт игнорируемый Git файл `backend/.env.local` с локальным случайным паролем и использует его при следующих запусках. PostgreSQL работает в контейнере `repaircalc-postgres`, данные сохраняются в named volume `repaircalc-pgdata`, адрес БД — `127.0.0.1:55432`.
+
+Launcher собирает JAR через Maven Wrapper командой `package -DskipTests`, затем запускает сервер в текущем терминале на `http://127.0.0.1:8000`. Это быстрая сборка без тестов; полная проверка описана ниже. `Ctrl+C` останавливает Java-сервер; данные в volume сохраняются.
+
+Только явный `-InitializeData` перед HTTP-стартом импортирует учебный каталог и правила. Обычный запуск данные не импортирует. На новой пустой БД без инициализации витрина и readiness возвращают 503; после инициализации ожидаются результаты из раздела HTTP-проверок ниже.
+
+Для подготовки без HTTP-сервера используйте `.\backend\run-local.cmd -InitializeData -PrepareOnly`. Существующие контейнер и volume не сбрасываются. Если БД уже создана вручную, а `.env.local` отсутствует, launcher остановится: скопируйте `.env.example` в `.env.local` и задайте **прежний** пароль. Порт сервера можно поменять через `SERVER_PORT` в этом файле; занятый порт вызывает понятную ошибку.
+
+### IntelliJ IDEA
+
+Подключите `backend/pom.xml` как Maven project. В **Project SDK** выберите JDK 21, а в настройках **Maven Runner → JRE** — тот же JDK 21. JDK 17 не подходит для этого backend; настройки SDK корневого проекта могут отличаться от `JAVA_HOME` терминала.
+
+Для запуска через терминал IDEA используйте launcher выше. При прямом запуске `RepairCalcApplication` передайте его процессу DB-переменные из локальной конфигурации: сам Spring Boot `.env.local` не читает. Пользовательские файлы `.idea` менять или коммитить для launcher не требуется.
+
+### Ручной запуск — альтернатива launcher
+
+Следующие шаги позволяют настроить всё вручную. Если PostgreSQL уже создан launcher, используйте пароль из `backend/.env.local`: новая переменная не меняет пароль существующей БД.
+
+#### 1. JDK, Docker и окружение
 
 Замените путь JDK и пароль своими значениями. Переменные действуют в текущем терминале; `.env.example` и `.env` Spring Boot автоматически не читает.
 
 ```powershell
 cd backend
 $env:JAVA_HOME = 'C:\path\to\jdk-21'
-$env:Path = "$env:JAVA_HOME\bin;$env:Path"
-java -version
-javac -version
+& "$env:JAVA_HOME\bin\java.exe" -version
+& "$env:JAVA_HOME\bin\javac.exe" -version
 docker version
 
 $env:DB_URL = 'jdbc:postgresql://127.0.0.1:55432/repaircalc'
@@ -40,7 +76,7 @@ $env:SERVER_PORT = '8000'
 $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}').Trim()
 ```
 
-### 2. PostgreSQL и проверка сборки
+#### 2. PostgreSQL и проверка сборки
 
 Следующая команда создаёт БД **первый раз**. Если контейнер уже существует, используйте `docker start repaircalc-postgres` вместо `docker run`.
 
@@ -57,23 +93,23 @@ docker exec repaircalc-postgres pg_isready -U repaircalc -d repaircalc
 if ($LASTEXITCODE -ne 0) { throw 'Build/tests failed; stop here.' }
 ```
 
-### 3. Каталог, правила, сервер
+#### 3. Каталог, правила, сервер
 
 Порядок импорта обязателен: сначала каталог, затем соответствующие ему правила. Обе команды завершаются сами, HTTP-сервер в них не запускается.
 
 ```powershell
-java -jar target/repaircalc-backend-0.1.0-SNAPSHOT.jar --repaircalc.command=import-catalog --repaircalc.catalog.file=data/catalog-v1.json --repaircalc.catalog.mappings=data/work-mappings-v1.json
+& "$env:JAVA_HOME\bin\java.exe" -jar target/repaircalc-backend-0.1.0-SNAPSHOT.jar --repaircalc.command=import-catalog --repaircalc.catalog.file=data/catalog-v1.json --repaircalc.catalog.mappings=data/work-mappings-v1.json
 if ($LASTEXITCODE -ne 0) { throw 'Catalog import failed.' }
 
-java -jar target/repaircalc-backend-0.1.0-SNAPSHOT.jar --repaircalc.command=import-rules --repaircalc.rules.file=data/rules-v1.json
+& "$env:JAVA_HOME\bin\java.exe" -jar target/repaircalc-backend-0.1.0-SNAPSHOT.jar --repaircalc.command=import-rules --repaircalc.rules.file=data/rules-v1.json
 if ($LASTEXITCODE -ne 0) { throw 'Rules import failed.' }
 
-java -jar target/repaircalc-backend-0.1.0-SNAPSHOT.jar
+& "$env:JAVA_HOME\bin\java.exe" -jar target/repaircalc-backend-0.1.0-SNAPSHOT.jar
 ```
 
 Последняя команда занимает терминал. Оставьте его открытым; остановка сервера — `Ctrl+C`.
 
-### 4. Проверка из второго терминала
+### Проверка из второго терминала
 
 Для HTTP-проверок DB-переменные не нужны.
 
@@ -142,12 +178,25 @@ curl --fail --show-error -H 'Content-Type: application/json' --data '{"area":20,
 
 ## Повторный запуск и сохранность данных
 
-При новом терминале снова задайте **те же** DB-переменные и настройки JDK из своего раздела. Затем:
+На Windows при использовании launcher достаточно снова задать `JAVA_HOME`, если требуется, и выполнить из корня `.\backend\run-local.cmd` без `-InitializeData`.
+
+При ручном запуске в новом терминале снова задайте **те же** DB-переменные и настройки JDK из своего раздела. Из `backend` запустите БД и дождитесь готовности:
 
 ```text
 docker start repaircalc-postgres
 docker exec repaircalc-postgres pg_isready -U repaircalc -d repaircalc
-java -jar target/repaircalc-backend-0.1.0-SNAPSHOT.jar
+```
+
+Затем запустите Java-сервер на своей платформе:
+
+```powershell
+# Windows / PowerShell
+& "$env:JAVA_HOME\bin\java.exe" -jar target/repaircalc-backend-0.1.0-SNAPSHOT.jar
+```
+
+```bash
+# Linux/macOS
+"$JAVA_HOME/bin/java" -jar target/repaircalc-backend-0.1.0-SNAPSHOT.jar
 ```
 
 При сохранённом `repaircalc-pgdata` повторный импорт не нужен: миграции не применяются повторно, каталог/правила и их UUID/версии сохраняются. Повтор импорта тех же файлов допустим: exit 0, сообщения `Catalog unchanged` / `Rules unchanged`, без дубликатов и повторной активации старой версии.
@@ -191,7 +240,8 @@ node --experimental-strip-types src/test/js/calculation-contract.mjs target/cont
 
 | Признак | Действие |
 | --- | --- |
-| Enforcer требует JDK 21 / UnsupportedClassVersionError | Проверьте `JAVA_HOME`, `java -version` и `javac -version`; они должны относиться к JDK 21 |
+| Enforcer требует JDK 21 / UnsupportedClassVersionError | Проверьте `JAVA_HOME`; на Windows вызывайте `java.exe`/`javac.exe` из его `bin`. В IDEA проверьте Project SDK и Maven Runner JRE — JDK 21 |
+| PowerShell не находит команду `java` | Используйте `run-local.cmd` или прямой вызов `& "$env:JAVA_HOME\bin\java.exe"`; добавлять Java в глобальный PATH для launcher не нужно |
 | Docker показывает только Client / Testcontainers не находит daemon | Запустите Docker и Linux engine; проверьте `docker version` и endpoint текущего context, как в командах окружения |
 | Имя контейнера уже занято | Запустите существующий `repaircalc-postgres`, не создавайте второй с тем же именем |
 | Порт 55432 занят | Выберите свободный host-порт в `--publish` и тот же порт в `DB_URL` |

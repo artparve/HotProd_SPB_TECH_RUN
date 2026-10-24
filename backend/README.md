@@ -4,6 +4,18 @@
 
 **Для другого участника команды:** [пошаговый запуск на Windows/Linux/macOS](docs/TEAM_SETUP.md) — требования, PostgreSQL, импорт каталога/правил, запуск, проверка API и повторный старт с сохранённой БД. Глобальный Maven/Make/Python/Node для Java backend не нужны; Node требуется только дополнительным frontend contract checks.
 
+## Быстрый запуск Windows
+
+При заданном `JAVA_HOME` (JDK 21) и работающем Docker с Linux containers выполните **из корня репозитория**:
+
+```powershell
+.\backend\run-local.cmd -InitializeData
+```
+
+Launcher использует Java из `JAVA_HOME`, создаёт локальную PostgreSQL через Docker CLI, сохраняет пароль в игнорируемом `backend/.env.local`, собирает JAR и явно импортирует учебный каталог/правила. Затем backend работает на `http://127.0.0.1:8000`; остановка — `Ctrl+C`.
+
+Повторный старт: `.\backend\run-local.cmd`. Контейнер `repaircalc-postgres` и volume `repaircalc-pgdata` используются повторно, обычный запуск ничего не импортирует. `-PrepareOnly` выполняет подготовку без HTTP-сервера; его можно сочетать с `-InitializeData`. Launcher собирает с `-DskipTests`; полная проверка — `mvnw.cmd verify`.
+
 ## Сборка
 
 Из каталога `backend`:
@@ -149,6 +161,12 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/product/ac1f222
 Отдельно собран чистый Git-снимок backend в Linux x86_64 с Temurin 21: Maven Wrapper/package и 80 unit/API/config tests прошли. На новой PostgreSQL через Docker CLI проверены четыре миграции, импорты, readiness 503→200, все карточки/расчёты, блокировка неполного товара и повторные no-op импорты. После пересоздания контейнера БД с прежним named volume и перезапуска Java без импортов сохранились IDs/fingerprints/версии, полный ответ витрины и расчёт плитки 16 упаковок/34560.00 RUB. Linux HTTP-ответы также приняты frontend-схемами. Реальный Java 17 отклонён Enforcer с понятным сообщением. Проверка macOS/ARM на устройствах не выполнялась.
 
 Пошаговые команды для Windows/Linux/macOS, повторного старта и диагностики: [TEAM_SETUP](docs/TEAM_SETUP.md).
+
+## Исправление локального запуска — 24 октября 2026
+
+Воспроизведён отказ `spring-boot:run`: PostgreSQL на `127.0.0.1:55432` отсутствовала. JDK 21 был задан в `JAVA_HOME`, но `java` не находилась через PATH; в IDEA корневой проект использовал JDK 17. Добавлены `run-local.cmd` и `scripts/run-local.ps1`: явные локальные настройки, запуск/ожидание PostgreSQL через Docker CLI, проверка пароля, сборка и запуск через `JAVA_HOME`. Режим deploy и обычный Spring startup не изменены.
+
+Проверки: `scripts/verify-contract.ps1` — PASS, **80 unit/API/config + 60 PostgreSQL IT, 0 skipped**, frontend-контракты 12 товаров/11 расчётов. Через launcher выполнены подготовка с `-InitializeData -PrepareOnly`, обычный HTTP-старт без импорта и повторная подготовка после перезапуска БД: импорты стали no-op, UUID/fingerprints/active не изменились. Реальные HTTP-ответы launcher приняты обеими frontend-схемами; liveness/readiness — 200, плитка — 16 упаковок / `34560.00`. Отдельно подтверждены exit 1 для отсутствующего JDK, занятого HTTP-порта и неверного пароля БД. Пароль не попадает в команды или Git; `.env.local` игнорируется. Локальная PostgreSQL оставлена для дальнейшей работы, данные хранятся в `repaircalc-pgdata`.
 
 ## Выполненные задачи
 
