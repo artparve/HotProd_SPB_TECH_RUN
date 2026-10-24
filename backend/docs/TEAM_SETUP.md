@@ -44,6 +44,8 @@ make backend
 
 Глобальный Maven, GNU Make, Python и Node для самого backend не нужны. Maven Wrapper входит в исходники. Node/npm нужны только для дополнительных проверок frontend-контрактов ниже.
 
+Docker Desktop с установленным CLI можно запустить командой `docker desktop start --detach`. После запуска дождитесь, чтобы `docker version` показывал версию Server.
+
 После распаковки/получения ветки найдите рядом `backend`, `frontend` и `docs`. Все следующие команды запуска выполняются **из `backend`**. У каждого участника свои локальная БД и пароль.
 
 ## Windows — PowerShell
@@ -204,6 +206,17 @@ node --experimental-strip-types src/test/js/calculation-contract.mjs target/cont
 ```
 
 В PowerShell 7 на Linux/macOS также можно выполнить `pwsh -File scripts/verify-contract.ps1`. Java `verify` и PostgreSQL IT обязательны; неисправный Docker не считается успешным пропуском. Проверяются настоящие HTTP-ответы 12 карточек и 11 расчётов. Полный api-mode интерфейс пока не готов: мастер сметы и подбор требуют будущих `/estimate` и `/recommendations`.
+
+## Проверенный результат передачи
+
+На 24 октября 2026 года проверены Windows/JDK 21 и чистая копия исходников в Linux x86_64/Temurin 21:
+
+- Windows: 140 Java-тестов (80 unit/API/config + 60 PostgreSQL IT), без ошибок и пропусков; реальные HTTP-ответы приняты frontend `productSchema` и `estimateSchema`.
+- Linux: сборка Maven Wrapper и 80 unit/API/config tests; миграции V1–V4 на новой БД, консольные импорты, 12 карточек, 11 успешных расчётов и отказ неполной карточке с 422. Те же ответы проверены frontend-схемами.
+- Повтор обоих импортов — no-op. После пересоздания PostgreSQL на том же named volume и перезапуска Java без импорта сохранились UUID/fingerprints/версии, readiness 200 и расчёт плитки 16 упаковок/34560.00 RUB.
+- На настоящем Java 17 Maven Enforcer отклоняет сборку сообщением `RepairCalc requires JDK 21 or newer`.
+
+Фактические прогоны на macOS и ARM не выполнялись; для них приведены команды установки окружения и запуска, без заявления о проверке на этих устройствах.
 
 ## Если запуск не удался
 
