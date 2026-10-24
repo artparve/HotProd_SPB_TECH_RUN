@@ -6,6 +6,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.repaircalc.ingestion.CatalogImportService;
 import ru.repaircalc.catalog.CatalogReadService;
+import ru.repaircalc.rules.RuleSetImportService;
+import ru.repaircalc.rules.RuleSetReadService;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -14,6 +16,10 @@ class RepairCalcApplicationTest {
     private CatalogImportService importer;
     @MockitoBean
     private CatalogReadService catalog;
+    @MockitoBean
+    private RuleSetImportService ruleImporter;
+    @MockitoBean
+    private RuleSetReadService rules;
 
     @Test
     void startsApplicationContext() {

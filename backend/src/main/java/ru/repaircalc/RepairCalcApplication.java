@@ -15,8 +15,9 @@ public class RepairCalcApplication {
             return;
         }
         var commands = options.getOptionValues("repaircalc.command");
-        if (commands == null || commands.size() != 1 || !"import-catalog".equals(commands.getFirst())) {
-            System.err.println("Supported operator command: --repaircalc.command=import-catalog");
+        if (commands == null || commands.size() != 1
+                || !("import-catalog".equals(commands.getFirst()) || "import-rules".equals(commands.getFirst()))) {
+            System.err.println("Supported operator commands: --repaircalc.command=import-catalog|import-rules");
             System.exit(2);
             return;
         }
@@ -25,7 +26,7 @@ public class RepairCalcApplication {
         try (var context = application.run(args)) {
             exitCode = SpringApplication.exit(context);
         } catch (Exception exception) {
-            System.err.println("Catalog import failed; no release was published by this attempt.");
+            System.err.println("Operator command failed; check the failing phase in the application logs.");
             exitCode = 1;
         }
         if (exitCode != 0) {

@@ -13,6 +13,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.repaircalc.ingestion.CatalogImportService;
 import ru.repaircalc.catalog.CatalogReadService;
+import ru.repaircalc.rules.RuleSetImportService;
+import ru.repaircalc.rules.RuleSetReadService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,6 +25,10 @@ class HealthEndpointsTest {
     private CatalogImportService importer;
     @MockitoBean
     private CatalogReadService catalog;
+    @MockitoBean
+    private RuleSetImportService ruleImporter;
+    @MockitoBean
+    private RuleSetReadService rules;
 
     private final HttpClient client = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(5)).build();

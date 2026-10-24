@@ -96,6 +96,20 @@ $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}'
 
 Проверка собранного JAR через Docker CLI: обычный старт не загружает данные (`503 catalog_unavailable`); после консольного импорта тот же запущенный сервер возвращает 12 товаров без перезапуска. Ответ принят frontend Zod-схемой, повтор импорта завершился exit 0/no-op. Liveness — 200, общая readiness — 503 до публикации правил; `X-Request-ID` присутствует. Временные PostgreSQL-контейнер и Java-процесс остановлены.
 
+## Правила расчёта — BE-11
+
+`data/rules-v1.json` — типизированный **учебный** bundle: точная версия/fingerprint каталога, источники, восемь профилей семи стратегий, 11 рассчитываемых назначений, явная блокировка неполного лака и пять тестовых тарифов работ. Цена и фасовка остаются в каталоге; нормы принадлежат правилам и проверяются на согласованность с заполненными нормами карточек.
+
+После импорта каталога, с теми же DB-переменными, из `backend`:
+
+```powershell
+& "$env:JAVA_HOME/bin/java" -jar target/repaircalc-backend-0.1.0-SNAPSHOT.jar --repaircalc.command=import-rules --repaircalc.rules.file=data/rules-v1.json
+```
+
+Команда работает без HTTP-сервера и закрывает контекст. Повтор тех же байтов/версии — exit 0/no-op без повторной активации; изменение требует новой версии. Загрузка не выполняется автоматически при старте. V4 защищает опубликованный bundle и допускает один активный набор на точный catalog release. Публикации каталога и правил используют общий advisory lock; сбой сохраняет прежний активный набор.
+
+Проверка BE-11: `mvnw.cmd verify` — PASS, 24 unit/API/config + 52 PostgreSQL IT, без пропусков. Включены 6 проверок схемы/неизменяемости и 10 сценариев импорта: strict JSON, ссылки и источники, полнота назначений, конфликт норм/версии, повтор старого набора, rollback после записи и конкурентные публикации.
+
 ## Выполненные задачи
 
 | Задачи | Результат | Проверки |
@@ -108,5 +122,6 @@ $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}'
 | BE-09, схема назначений | V3: work-taxonomy-v1 и несколько проверяемых назначений товара | `mvnw.cmd verify`: PASS (19 unit/API/config + 20 PostgreSQL IT, включая 9 work mapping tests) |
 | BE-09, импорт | Строгий JSON, консольный импорт 12 карточек, атомарная публикация и повтор | `mvnw.cmd verify`: PASS (19 unit/API/config + 30 PostgreSQL IT, включая 10 import tests) |
 | BE-10 | Опубликованный snapshot, GET /api/v1/products, безопасный 503, frontend-контракт | `scripts/verify-contract.ps1`: PASS — 24 unit/API/config + 36 PostgreSQL IT (0 skipped), реальный HTTP-ответ с 12 товарами принят существующим `productSchema` через Node |
+| BE-11 | V4, versioned typed RuleSet, источники/тарифы, строгий CLI loader и атомарная публикация | `mvnw.cmd verify`: PASS (24 unit/API/config + 52 PostgreSQL IT, 0 skipped) |
 
 Решения по стеку: [ADR-001](docs/adr/001-backend-foundation.md). Общий backlog находится в `../docs/BACKEND_IMPLEMENTATION_PLAN.md`.
