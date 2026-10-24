@@ -27,12 +27,22 @@ docs/           OpenAPI и пояснения
 - **Node.js 22.12+ LTS** или 24 LTS, с npm; `.nvmrc` содержит 22.
 - Для Docker-команд — работающий Docker Engine и Compose v2.
 
-Python, Bash, MSYS2, WSL и PowerShell-скрипты проекту не требуются. У Makefile нет жёстко заданного `SHELL`, Windows-путей, `.cmd`, `os.name`, Unix-команды `export` или присваивания env в стиле `VAR=value command`.
+Для локального запуска через Node.js Python, Bash, MSYS2, WSL и PowerShell-скрипты не требуются. Для Docker Desktop на Windows с Linux-контейнерами нужен WSL 2; см. [установку Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/). У Makefile нет жёстко заданного `SHELL`, Windows-путей, `.cmd`, `os.name`, Unix-команды `export` или присваивания env в стиле `VAR=value command`.
 
 GNU Make нужно установить отдельно, если команды `make` нет:
-- **Windows:** например, `choco install make` при установленном Chocolatey. После установки открыть новый терминал. `nmake` из Visual Studio не является заменой GNU Make.
+- **Windows:** `winget install --id ezwinports.make --exact --scope user` или `choco install make` при установленном Chocolatey. `nmake` из Visual Studio не является заменой GNU Make.
 - **macOS:** GNU Make доступен с Command Line Tools; также можно установить `brew install make`. Homebrew может назвать команду `gmake` — тогда используйте `gmake` вместо `make`.
 - **Linux:** пакет `make` из пакетного менеджера дистрибутива, например `sudo apt install make`.
+
+Если после установки PowerShell сообщает, что `node` или `make` не распознаны, обновите PATH текущего терминала:
+
+```powershell
+$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
+node --version
+make --version
+```
+
+Встроенный терминал IDE наследует окружение самой IDE: открытие новой вкладки может сохранить старый PATH. Обновите его командой выше либо полностью перезапустите IDE.
 
 Если установлен GNU Make под именем `gmake` или `mingw32-make`, это тот же формат Makefile. Вложенные вызовы используют `$(MAKE)`, поэтому продолжают работать с выбранным именем команды. Из каталога проекта:
 

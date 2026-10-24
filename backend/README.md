@@ -2,12 +2,14 @@
 
 Самостоятельный Spring MVC backend. Базовая версия Java — 21; preview features не используются.
 
+**Для другого участника команды:** [пошаговый запуск на Windows/Linux/macOS](docs/TEAM_SETUP.md) — требования, PostgreSQL, импорт каталога/правил, запуск, проверка API и повторный старт с сохранённой БД. Глобальный Maven/Make/Python/Node для Java backend не нужны; Node требуется только дополнительным frontend contract checks.
+
 ## Сборка
 
 Из каталога `backend`:
 
 ```powershell
-$env:JAVA_HOME = 'C:\Program Files\Java\jdk-21.0.10'
+$env:JAVA_HOME = 'C:\path\to\jdk-21' # Укажите свой установленный JDK 21.
 .\mvnw.cmd verify
 ```
 
@@ -31,7 +33,7 @@ Linux/macOS: `./mvnw verify`. Wrapper загружает фиксированн�
 
 ## PostgreSQL и миграции — BE-07
 
-Подготовлены JPA, PostgreSQL driver, Flyway и Testcontainers с версиями из Boot BOM. Миграция `V1__create_repaircalc_schema.sql` создаёт схему `repaircalc`; история Flyway находится в `public`. Hibernate использует `ddl-auto=validate`, `open-in-view` отключён. До появления сущностей в BE-08 проверка их таблиц не заявляется.
+Подготовлены JPA, PostgreSQL driver, Flyway и Testcontainers с версиями из Boot BOM. V1 создаёт схему `repaircalc`, V2–V4 — каталог, назначения работ и правила; история Flyway находится в `public`. Hibernate проверяет сущности через `ddl-auto=validate`, `open-in-view` отключён.
 
 Для локальной БД выделен порт `55432`. Команды выполняются в PowerShell из `backend` после запуска Linux engine Docker:
 
@@ -157,4 +159,4 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/product/ac1f222
 | BE-13 | Семь стратегий, формулы/источники и явные учебные ограничения | `mvnw.cmd verify`: PASS (74 unit/API/config + 52 PostgreSQL IT, 0 skipped) |
 | BE-14 | ProductCalc API, согласованный snapshot, readiness и frontend-контракты | `scripts/verify-contract.ps1`: PASS (80 unit/API/config + 60 PostgreSQL IT, 0 skipped; 12 товаров + 11 расчётов приняты Zod) |
 
-Решения по стеку: [ADR-001](docs/adr/001-backend-foundation.md). Общий backlog находится в `../docs/BACKEND_IMPLEMENTATION_PLAN.md`.
+Решения по стеку: [ADR-001](docs/adr/001-backend-foundation.md). Инструкция передачи и запуска: [TEAM_SETUP](docs/TEAM_SETUP.md).

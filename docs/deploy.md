@@ -19,6 +19,16 @@ docker compose version
 
 Если GNU Make установлен под именем `gmake` или `mingw32-make`, заменяйте `make` этим именем во всех следующих командах. `nmake` не подходит. Варианты установки инструментов описаны в [FRONTEND.md](FRONTEND.md#windows-macos-и-linux).
 
+На Windows после установки инструментов обновите PATH открытого PowerShell, если он не находит команды:
+
+```powershell
+$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
+```
+
+Если используете терминал IDE, также можно полностью перезапустить IDE. Для Docker Desktop должен быть установлен WSL 2; после первого включения компонентов Windows может потребоваться перезагрузка. См. [официальную инструкцию Docker](https://docs.docker.com/desktop/setup/install/windows-install/).
+
+Перед следующими шагами перейдите в корень проекта. Если терминал открыт в `HotProd_SPB_TECH_RUN/docs`, выполните `cd ..`: в папке `docs` нет Makefile и Compose-файлов.
+
 ## Шаг 2. Создайте локальные настройки
 
 ```bash
