@@ -110,6 +110,12 @@ $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}'
 
 Проверка BE-11: `mvnw.cmd verify` — PASS, 24 unit/API/config + 52 PostgreSQL IT, без пропусков. Включены 6 проверок схемы/неизменяемости и 10 сценариев импорта: strict JSON, ссылки и источники, полнота назначений, конфликт норм/версии, повтор старого набора, rollback после записи и конкурентные публикации.
 
+## Точная арифметика — BE-12
+
+Независимое Java-ядро вычисляет геометрию, пользовательский запас и упаковки на BigDecimal. Промежуточные значения не округляются; число упаковок округляется вверх непосредственно при делении. Цена должна быть положительной и выражаться целыми копейками; деньги сериализуются с двумя знаками. Известные единицы не конвертируются неявно. Количество упаковок ограничено безопасным целым JavaScript (9007199254740991).
+
+`mvnw.cmd verify` — PASS: 38 unit/API/config + 52 PostgreSQL IT. Включены независимые эталоны 22/1,44 → 16 упаковок и 34560,00 RUB; 0,3/0,1 → 3 упаковки, очень малая потребность без преждевременного округления, запас 0–30%, границы геометрии и безопасного целого.
+
 ## Выполненные задачи
 
 | Задачи | Результат | Проверки |
@@ -123,5 +129,6 @@ $env:DOCKER_HOST = (docker context inspect --format '{{.Endpoints.docker.Host}}'
 | BE-09, импорт | Строгий JSON, консольный импорт 12 карточек, атомарная публикация и повтор | `mvnw.cmd verify`: PASS (19 unit/API/config + 30 PostgreSQL IT, включая 10 import tests) |
 | BE-10 | Опубликованный snapshot, GET /api/v1/products, безопасный 503, frontend-контракт | `scripts/verify-contract.ps1`: PASS — 24 unit/API/config + 36 PostgreSQL IT (0 skipped), реальный HTTP-ответ с 12 товарами принят существующим `productSchema` через Node |
 | BE-11 | V4, versioned typed RuleSet, источники/тарифы, строгий CLI loader и атомарная публикация | `mvnw.cmd verify`: PASS (24 unit/API/config + 52 PostgreSQL IT, 0 skipped) |
+| BE-12 | Чистые Geometry/Money/Unit, запас и точное округление упаковок | `mvnw.cmd verify`: PASS (38 unit/API/config + 52 PostgreSQL IT, 0 skipped) |
 
 Решения по стеку: [ADR-001](docs/adr/001-backend-foundation.md). Общий backlog находится в `../docs/BACKEND_IMPLEMENTATION_PLAN.md`.
