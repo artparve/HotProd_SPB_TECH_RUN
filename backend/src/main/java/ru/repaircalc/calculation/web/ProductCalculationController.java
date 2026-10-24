@@ -23,7 +23,7 @@ public class ProductCalculationController {
     public ProductCalculationController(ProductCalculationService calculations) { this.calculations = calculations; }
 
     @PostMapping("/{id}/calc")
-    public ProductEstimate calculate(@PathVariable String id, @RequestBody @Valid Input body) {
+    public ProductEstimate calculate(@PathVariable("id") String id, @RequestBody @Valid Input body) {
         return calculations.calculate(id, new CalculationInput(body.area(), body.perimeter(), body.height(),
                 body.reserve(), body.layers(), body.quantity()));
     }
