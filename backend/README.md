@@ -20,7 +20,9 @@ Launcher использует Java из `JAVA_HOME`, создаёт локаль
 
 В репозитории сохранена конфигурация **Backend local**: выберите её в списке Run и нажмите Run. Она запускает `spring-boot:run` из `backend` через Maven Wrapper с JDK из `JAVA_HOME`, независимо от SDK корневого проекта. После изменения `JAVA_HOME` перезапустите IDEA, чтобы она получила новое окружение.
 
-Перед первым запуском подготовьте локальную БД: `.\backend\run-local.cmd -InitializeData -PrepareOnly` из корня. При следующих запусках достаточно работающего контейнера `repaircalc-postgres`. Профиль `local` сам читает `backend/.env.local`, если рабочий каталог — `backend`; обычный запуск ничего не импортирует. Для прямого Java Run/Debug из редактора дополнительно подключите `backend/pom.xml` как Maven project и выберите SDK 21. Подробности — [TEAM_SETUP](docs/TEAM_SETUP.md#intellij-idea).
+Перед первым запуском подготовьте локальную БД: `.\backend\run-local.cmd -InitializeData -PrepareOnly` из корня. При следующих запусках достаточно работающего контейнера `repaircalc-postgres`. Профиль `local` сам читает `backend/.env.local`, если рабочий каталог — `backend`; обычный запуск ничего не импортирует.
+
+Для прямого Java Run/Debug подключите `backend/pom.xml` как Maven project, выберите Project SDK 21 и конфигурацию **Backend Java**. Она использует main-класс `ru.repaircalc.RepairCalcApplication`, модуль `repaircalc-backend`, стандартный Build и рабочую папку `backend`. Для конфигурации, созданной зелёной стрелкой из редактора, нужны те же модуль и рабочая папка. Подробности — [TEAM_SETUP](docs/TEAM_SETUP.md#intellij-idea).
 
 ## Сборка
 
@@ -179,6 +181,14 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/product/ac1f222
 Добавлена общая `.run/Backend_local.run.xml` для IDEA Community: Maven Wrapper, `JAVA_HOME`, рабочая папка `backend`, цель `spring-boot:run`. Профиль `local` явно импортирует `.env.local`; секреты в Run Configuration не записываются. Локально подключён `backend/pom.xml` к Maven-проектам IDEA; пользовательские `.idea` и настройки SDK не входят в коммит.
 
 Проверена команда из XML-конфигурации с удалёнными DB/Spring-переменными окружения: Java 21, local profile, порт 8000, liveness/readiness 200, 12 карточек, расчёт плитки 16 упаковок / `34560.00`. Проверочный сервер остановлен, порт 8000 оставлен свободным для Run в IDEA. `scripts/verify-contract.ps1` — PASS: 80 unit/API/config + 60 PostgreSQL IT, без пропусков; оба frontend-контракта прошли. Профиль deploy без явного окружения не использует локальный файл и ожидаемо отклоняет запуск без JDBC URL. Нажатие кнопки Run в графическом интерфейсе автоматически не проверялось.
+
+## Нативный Run/Debug в IDEA — 25 октября 2026
+
+Добавлена общая Java-конфигурация `Backend Java`. Локально зарегистрирован отдельный SDK `repaircalc-21` (прежний SDK 17 сохранён), выставлены язык/bytecode 21 и настроен модуль backend с production/test sources, resources и Maven-зависимостями. Шаблон новых Application-конфигураций использует рабочую папку `backend`. Пользовательские SDK/`.idea` остаются локальными; резервные копии настроек находятся в `target/ide-native-check/backups`.
+
+Проверена модель проекта через установленную библиотеку IDEA JPS: main-класс, SDK, source/resource roots и 94 элемента runtime classpath разрешаются. Все 57 production Java-файлов отдельно скомпилированы JDK 21 без `-parameters`; прямой запуск main загрузил локальную конфигурацию и прошёл HTTP/frontend-контракты 12 товаров и 11 расчётов. Liveness/readiness — 200; плитка — 16 упаковок / `34560.00`. JDI-отладчик успешно подключился к этой JVM. При проверке исправлена зависимость маршрута калькулятора от имён параметров компилятора: `@PathVariable("id")` теперь задаёт привязку явно. Проверочный процесс остановлен, порт 8000 свободен для IDEA.
+
+Повторная `scripts/verify-contract.ps1` после исправления — PASS: **80 unit/API/config + 60 PostgreSQL IT, 0 skipped**, оба frontend-контракта прошли. Результаты локального прогона: `target/native-idea-verify.log`.
 
 ## Выполненные задачи
 

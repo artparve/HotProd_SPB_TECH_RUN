@@ -62,7 +62,9 @@ Launcher собирает JAR через Maven Wrapper командой `package
 
 Если **Backend local** не появился, переоткройте проект, чтобы IDEA перечитала `.run`. Подключите `backend/pom.xml` через **Add as Maven Project**, если backend ещё не отображается в окне Maven, и дождитесь импорта.
 
-Для прямого запуска или отладки `RepairCalcApplication` из редактора дополнительно выберите **JDK 21 в Project SDK**, импортируйте `backend/pom.xml` как Maven project и задайте рабочую папку Java-конфигурации `$PROJECT_DIR$/backend`. Корневой проект может использовать JDK 17 независимо от `JAVA_HOME`; для backend JDK 17 не подходит. Профиль `local` загрузит `.env.local` из рабочей папки; без него передайте DB-переменные процессу явно. Профиль `deploy` локальный файл не загружает и требует явного окружения.
+Для обычного Java Run/Debug выберите **JDK 21 в Project SDK** и подключите `backend/pom.xml` как Maven project. После импорта модуль `repaircalc-backend` должен содержать `src/main/java`, resources и Maven-зависимости. Затем выберите общую конфигурацию [Backend Java](../../.run/Backend_Java.run.xml) и нажмите **Run** или **Debug**. Она запускает `ru.repaircalc.RepairCalcApplication` с classpath этого модуля и рабочей папкой `$PROJECT_DIR$/backend`, выполняя стандартный Build перед стартом.
+
+Зелёная стрелка рядом с `main` создаёт отдельную Java-конфигурацию: проверьте в ней модуль `repaircalc-backend` и рабочую папку `$PROJECT_DIR$/backend`. Корневой проект может использовать JDK 17 независимо от `JAVA_HOME`; для backend JDK 17 не подходит. Профиль `local` загрузит `.env.local` из рабочей папки; без него передайте DB-переменные процессу явно. Профиль `deploy` локальный файл не загружает и требует явного окружения.
 
 ### Ручной запуск — альтернатива launcher
 
