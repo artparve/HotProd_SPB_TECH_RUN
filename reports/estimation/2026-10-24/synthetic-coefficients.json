@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "version": "consumption-ols-v1-566d733fd7ad7912",
+  "trainingSha256": "566d733fd7ad7912a1f83143b33226654f6c9cc7c9539d2408493e68315e1e38",
+  "method": "per-product-no-intercept-ols",
+  "products": {
+    "30473701-b10b-3d56-a15a-8591c16486c4": {
+      "kind": "paint",
+      "unit": "л",
+      "catalog": "synthetic-catalog-v1",
+      "rules": "synthetic-rules-v1",
+      "factor": "1.1",
+      "samples": 5,
+      "trainingMAE": "0.0"
+    }
+  }
+}

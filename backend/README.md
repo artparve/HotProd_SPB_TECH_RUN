@@ -4,6 +4,10 @@
 
 **Для другого участника команды:** [пошаговый запуск на Windows/Linux/macOS](docs/TEAM_SETUP.md) — требования, PostgreSQL, импорт каталога/правил, запуск, проверка API и повторный старт с сохранённой БД. Глобальный Maven/Make/Python/Node для Java backend не нужны; Node требуется только дополнительным frontend contract checks.
 
+**Отдельная проверка LLM:** [Gemma 4 12B через Ollama](docs/OLLAMA_SMOKE.md) — автономный Python-скрипт, загрузка модели и тестовый запрос. В Java backend вызовов моделей пока нет; расчёт возвращает `model=not-used`.
+
+**Классификация товаров:** [LangChain + structured output](classification/README.md) — отдельный Python-модуль, промпт и схема для определения видов работ, поверхностей и свойств. [Таксономия и полный анализ датасетов](../reports/classification/README.md). Интеграция классификатора с Java API/БД не выполняется.
+
 ## Сборка
 
 Из каталога `backend`:
@@ -160,3 +164,16 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/v1/product/ac1f222
 | BE-14 | ProductCalc API, согласованный snapshot, readiness и frontend-контракты | `scripts/verify-contract.ps1`: PASS (80 unit/API/config + 60 PostgreSQL IT, 0 skipped; 12 товаров + 11 расчётов приняты Zod) |
 
 Решения по стеку: [ADR-001](docs/adr/001-backend-foundation.md). Инструкция передачи и запуска: [TEAM_SETUP](docs/TEAM_SETUP.md).
+
+## Python-сервис расчёта с Ollama
+
+[estimation](estimation/README.md) — отдельный HTTP-сервис и CLI: Gemma вызывает tool
+`calculate_material_cost`, который использует существующий Java ProductCalc API.
+Смета и объяснение возвращаются отдельно; деньги и формулы считает Java.
+Есть обучение поправочных коэффициентов по фактическому расходу заказов;
+в репозитории проверена только синтетическая обучающая выборка.
+Запуск: `PYTHONPATH=backend/estimation python3 -m repaircalc_estimator serve` из корня проекта,
+порт `8010`, Java API `8000`, Ollama `11434`.
+Требуются опубликованные каталог/правила и установленная модель.
+[Smoke-инструкция](docs/ESTIMATION_SMOKE.md),
+[реальные результаты и ограничения](../reports/estimation/2026-10-24/README.md).

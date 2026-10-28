@@ -1,0 +1,9 @@
+READY http://172.17.0.1:8010 model=gemma4:12b
+START case-892c73c1 product=30473701-b10b-3d56-a15a-8591c16486c4
+END case-892c73c1 elapsed=111.548s
+START case-5d715b41 product=ac1f222a-f5e9-3b5d-a91e-c943b053e92e
+END case-5d715b41 elapsed=81.78s
+START case-4bac659b product=f3b607e5-5758-3db2-bbf2-605dc539184c
+END case-4bac659b elapsed=83.131s
+START case-bf57a81a product=8539fe9d-e2dc-3994-a5fc-85773eb533b5
+END case-bf57a81a elapsed=168.027s

@@ -1,0 +1,14 @@
+{
+  "cases": 1,
+  "passed_cases": 1,
+  "checks": 7,
+  "passed_checks": 7,
+  "elapsed_seconds": 440.32,
+  "taxonomy_version": "repair-product-taxonomy-v2",
+  "prompt_version": "repair-classifier-prompt-v2",
+  "remaining_limitations": [
+    "One targeted rerun, not a full rerun of all seven cases on v2",
+    "No independent micro/macro-F1 measurement",
+    "Slow inference on this host; catalog audit overlapped the targeted run"
+  ]
+}

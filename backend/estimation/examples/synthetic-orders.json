@@ -1,0 +1,52 @@
+[
+  {
+    "orderId": "SYNTHETIC-1",
+    "productId": "30473701-b10b-3d56-a15a-8591c16486c4",
+    "kind": "paint",
+    "unit": "л",
+    "catalogVersion": "synthetic-catalog-v1",
+    "rulesVersion": "synthetic-rules-v1",
+    "baselineNeed": "1",
+    "actualConsumed": "1.1"
+  },
+  {
+    "orderId": "SYNTHETIC-2",
+    "productId": "30473701-b10b-3d56-a15a-8591c16486c4",
+    "kind": "paint",
+    "unit": "л",
+    "catalogVersion": "synthetic-catalog-v1",
+    "rulesVersion": "synthetic-rules-v1",
+    "baselineNeed": "2",
+    "actualConsumed": "2.2"
+  },
+  {
+    "orderId": "SYNTHETIC-3",
+    "productId": "30473701-b10b-3d56-a15a-8591c16486c4",
+    "kind": "paint",
+    "unit": "л",
+    "catalogVersion": "synthetic-catalog-v1",
+    "rulesVersion": "synthetic-rules-v1",
+    "baselineNeed": "3",
+    "actualConsumed": "3.3"
+  },
+  {
+    "orderId": "SYNTHETIC-4",
+    "productId": "30473701-b10b-3d56-a15a-8591c16486c4",
+    "kind": "paint",
+    "unit": "л",
+    "catalogVersion": "synthetic-catalog-v1",
+    "rulesVersion": "synthetic-rules-v1",
+    "baselineNeed": "4",
+    "actualConsumed": "4.4"
+  },
+  {
+    "orderId": "SYNTHETIC-5",
+    "productId": "30473701-b10b-3d56-a15a-8591c16486c4",
+    "kind": "paint",
+    "unit": "л",
+    "catalogVersion": "synthetic-catalog-v1",
+    "rulesVersion": "synthetic-rules-v1",
+    "baselineNeed": "5",
+    "actualConsumed": "5.5"
+  }
+]

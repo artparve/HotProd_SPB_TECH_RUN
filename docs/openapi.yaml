@@ -3,9 +3,10 @@ info:
   title: RepairCalc Frontend API
   version: 1.0.0
   description: |
-    Предлагаемый контракт будущего backend, а не описание уже доступного сервиса.
+    Контракт Java API каталога/расчёта товара и отдельного Python-сервиса materials.
+    Общая смета и рекомендации пока запланированы.
     Внешний Bagisto API каталога не совместим с этим контрактом без нормализации.
-    Витрина ограничена товарами для виджета; массовый импорт, ML и admin API вне scope.
+    Витрина ограничена товарами для виджета; массовый импорт и admin API вне scope.
     Денежные значения передаются десятичными строками в RUB.
     Нельзя считать неизвестные фасовку, расход или совместимость подтверждёнными.
     Авторизация и CSRF-политика должны быть согласованы до production-интеграции.
@@ -164,8 +165,142 @@ paths:
           $ref: '#/components/responses/Unavailable'
         default:
           $ref: '#/components/responses/Error'
+  /materials/estimate:
+    post:
+      operationId: estimateMaterialWithAssistant
+      tags: [Estimates]
+      summary: Расчёт товара через Ollama tool calling и пояснение модели
+      description: |
+        Отдельный Python-сервис вызывает Ollama, исполняет calculate_material_cost с пустыми
+        аргументами через Java API и запрашивает пояснение. Суммы берутся только из estimate.
+        Текст explanation не проверен на достоверность. При сбое пояснения рассчитанная смета
+        сохраняется, explanationStatus=unavailable. Отсутствие tool call не заменяется демо.
+        Два обращения к модели могут занять несколько минут (socket timeout 600 с каждое).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialRequest'
+      responses:
+        '200':
+          description: Проверенная Java-смета и отдельно справочное пояснение модели
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialEstimate'
+        '422':
+          $ref: '#/components/responses/NeedsClarification'
+        '502':
+          description: Модель не выполнила обязательный вызов tool или ответ некорректен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        default:
+          $ref: '#/components/responses/Error'
+  /materials/calculate:
+    post:
+      operationId: calculateMaterialWithoutAssistant
+      tags: [Estimates]
+      summary: Детерминированный расчёт через Python-сервис без вызова Ollama
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialRequest'
+      responses:
+        '200':
+          description: Java-смета, baseline и сведения о поправке без пояснения модели
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialCalculation'
+        default:
+          $ref: '#/components/responses/Error'
 components:
   schemas:
+    MaterialRequest:
+      type: object
+      required: [productId, input]
+      additionalProperties: false
+      properties:
+        productId:
+          type: string
+          format: uuid
+        input:
+          $ref: '#/components/schemas/ProductInput'
+        prompt:
+          type: string
+          minLength: 1
+          maxLength: 8000
+        useCorrection:
+          type: boolean
+          default: false
+    MaterialCorrection:
+      type: object
+      required: [applied, version, factor]
+      properties:
+        applied:
+          type: boolean
+        version:
+          type: string
+        factor:
+          type: string
+          pattern: '^\d+(\.\d+)?$'
+        originalReserve:
+          type: string
+        effectiveReserve:
+          type: string
+    MaterialCalculation:
+      type: object
+      required: [status, estimate, baseline, correction, model]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        estimate:
+          $ref: '#/components/schemas/ProductEstimate'
+        baseline:
+          $ref: '#/components/schemas/ProductEstimate'
+        correction:
+          $ref: '#/components/schemas/MaterialCorrection'
+        model:
+          type: string
+    MaterialEstimate:
+      type: object
+      required: [status, estimate, baseline, correction, model, toolCalls, explanation, explanationStatus]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        estimate:
+          $ref: '#/components/schemas/ProductEstimate'
+        baseline:
+          $ref: '#/components/schemas/ProductEstimate'
+        correction:
+          $ref: '#/components/schemas/MaterialCorrection'
+        model:
+          type: string
+          minLength: 1
+        toolCalls:
+          type: array
+          minItems: 1
+          maxItems: 1
+          items:
+            type: string
+            enum: [calculate_material_cost]
+        explanation:
+          type: string
+          nullable: true
+        explanationStatus:
+          type: string
+          enum: [unverified_model_text, unavailable]
+        explanationError:
+          $ref: '#/components/schemas/ApiError'
     Money:
       type: string
       pattern: '^\d+(\.\d{1,2})?$'

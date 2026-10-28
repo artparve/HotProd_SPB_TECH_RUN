@@ -12,6 +12,7 @@ services:
     environment:
       # No backend is included. In API mode point to a reachable REST service.
       API_UPSTREAM: ${DOCKER_API_UPSTREAM:-http://127.0.0.1:9}
+      ESTIMATION_UPSTREAM: ${DOCKER_ESTIMATION_UPSTREAM:-http://127.0.0.1:9}
     expose:
       - "8080"
     restart: unless-stopped

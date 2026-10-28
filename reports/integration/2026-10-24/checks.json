@@ -1,0 +1,142 @@
+[
+  {
+    "label": "liveness",
+    "status": 200,
+    "requestId": "4d1cc4be-e8e9-4c2a-a674-913e429f4974"
+  },
+  {
+    "label": "readiness",
+    "status": 200,
+    "requestId": "4f2e6b26-3928-4cfc-8701-a41e99084261"
+  },
+  {
+    "label": "nginx health",
+    "status": 200,
+    "requestId": null
+  },
+  {
+    "label": "catalog through nginx",
+    "status": 200,
+    "requestId": "e7eb6a29-42ea-4818-86d4-c99c39232341"
+  },
+  {
+    "label": "catalog direct API",
+    "status": 200,
+    "requestId": "53f20e8b-f41e-45ea-8280-a208b563306f"
+  },
+  {
+    "label": "calculate demo-laminate",
+    "status": 200,
+    "requestId": "f34019eb-193f-4bc4-a174-dc06fe548ee3"
+  },
+  {
+    "label": "calculate demo-tile",
+    "status": 200,
+    "requestId": "a4902016-a727-4570-8155-ee4f4958426d"
+  },
+  {
+    "label": "calculate demo-vinyl",
+    "status": 200,
+    "requestId": "cf55b64b-b8de-487d-b553-5d07659bd704"
+  },
+  {
+    "label": "calculate demo-paint",
+    "status": 200,
+    "requestId": "5d6332a9-765c-41db-bf1e-5fe91d0ddae1"
+  },
+  {
+    "label": "calculate demo-wet-paint",
+    "status": 200,
+    "requestId": "e3aa91ad-2990-4990-a828-7da8ba515dfa"
+  },
+  {
+    "label": "calculate demo-primer",
+    "status": 200,
+    "requestId": "9ab0b460-86de-43bf-9039-ec7626d55649"
+  },
+  {
+    "label": "calculate demo-wallpaper",
+    "status": 200,
+    "requestId": "30ce48f9-f2e5-431b-92ec-0e07a166c5b7"
+  },
+  {
+    "label": "calculate demo-glue",
+    "status": 200,
+    "requestId": "f9e0f2db-d5bf-4a9f-8a1e-ab98fca76897"
+  },
+  {
+    "label": "calculate demo-socket",
+    "status": 200,
+    "requestId": "3a1705b3-8466-4e16-b4f9-47eb6ad48770"
+  },
+  {
+    "label": "calculate demo-wet-socket",
+    "status": 200,
+    "requestId": "ded41561-1833-49cb-8531-c221baa1daa9"
+  },
+  {
+    "label": "calculate demo-cable",
+    "status": 200,
+    "requestId": "0b94d45f-3020-4189-a624-1956a4c56803"
+  },
+  {
+    "label": "unconfirmed norm",
+    "status": 422,
+    "requestId": "f12d995c-5162-4c43-8950-124282bf234f"
+  },
+  {
+    "label": "missing product",
+    "status": 404,
+    "requestId": "71bf316c-314b-4a7e-8816-4c34a23f3a84"
+  },
+  {
+    "label": "old demo identifier",
+    "status": 404,
+    "requestId": "22439dd4-b4c8-4c4b-86bc-f28c40133857"
+  },
+  {
+    "label": "invalid JSON",
+    "status": 400,
+    "requestId": "a79e86ad-766a-4521-8853-2f2be1b4d5e8"
+  },
+  {
+    "label": "missing input fields",
+    "status": 422,
+    "requestId": "26d23eba-d020-448b-b979-1073fb500c1f"
+  },
+  {
+    "label": "negative area",
+    "status": 422,
+    "requestId": "0ec38924-4642-4492-b996-496644e5d57b"
+  },
+  {
+    "label": "fractional paint layers",
+    "status": 422,
+    "requestId": "4f6b1206-c388-4b24-8c1d-42da77b13a83"
+  },
+  {
+    "label": "fractional socket points",
+    "status": 422,
+    "requestId": "00fba2c8-9811-402b-bcfe-f1d8a0fdaf00"
+  },
+  {
+    "label": "unsupported method",
+    "status": 405,
+    "requestId": "ca0e33ee-56ff-4db3-be73-f157f4d1b514"
+  },
+  {
+    "label": "unsupported media type",
+    "status": 415,
+    "requestId": "793d2a7f-c375-4daa-a31b-be56476e291d"
+  },
+  {
+    "label": "estimate not implemented",
+    "status": 404,
+    "requestId": "81c65ec6-27a0-4060-9973-59e8fae7fe83"
+  },
+  {
+    "label": "recommendations not implemented",
+    "status": 404,
+    "requestId": "9a41d5f2-71d2-4355-802c-43c0ad08aeca"
+  }
+]

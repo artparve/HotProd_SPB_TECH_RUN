@@ -1,0 +1,14 @@
+npm --prefix frontend test
+
+> repaircalc-frontend@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /home/artparve/projects/spb_tech_run_2026/frontend
+
+
+ Test Files  4 passed (4)
+      Tests  36 passed (36)
+   Start at  16:29:27
+   Duration  1.78s (environment 59%, transform 15%, tests 14%, import 11%, worker 1%)
+

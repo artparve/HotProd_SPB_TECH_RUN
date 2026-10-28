@@ -12,6 +12,8 @@ Frontend по умолчанию использует демонстрацион
 
 Пошаговый запуск на Windows, Linux и macOS: **[инструкция для команды](backend/docs/TEAM_SETUP.md)**. Подробности реализации, переменные окружения, CLI-импорт и проверки: [backend/README.md](backend/README.md). Используются JDK 21 и отдельная PostgreSQL; глобальный Maven не нужен — версия зафиксирована Maven Wrapper.
 
+Отдельный тест локальной модели: **[Gemma 4 12B через Ollama](backend/docs/OLLAMA_SMOKE.md)**. Python-скрипт работает независимо от Java backend; подключение LLM к серверным расчётам пока не реализовано.
+
 ## Быстрый запуск frontend
 
 Требования: **GNU Make**, Node.js **22.12+ LTS** (либо 24 LTS) и npm. Для контейнера — Docker Engine и Compose v2. Команды одинаковые на Windows, macOS и Linux; Python, Bash и PowerShell-скрипты не нужны.

@@ -91,6 +91,30 @@ Backend должен поддерживать [OpenAPI-контракт](openapi
 
 Сохраните файл. Не задавайте эти же переменные отдельно в окружении терминала: значения окружения имеют приоритет над `env/.env`. В `VITE_*` нельзя записывать секреты — они попадут в браузерный JavaScript.
 
+### Расчёт товара с ИИ-помощником
+
+В API-режиме карточка товара по умолчанию использует отдельный
+[сервис Ollama + tool](../backend/estimation/README.md). Дополнительно задайте:
+
+```dotenv
+ESTIMATION_UPSTREAM=http://127.0.0.1:8010
+DOCKER_ESTIMATION_UPSTREAM=http://host.docker.internal:8010
+```
+
+`ESTIMATION_UPSTREAM` используется Vite, `DOCKER_ESTIMATION_UPSTREAM` — nginx.
+Запустите Java с PostgreSQL и опубликованными данными, Ollama с моделью, затем Python-сервис.
+Для Docker nginx Python должен слушать интерфейс, доступный контейнеру: `127.0.0.1` хоста
+ему недоступен. На Linux можно привязать Python только к адресу Docker-хоста, который
+возвращает `docker network inspect bridge --format '{{(index .IPAM.Config 0).Gateway}}'`,
+передав этот адрес в `serve --listen`. Не открывайте сервис без аутентификации в общую сеть.
+После настройки выполните `make config` и `make up`.
+
+Флажок «Добавить пояснение ИИ» включает вызов `/api/v1/materials/estimate`; его снятие
+выбирает прямой Java-расчёт. Ошибка модели не подменяется демосметой. Nginx ожидает
+ответ estimation до 1250 секунд, фронтенд — до 1260 секунд, учитывая два вызова Ollama
+с socket timeout 600 секунд и обращение к Java. Для долгого запроса UI показывает ожидание.
+Backend и estimation остаются отдельными процессами: существующий Compose запускает frontend.
+
 ## Шаг 4. Проверьте локальный override
 
 Откройте **`docker/docker-compose.override.yml`**. Для обычного запуска его содержимое должно включать:

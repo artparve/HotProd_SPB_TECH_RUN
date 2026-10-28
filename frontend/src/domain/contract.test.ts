@@ -2,6 +2,7 @@
 import SwaggerParser from '@apidevtools/swagger-parser'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { materialEstimateSchema, materialRequestSchema } from './materials'
 import {
   estimateSchema,
   lineSchema,
@@ -21,6 +22,8 @@ describe('OpenAPI contract', () => {
     expect(api.openapi).toBe('3.0.3')
     expect(Object.keys(api.paths!).sort()).toEqual([
       '/estimate',
+      '/materials/calculate',
+      '/materials/estimate',
       '/product/{id}/calc',
       '/products',
       '/recommendations',
@@ -39,6 +42,8 @@ describe('OpenAPI contract', () => {
       EstimateLine: lineSchema.shape,
       Estimate: estimateSchema.shape,
       Recommendations: recommendationSchema.shape,
+      MaterialRequest: materialRequestSchema.shape,
+      MaterialEstimate: materialEstimateSchema.innerType().shape,
     }
     for (const [name, shape] of Object.entries(pairs)) {
       const schema = schemas[name]
