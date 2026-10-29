@@ -1,0 +1,177 @@
+{
+  "card": {
+    "id": "a5cc205d-44b5-48d7-a741-e6c1cc25bc68",
+    "status": "draft",
+    "created_at": "2026-10-29T21:55:35.203526+00:00",
+    "created_by": "catalog-admin",
+    "updated_at": "2026-10-29T21:55:53.632724+00:00",
+    "updated_by": "catalog-admin",
+    "external_id": "manual-2026-10-30",
+    "source_namespace": "browser-admin-check",
+    "current_version_id": "6452ec0e-d756-4cee-bd4f-47ca10ac62e4"
+  },
+  "audit": [
+    {
+      "id": "027f6957-26aa-4db9-9153-951acaa699b0",
+      "actor": "catalog-admin",
+      "action": "create",
+      "details": {},
+      "product_id": "a5cc205d-44b5-48d7-a741-e6c1cc25bc68",
+      "request_id": "f91601d3-e4a0-46b1-8a49-ae78c0fb4c3e",
+      "occurred_at": "2026-10-29T21:55:35.203526+00:00",
+      "after_version_id": "cbfdc117-1dec-4a19-bc3c-6f6ec1736da4",
+      "before_version_id": null
+    },
+    {
+      "id": "da3c0d74-0e91-42b6-a225-20c86109d343",
+      "actor": "catalog-admin",
+      "action": "update",
+      "details": {},
+      "product_id": "a5cc205d-44b5-48d7-a741-e6c1cc25bc68",
+      "request_id": "9e9f4a03-a42e-420a-8673-7a061d92dfcb",
+      "occurred_at": "2026-10-29T21:55:53.632724+00:00",
+      "after_version_id": "6452ec0e-d756-4cee-bd4f-47ca10ac62e4",
+      "before_version_id": "cbfdc117-1dec-4a19-bc3c-6f6ec1736da4"
+    }
+  ],
+  "versions": [
+    {
+      "id": "cbfdc117-1dec-4a19-bc3c-6f6ec1736da4",
+      "version": 1,
+      "snapshot": {
+        "sku": "",
+        "wet": {
+          "state": "unknown"
+        },
+        "kind": {
+          "state": "unset"
+        },
+        "name": "Краска — проверка административного черновика",
+        "unit": {
+          "state": "unset"
+        },
+        "price": {
+          "state": "unset"
+        },
+        "comment": "",
+        "rapport": {
+          "state": "unset"
+        },
+        "sources": [],
+        "category": {
+          "state": "unset"
+        },
+        "currency": {
+          "state": "unset"
+        },
+        "highLoad": {
+          "state": "unset"
+        },
+        "saleUnit": {
+          "state": "unset"
+        },
+        "unheated": {
+          "state": "unset"
+        },
+        "priceDate": {
+          "state": "unset"
+        },
+        "rollWidth": {
+          "state": "unset"
+        },
+        "attributes": [],
+        "externalId": "manual-2026-10-30",
+        "rollLength": {
+          "state": "unset"
+        },
+        "application": "",
+        "consumption": {
+          "state": "unset"
+        },
+        "description": "",
+        "limitations": "",
+        "packageSize": {
+          "state": "unset"
+        },
+        "consumptionUnit": {
+          "state": "unset"
+        },
+        "sourceNamespace": "browser-admin-check"
+      },
+      "created_at": "2026-10-29T21:55:35.203526+00:00",
+      "created_by": "catalog-admin",
+      "product_id": "a5cc205d-44b5-48d7-a741-e6c1cc25bc68"
+    },
+    {
+      "id": "6452ec0e-d756-4cee-bd4f-47ca10ac62e4",
+      "version": 2,
+      "snapshot": {
+        "sku": "",
+        "wet": {
+          "state": "unknown"
+        },
+        "kind": {
+          "state": "unset"
+        },
+        "name": "Краска — проверка административного черновика",
+        "unit": {
+          "state": "unset"
+        },
+        "price": {
+          "state": "confirmed",
+          "value": "1234.50",
+          "source": "Тестовая этикетка от 30.10.2026",
+          "confirmedBy": "catalog-admin"
+        },
+        "comment": "",
+        "rapport": {
+          "state": "unset"
+        },
+        "sources": [],
+        "category": {
+          "state": "unset"
+        },
+        "currency": {
+          "state": "unset"
+        },
+        "highLoad": {
+          "state": "unset"
+        },
+        "saleUnit": {
+          "state": "unset"
+        },
+        "unheated": {
+          "state": "unset"
+        },
+        "priceDate": {
+          "state": "unset"
+        },
+        "rollWidth": {
+          "state": "unset"
+        },
+        "attributes": [],
+        "externalId": "manual-2026-10-30",
+        "rollLength": {
+          "state": "unset"
+        },
+        "application": "",
+        "consumption": {
+          "state": "unset"
+        },
+        "description": "",
+        "limitations": "",
+        "packageSize": {
+          "state": "unset"
+        },
+        "consumptionUnit": {
+          "state": "unset"
+        },
+        "sourceNamespace": "browser-admin-check"
+      },
+      "created_at": "2026-10-29T21:55:53.632724+00:00",
+      "created_by": "catalog-admin",
+      "product_id": "a5cc205d-44b5-48d7-a741-e6c1cc25bc68"
+    }
+  ],
+  "publicRevisionCount": 0
+}

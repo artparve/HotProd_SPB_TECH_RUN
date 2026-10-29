@@ -60,6 +60,9 @@ const links = [
           }}</span>
         </RouterLink>
       </nav>
+      <RouterLink class="nav-link" to="/admin" :class="{ active: route.path.startsWith('/admin') }"
+        ><AppIcon name="box" /><span>Администрирование</span></RouterLink
+      >
       <div class="sidebar-tip">
         <span class="tip-icon"><AppIcon name="bulb" :size="22" /></span>
         <h3>Меньше лишнего.<br />Больше уверенности.</h3>
@@ -91,7 +94,14 @@ const links = [
           >
         </div>
         <div class="topbar-actions">
-          <span class="mode-pill"><i />{{ dataMode === 'demo' ? 'Демо-режим' : 'REST API' }}</span
+          <span class="mode-pill"
+            ><i />{{
+              route.path.startsWith('/admin')
+                ? 'Административный API'
+                : dataMode === 'demo'
+                  ? 'Демо-режим'
+                  : 'REST API'
+            }}</span
           ><button class="icon-button help-button" aria-label="Помощь" @click="helpOpen = true">
             <AppIcon name="help" /></button
           ><RouterLink class="cart-button" to="/cart"

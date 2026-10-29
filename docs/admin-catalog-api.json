@@ -1,0 +1,1423 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "RepairCalc administrative catalog: implemented draft CRUD",
+    "version": "0.1.0",
+    "description": "Реализованный первый этап. Очередь, метки, готовность, публикация, архив и импорт ещё не реализованы. Ответы no-store; X-Request-ID во всех ответах. UTF-8 JSON; максимум 262144 байта. Стойкий парольный хеш в конфигурации; единственный именованный администратор. Сессии хранятся в памяти процесса, истекают при перезапуске и через ADMIN_SESSION_SECONDS (по умолчанию 1800). Cookie HttpOnly, SameSite=Strict, Secure по умолчанию. Login требует предварительного GET session и X-CSRF-Token; после входа токен меняется. Без настройки доступа административные запросы возвращают 503."
+  },
+  "servers": [
+    {
+      "url": "/api/v1/admin"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Admin"
+    }
+  ],
+  "paths": {
+    "/session": {
+      "get": {
+        "operationId": "adminSession",
+        "tags": ["Admin"],
+        "summary": "Получить сессию и CSRF-токен",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSession"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "operationId": "adminLogin",
+        "tags": ["Admin"],
+        "summary": "Войти; заменить сессию и CSRF-токен",
+        "security": [
+          {
+            "AdminCsrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSession"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "maxLength": 500
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "maxLength": 1024
+                  }
+                },
+                "required": ["username", "password"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/logout": {
+      "post": {
+        "operationId": "adminLogout",
+        "tags": ["Admin"],
+        "summary": "Завершить серверную сессию",
+        "security": [
+          {
+            "AdminCookie": [],
+            "AdminCsrf": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Сессия завершена",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Ошибка",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "operationId": "adminListProducts",
+        "tags": ["Admin"],
+        "summary": "Список административных карточек",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProductPage"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 500
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["draft", "review", "published", "archived"]
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 4000
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["created", "-created", "updated", "-updated"],
+              "default": "-updated"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "description": "Поиск по подстроке названия/внешнего ID без учёта регистра. category — точное совпадение; сортировка дополнена UUID в том же направлении."
+      },
+      "post": {
+        "operationId": "adminCreateProduct",
+        "tags": ["Admin"],
+        "summary": "Создать черновик и аудит в одной транзакции",
+        "security": [
+          {
+            "AdminCookie": [],
+            "AdminCsrf": []
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Черновик создан",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProduct"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminDraft"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "adminGetProduct",
+        "tags": ["Admin"],
+        "summary": "Получить рабочую карточку",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProduct"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "adminUpdateProduct",
+        "tags": ["Admin"],
+        "summary": "Создать новую неизменяемую версию",
+        "security": [
+          {
+            "AdminCookie": [],
+            "AdminCsrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminProduct"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Сильный ETag: UUID версии в двойных кавычках, как в GET."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminDraft"
+              }
+            }
+          }
+        },
+        "description": "Полный снимок; внешняя идентичность неизменяема. 412 только для несовпадения If-Match, 428 при его отсутствии. Аудит и новая версия записываются атомарно. Публичный каталог обслуживает прежний release."
+      }
+    },
+    "/products/{id}/history": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "adminProductHistory",
+        "tags": ["Admin"],
+        "summary": "История снимков и связанных событий создания/изменения",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminHistoryPage"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdminStringValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["unset", "unknown"]
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "value": {
+                "type": "string",
+                "nullable": true,
+                "enum": [null]
+              }
+            },
+            "required": ["state"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["confirmed"]
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "confirmedBy": {
+                "type": "string"
+              }
+            },
+            "required": ["state", "value", "source"]
+          }
+        ]
+      },
+      "AdminBooleanValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["unset", "unknown"]
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "value": {
+                "type": "string",
+                "nullable": true,
+                "enum": [null]
+              }
+            },
+            "required": ["state"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["confirmed"]
+              },
+              "value": {
+                "type": "boolean"
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "confirmedBy": {
+                "type": "string"
+              }
+            },
+            "required": ["state", "value", "source"]
+          }
+        ]
+      },
+      "AdminPositiveValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["unset", "unknown"]
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "value": {
+                "type": "string",
+                "nullable": true,
+                "enum": [null]
+              }
+            },
+            "required": ["state"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["confirmed"]
+              },
+              "value": {
+                "type": "number",
+                "minimum": 0,
+                "exclusiveMinimum": true
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "confirmedBy": {
+                "type": "string"
+              }
+            },
+            "required": ["state", "value", "source"]
+          }
+        ]
+      },
+      "AdminRapportValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["unset", "unknown"]
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "value": {
+                "type": "string",
+                "nullable": true,
+                "enum": [null]
+              }
+            },
+            "required": ["state"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["confirmed"]
+              },
+              "value": {
+                "type": "number",
+                "minimum": 0
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "confirmedBy": {
+                "type": "string"
+              }
+            },
+            "required": ["state", "value", "source"]
+          }
+        ]
+      },
+      "AdminPriceValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["unset", "unknown"]
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "value": {
+                "type": "string",
+                "nullable": true,
+                "enum": [null]
+              }
+            },
+            "required": ["state"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["confirmed"]
+              },
+              "value": {
+                "type": "string",
+                "pattern": "^[0-9]{1,17}(\\.[0-9]{1,2})?$",
+                "description": "Строго положительная цена. Десятичная строка; до 17 цифр до точки и до 2 после."
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "confirmedBy": {
+                "type": "string"
+              }
+            },
+            "required": ["state", "value", "source"]
+          }
+        ]
+      },
+      "AdminCurrencyValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["unset", "unknown"]
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "value": {
+                "type": "string",
+                "nullable": true,
+                "enum": [null]
+              }
+            },
+            "required": ["state"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["confirmed"]
+              },
+              "value": {
+                "type": "string",
+                "enum": ["RUB"]
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "confirmedBy": {
+                "type": "string"
+              }
+            },
+            "required": ["state", "value", "source"]
+          }
+        ]
+      },
+      "AdminDateValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["unset", "unknown"]
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "value": {
+                "type": "string",
+                "nullable": true,
+                "enum": [null]
+              }
+            },
+            "required": ["state"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["confirmed"]
+              },
+              "value": {
+                "type": "string",
+                "format": "date"
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "confirmedBy": {
+                "type": "string"
+              }
+            },
+            "required": ["state", "value", "source"]
+          }
+        ]
+      },
+      "AdminUnitValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["unset", "unknown"]
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "value": {
+                "type": "string",
+                "nullable": true,
+                "enum": [null]
+              }
+            },
+            "required": ["state"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["confirmed"]
+              },
+              "value": {
+                "type": "string",
+                "enum": ["м²", "л", "кг", "м", "шт.", "полотен"]
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "confirmedBy": {
+                "type": "string"
+              }
+            },
+            "required": ["state", "value", "source"]
+          }
+        ]
+      },
+      "AdminSaleUnitValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["unset", "unknown"]
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "value": {
+                "type": "string",
+                "nullable": true,
+                "enum": [null]
+              }
+            },
+            "required": ["state"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["confirmed"]
+              },
+              "value": {
+                "type": "string",
+                "enum": [
+                  "м²",
+                  "л",
+                  "кг",
+                  "м",
+                  "шт.",
+                  "уп.",
+                  "рул.",
+                  "бан.",
+                  "меш.",
+                  "кан.",
+                  "бух."
+                ]
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "confirmedBy": {
+                "type": "string"
+              }
+            },
+            "required": ["state", "value", "source"]
+          }
+        ]
+      },
+      "AdminKindValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["unset", "unknown"]
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "value": {
+                "type": "string",
+                "nullable": true,
+                "enum": [null]
+              }
+            },
+            "required": ["state"]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": ["confirmed"]
+              },
+              "value": {
+                "type": "string",
+                "enum": [
+                  "covering",
+                  "paint",
+                  "primer",
+                  "wallpaper",
+                  "adhesive",
+                  "socket",
+                  "cable"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "confirmedBy": {
+                "type": "string"
+              }
+            },
+            "required": ["state", "value", "source"]
+          }
+        ]
+      },
+      "AdminDraft": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sourceNamespace": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "externalId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "sku": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "application": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "limitations": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "category": {
+            "$ref": "#/components/schemas/AdminStringValue"
+          },
+          "wet": {
+            "$ref": "#/components/schemas/AdminBooleanValue"
+          },
+          "highLoad": {
+            "$ref": "#/components/schemas/AdminBooleanValue"
+          },
+          "unheated": {
+            "$ref": "#/components/schemas/AdminBooleanValue"
+          },
+          "packageSize": {
+            "$ref": "#/components/schemas/AdminPositiveValue"
+          },
+          "consumption": {
+            "$ref": "#/components/schemas/AdminPositiveValue"
+          },
+          "rollWidth": {
+            "$ref": "#/components/schemas/AdminPositiveValue"
+          },
+          "rollLength": {
+            "$ref": "#/components/schemas/AdminPositiveValue"
+          },
+          "rapport": {
+            "$ref": "#/components/schemas/AdminRapportValue"
+          },
+          "price": {
+            "$ref": "#/components/schemas/AdminPriceValue"
+          },
+          "currency": {
+            "$ref": "#/components/schemas/AdminCurrencyValue"
+          },
+          "priceDate": {
+            "$ref": "#/components/schemas/AdminDateValue"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/AdminUnitValue"
+          },
+          "consumptionUnit": {
+            "$ref": "#/components/schemas/AdminUnitValue"
+          },
+          "saleUnit": {
+            "$ref": "#/components/schemas/AdminSaleUnitValue"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AdminKindValue"
+          },
+          "attributes": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "unit": {
+                  "type": "string",
+                  "maxLength": 4000
+                }
+              },
+              "required": ["name", "value"]
+            }
+          },
+          "sources": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                },
+                "url": {
+                  "type": "string",
+                  "maxLength": 4000
+                }
+              },
+              "required": ["label"]
+            }
+          }
+        },
+        "required": ["sourceNamespace", "externalId", "name"],
+        "description": "Полный снимок черновика. Отсутствующее проверяемое поле означает unset. Пробелы по краям обязательных строк недопустимы. confirmed требует значения и источника; автор подтверждения назначается сервером из сессии. При сохранении все confirmed-поля подтверждает текущий администратор."
+      },
+      "AdminProduct": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sourceNamespace": {
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "versionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "review", "published", "archived"]
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/AdminDraft"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedBy": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sourceNamespace",
+          "externalId",
+          "versionId",
+          "version",
+          "status",
+          "snapshot",
+          "createdAt",
+          "createdBy",
+          "updatedAt",
+          "updatedBy"
+        ]
+      },
+      "AdminVersion": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/AdminDraft"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string",
+            "nullable": true
+          },
+          "action": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "snapshot",
+          "createdAt",
+          "createdBy",
+          "requestId",
+          "action"
+        ]
+      },
+      "AdminProductPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminProduct"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        },
+        "required": ["items", "page", "size", "total"]
+      },
+      "AdminHistoryPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminVersion"
+            }
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        },
+        "required": ["items", "page", "size", "total"]
+      },
+      "AdminSession": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "authenticated": {
+            "type": "boolean"
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "csrfToken": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["authenticated", "username", "csrfToken"]
+      },
+      "AdminError": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": ["field", "code", "message"]
+            }
+          }
+        },
+        "required": ["code", "message", "requestId", "details"]
+      }
+    },
+    "securitySchemes": {
+      "AdminCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "REPAIRCALC_ADMIN"
+      },
+      "AdminCsrf": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token"
+      }
+    }
+  }
+}

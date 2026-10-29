@@ -34,7 +34,39 @@ class CatalogImportIT {
     @Autowired CatalogImportService importer;
     @Autowired JdbcTemplate jdbc;
     @Autowired JsonMapper json;
+    @Autowired ru.repaircalc.admin.AdminProductService adminProducts;
     @TempDir Path directory;
+
+    @Test
+    void administrativeCardAdoptsPublicUuidAndEditsDoNotChangePublicRelease() throws Exception {
+        var catalog = catalog();
+        var files = files(catalog, mappings());
+        var published = importer.importFiles(files.catalog(), files.mappings());
+        var original = product(catalog, 0);
+        var source = original.path("sources").get(0);
+        var input = json.createObjectNode().put("sourceNamespace", source.path("namespace").asText())
+                .put("externalId", source.path("externalId").asText()).put("name", "Administrative draft");
+        var card = adminProducts.create(input, "test-admin", "create-request");
+        assertThat(card.id().toString()).isEqualTo(original.path("id").asText());
+        input.put("name", "Edited administrative draft");
+        adminProducts.update(card.id(), ru.repaircalc.admin.AdminProductService.etag(card), input, "test-admin", "update-request");
+        assertThat(active()).isEqualTo(published.releaseId());
+        assertThat(jdbc.queryForObject("select name from repaircalc.product_revision where release_id = ? and product_id = ?", String.class, published.releaseId(), card.id())).isEqualTo(original.path("name").asText());
+    }
+
+    @Test
+    void cliCannotReassignAnIdentityReservedByAnAdministrativeDraft() throws Exception {
+        var namespace = "admin-reserved-" + UUID.randomUUID();
+        var input = json.createObjectNode().put("sourceNamespace", namespace).put("externalId", "42").put("name", "Reserved draft");
+        var draft = adminProducts.create(input, "test-admin", "request");
+        var catalog = catalog();
+        var source = (ObjectNode) product(catalog, 0).path("sources").get(0);
+        source.put("namespace", namespace).put("externalId", "42");
+        var files = files(catalog, mappings());
+        assertThatThrownBy(() -> importer.importFiles(files.catalog(), files.mappings())).isInstanceOf(CatalogImportException.class)
+                .hasMessageContaining("cannot be assigned");
+        assertThat(adminProducts.get(draft.id()).version()).isEqualTo(1);
+    }
 
     @Test
     void publishesPreparedCatalogWithRawDataMappingsAndManifestThenRepeatsWithoutDuplicates() throws Exception {

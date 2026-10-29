@@ -1,0 +1,83 @@
+Browser tab: 2, Title: "Административный каталог · RepairCalc", URL: "http://127.0.0.1:15173/admin".
+0 AXWebArea Административный каталог · RepairCalc, URL: 127.0.0.1:15173/admin
+	1 container app
+		2 link Description: Перейти к содержимому, Value: 127.0.0.1:15173/admin#main
+		3 container
+			4 link Description: RepairCalc — главная, Value: 127.0.0.1:15173/
+			5 text ВАШ ПРОЕКТ
+			6 container Основная навигация
+				7 link Description: Общий расчёт, Value: 127.0.0.1:15173/
+				8 link Description: Подбор для комнаты, Value: 127.0.0.1:15173/room
+				9 link Description: Расчёт товара, Value: 127.0.0.1:15173/product
+				10 link Description: Мои сметы, Value: 127.0.0.1:15173/saved
+			11 link Description: Администрирование, Value: 127.0.0.1:15173/admin
+			12 heading Меньше лишнего. Больше уверенности., Value: 3
+				13 text Меньше лишнего.
+				14 text Больше уверенности.
+			15 text Рассчитайте материалы с запасом, а не на глаз.
+			16 button Как это работает
+			17 text ПРОЕКТ ДЛЯ КЕЙСА МАКСИДОМ всё для дома SPB TECH RUN · 2026
+		18 container
+			19 text Мой проект Административный каталог Административный API
+			20 button Помощь
+			21 link Description: Корзина 0, Value: 127.0.0.1:15173/cart
+		198 container Каталог · администрирование
+			199 heading Каталог · администрирование, Value: 1, ID: admin-title
+				200 text Каталог · администрирование
+			201 text Рабочие карточки и история изменений.
+			202 button Выйти · catalog-admin
+			203 container Разделы каталога
+				204 link Description: Все карточки, Value: 127.0.0.1:15173/admin
+				205 link Description: Новая карточка, Value: 127.0.0.1:15173/admin/products/new
+			206 container
+				207 text Название или внешний ID
+				208 text field (settable) Название или внешний ID, Value: manual-2026-10-30
+				209 text Статус
+				210 pop up button (collapsed, settable) Статус, Value: Все, Secondary Actions: Expand
+					211 menu
+						212 (selected) Все
+						213 Черновик
+						214 На проверке
+						215 Опубликован
+						216 Архив
+				217 text Категория
+				218 text field (settable) Категория
+				219 text Порядок
+				220 pop up button (collapsed, settable) Порядок, Value: Обновлены недавно, Secondary Actions: Expand
+					221 menu
+						222 (selected) Обновлены недавно
+						223 Обновлены давно
+						224 Созданы недавно
+						225 Созданы давно
+				226 button Найти
+			227 text Найдено карточек: 1
+			228 table
+				229 row
+					230 cell
+						231 text Товар
+					232 cell
+						233 text Внешняя идентичность
+					234 cell
+						235 text Статус
+					236 cell
+						237 text Версия
+					238 cell
+						239 text Обновление
+				240 row
+					241 cell
+						242 link Description: Краска — проверка административного черновика, Value: 127.0.0.1:15173/admin/products/a5cc205d-44b5-48d7-a741-e6c1cc25bc68
+					243 cell
+						244 text browser-admin-check / manual-2026-10-30
+					245 cell
+						246 text Черновик
+					247 cell
+						248 text 2
+					249 cell
+						250 text 30.10.2026, 00:55:53 · catalog-admin
+			251 button (disabled) Назад
+			252 text Страница 1
+			253 button (disabled) Вперёд
+		196 container
+			197 text RepairCalc · Умный подход к ремонту Расчёты через подключённый API
+
+The focused UI element is 0 AXWebArea Административный каталог · RepairCalc, URL: 127.0.0.1:15173/admin

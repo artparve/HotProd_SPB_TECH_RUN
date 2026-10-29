@@ -16,6 +16,21 @@ const router = createRouter({
     { path: '/product', component: ProductView, meta: { title: 'Расчёт товара' } },
     { path: '/saved', component: SavedView, meta: { title: 'Мои сметы' } },
     { path: '/cart', component: CartView, meta: { title: 'Состав корзины' } },
+    {
+      path: '/admin',
+      component: () => import('./views/AdminView.vue'),
+      meta: { title: 'Административный каталог' },
+    },
+    {
+      path: '/admin/products/new',
+      component: () => import('./views/AdminView.vue'),
+      meta: { title: 'Новая карточка' },
+    },
+    {
+      path: '/admin/products/:id',
+      component: () => import('./views/AdminView.vue'),
+      meta: { title: 'Карточка каталога' },
+    },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   scrollBehavior: () => ({ top: 0 }),

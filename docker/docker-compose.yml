@@ -17,6 +17,10 @@ x-java: &java
     DB_URL: jdbc:postgresql://postgres:5432/repaircalc
     DB_USER: repaircalc
     DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in env/.env}
+    ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+    ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
+    ADMIN_COOKIE_SECURE: ${ADMIN_COOKIE_SECURE:-true}
+    ADMIN_SESSION_SECONDS: ${ADMIN_SESSION_SECONDS:-1800}
     JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75
   read_only: true
   cpus: "1.0"

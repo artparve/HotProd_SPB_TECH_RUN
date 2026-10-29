@@ -6,18 +6,31 @@ info:
     Контракт Java API каталога/расчёта товара и отдельного Python-сервиса materials.
     Общая смета и рекомендации пока запланированы.
     Внешний Bagisto API каталога не совместим с этим контрактом без нормализации.
-    Витрина ограничена товарами для виджета; массовый импорт и admin API вне scope.
+    Витрина ограничена товарами для виджета. Административные сессии и CRUD черновиков реализованы; массовый импорт пока запланирован.
     Денежные значения передаются десятичными строками в RUB.
     Нельзя считать неизвестные фасовку, расход или совместимость подтверждёнными.
-    Авторизация и CSRF-политика должны быть согласованы до production-интеграции.
+    Административный CRUD защищён серверной сессией и CSRF; см. admin-catalog-api.json.
 servers:
   - url: /api/v1
     description: Same-origin API через Vite или nginx proxy
 tags:
+  - name: Admin
   - name: Catalog
   - name: Estimates
   - name: Recommendations
 paths:
+  /admin/session:
+    $ref: './admin-catalog-api.json#/paths/~1session'
+  /admin/login:
+    $ref: './admin-catalog-api.json#/paths/~1login'
+  /admin/logout:
+    $ref: './admin-catalog-api.json#/paths/~1logout'
+  /admin/products:
+    $ref: './admin-catalog-api.json#/paths/~1products'
+  /admin/products/{id}:
+    $ref: './admin-catalog-api.json#/paths/~1products~1{id}'
+  /admin/products/{id}/history:
+    $ref: './admin-catalog-api.json#/paths/~1products~1{id}~1history'
   /products:
     get:
       operationId: listProducts
@@ -222,6 +235,11 @@ paths:
         default:
           $ref: '#/components/responses/Error'
 components:
+  securitySchemes:
+    AdminCookie:
+      $ref: './admin-catalog-api.json#/components/securitySchemes/AdminCookie'
+    AdminCsrf:
+      $ref: './admin-catalog-api.json#/components/securitySchemes/AdminCsrf'
   schemas:
     MaterialRequest:
       type: object

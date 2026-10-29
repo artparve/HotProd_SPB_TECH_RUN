@@ -1,0 +1,15 @@
+{
+  "sourceNamespace": "manual",
+  "externalId": "paint-example-001",
+  "name": "Пример черновика краски",
+  "sku": "EXAMPLE-001",
+  "description": "Демонстрационный черновик для проверки административного API.",
+  "kind": { "state": "confirmed", "value": "paint", "source": "Проверенная карточка производителя" },
+  "category": { "state": "confirmed", "value": "Краски", "source": "Проверенная карточка производителя" },
+  "price": { "state": "unset" },
+  "wet": { "state": "unknown", "source": "В описании не указано" },
+  "packageSize": { "state": "unset" },
+  "attributes": [{ "name": "Цвет", "value": "Белый" }],
+  "sources": [{ "label": "Пример для разработки" }],
+  "comment": "Не предназначен для публикации или расчёта."
+}
