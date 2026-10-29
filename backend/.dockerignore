@@ -6,3 +6,11 @@
 !data/**
 !docker/
 !docker/init-data.sh
+
+# Exclude generated/private files even inside allowed src/data directories.
+**/__pycache__
+**/*.pyc
+**/*.log
+**/.env
+**/.env.*
+**/dumps

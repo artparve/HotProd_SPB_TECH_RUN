@@ -4,3 +4,10 @@
 !repaircalc_classifier/*.py
 !repaircalc_classifier/taxonomy.json
 !repaircalc_classifier/prompt.txt
+
+# Negated directory patterns can retain nested caches: exclude them explicitly.
+**/__pycache__
+**/*.pyc
+**/*.log
+**/.env
+**/.env.*

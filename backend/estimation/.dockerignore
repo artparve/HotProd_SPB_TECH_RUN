@@ -1,3 +1,9 @@
 *
 !repaircalc_estimator/
 !repaircalc_estimator/*.py
+
+**/__pycache__
+**/*.pyc
+**/*.log
+**/.env
+**/.env.*
