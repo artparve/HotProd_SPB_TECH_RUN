@@ -4,11 +4,13 @@ import { useRoute, useRouter } from 'vue-router'
 import AppIcon from '../components/AppIcon.vue'
 import ProductSwatch from '../components/ProductSwatch.vue'
 import EstimateResult from '../components/EstimateResult.vue'
+import MaterialExplanation from '../components/MaterialExplanation.vue'
 import { productInputSchema } from '../domain/types'
 import type { Estimate, Product, ProductInput } from '../domain/types'
+import type { MaterialEstimate } from '../domain/materials'
 import { money } from '../domain/format'
 import { useAsync } from '../composables/useAsync'
-import { service } from '../services/api'
+import { dataMode, service } from '../services/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,6 +18,8 @@ const products = ref<Product[]>([])
 const selectedId = ref('')
 const product = computed(() => products.value.find((p) => p.id === selectedId.value))
 const result = ref<Estimate | null>(null)
+const assistantResult = ref<MaterialEstimate | null>(null)
+const useAssistant = ref(true)
 const input = ref<ProductInput>({
   area: 20,
   perimeter: 18,
@@ -38,9 +42,10 @@ async function load() {
 }
 onMounted(load)
 watch(
-  [selectedId, input],
+  [selectedId, input, useAssistant],
   () => {
     result.value = null
+    assistantResult.value = null
     error.value = ''
   },
   { deep: true },
@@ -54,14 +59,24 @@ const needsArea = computed(
 async function calculate() {
   showValidation.value = true
   if (!productInputSchema.safeParse(input.value).success || !product.value) return
-  const fingerprint = JSON.stringify([selectedId.value, input.value])
+  const fingerprint = JSON.stringify([selectedId.value, input.value, useAssistant.value])
+  result.value = null
+  assistantResult.value = null
   const response = await run(async () => {
-    const result = await service.product(product.value!, productInputSchema.parse(input.value))
-    if (fingerprint !== JSON.stringify([selectedId.value, input.value]))
+    const values = productInputSchema.parse(input.value)
+    const assistant =
+      dataMode === 'api' && useAssistant.value
+        ? await service.materialEstimate(product.value!, values)
+        : null
+    const result = assistant?.estimate || (await service.product(product.value!, values))
+    if (fingerprint !== JSON.stringify([selectedId.value, input.value, useAssistant.value]))
       throw new Error('Параметры изменились. Повторите расчёт.')
-    return result
+    return { result, assistant }
   })
-  if (response) result.value = response
+  if (response) {
+    result.value = response.result
+    assistantResult.value = response.assistant
+  }
 }
 </script>
 
@@ -204,6 +219,21 @@ async function calculate() {
                 required
             /></label>
           </div>
+          <div v-if="dataMode === 'api'" class="assistant-option">
+            <label class="assistant-toggle">
+              <input
+                v-model="useAssistant"
+                type="checkbox"
+                :disabled="busy"
+                aria-describedby="assistant-hint"
+              />
+              <span>Добавить пояснение ИИ</span>
+            </label>
+            <p id="assistant-hint" class="field-hint">
+              Помощник вызовет калькулятор и объяснит результат. Первый запрос может занять
+              несколько минут.
+            </p>
+          </div>
           <div class="alert info">
             <AppIcon name="bulb" :size="18" /><span
               >Вы увидите и расчётную потребность, и фактически купленное количество. Работы в
@@ -218,6 +248,9 @@ async function calculate() {
             Проверьте размеры, запас и количество слоёв.
           </div>
           <div v-if="error" class="alert error" role="alert">{{ error }}</div>
+          <p v-if="busy && dataMode === 'api' && useAssistant" role="status">
+            Рассчитываем смету и готовим пояснение ИИ. Это может занять несколько минут.
+          </p>
           <button class="button primary full-width" :disabled="busy">
             {{ busy ? 'Рассчитываем…' : 'Рассчитать упаковки' }}<AppIcon name="arrow" :size="18" />
           </button>
@@ -226,6 +259,26 @@ async function calculate() {
     </div>
     <section v-if="result" class="panel result-panel">
       <EstimateResult :estimate="result" />
+      <MaterialExplanation v-if="assistantResult" :response="assistantResult" />
     </section>
   </template>
 </template>
+
+<style scoped>
+.assistant-option {
+  margin: 16px 0;
+}
+.assistant-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.assistant-toggle input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  accent-color: #245a48;
+}
+</style>

@@ -1,0 +1,5 @@
+{
+  "productId": "f3b607e5-5758-3db2-bbf2-605dc539184c",
+  "input": {"area": 20, "perimeter": 18, "height": 2.7, "reserve": 10, "layers": 1, "quantity": 6},
+  "prompt": "Сколько рулонов обоев нужно с учётом раппорта и подрезки?"
+}

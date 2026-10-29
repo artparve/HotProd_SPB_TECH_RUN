@@ -1,0 +1,5 @@
+{
+  "productId": "30473701-b10b-3d56-a15a-8591c16486c4",
+  "input": {"area": 20, "perimeter": 18, "height": 2.7, "reserve": 10, "layers": 2, "quantity": 6},
+  "prompt": "Сколько краски купить и сколько это стоит? Объясни остаток."
+}

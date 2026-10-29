@@ -1,0 +1,20 @@
+
+> repaircalc-frontend@0.1.0 test
+> vitest run --maxWorkers=1
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/app[39m
+
+ [32m✓[39m src/domain/calculations.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/services/api.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 100[2mms[22m[39m
+ [32m✓[39m src/domain/contract.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 375[2mms[22m[39m
+ [32m✓[39m src/components/RoomEditor.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 108[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m      Tests [22m [1m[32m41 passed[39m[22m[90m (41)[39m
+[2m   Start at [22m 17:21:23
+[2m   Duration [22m 3.58s[2m (environment 45%, tests 20%, transform 19%, import 14%, worker 1%)[22m
+
+[2m    Isolate [22m [33m4 workers spawned[39m[2m · ~474ms startup each (spawn + environment, per file)[22m
+[2m            [22m [2mat least ~1.42s faster with [22m[33misolate: false[39m[2m — reuses workers across files instead of one per file[22m
+

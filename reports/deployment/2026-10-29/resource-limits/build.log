@@ -1,0 +1,254 @@
+ Image repaircalc-backend:local Building 
+ Image repaircalc-estimator:local Building 
+ Image repaircalc-frontend:local Building 
+ Image repaircalc-ollama-cpu:local Building 
+ Image repaircalc-backend:local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 2.66kB done
+#1 DONE 0.0s
+
+#2 [ollama internal] load build definition from Dockerfile
+#2 transferring dockerfile: 333B done
+#2 DONE 0.0s
+
+#3 [estimator internal] load build definition from Dockerfile
+#3 transferring dockerfile: 253B done
+#3 DONE 0.0s
+
+#4 [backend internal] load build definition from Dockerfile
+#4 transferring dockerfile: 683B done
+#4 DONE 0.0s
+
+#5 [frontend internal] load build definition from Dockerfile
+#5 transferring dockerfile: 983B done
+#5 DONE 0.0s
+
+#6 [frontend] resolve image config for docker-image://docker.io/docker/dockerfile:1
+#6 DONE 2.2s
+
+#7 [ollama internal] load metadata for docker.io/library/python:3.11-slim
+#7 DONE 2.2s
+
+#8 [ollama internal] load .dockerignore
+#8 transferring context: 2B done
+#8 DONE 0.0s
+
+#9 [estimator internal] load .dockerignore
+#9 transferring context: 92B done
+#9 DONE 0.0s
+
+#10 [backend] docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#10 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#10 CACHED
+
+#11 [ollama internal] load build context
+#11 transferring context: 2.41kB done
+#11 DONE 0.0s
+
+#12 [estimator internal] load build context
+#12 transferring context: 16.92kB done
+#12 DONE 0.0s
+
+#13 [estimator 1/4] FROM docker.io/library/python:3.11-slim@sha256:673719e071ecf27434fd2635bbd8d00f49f4fdd81f243143438a42ced8bedf60
+#13 resolve docker.io/library/python:3.11-slim@sha256:673719e071ecf27434fd2635bbd8d00f49f4fdd81f243143438a42ced8bedf60 0.0s done
+#13 DONE 0.0s
+
+#14 [estimator 2/3] WORKDIR /app
+#14 CACHED
+
+#15 [ollama 2/4] RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 libgomp1 ca-certificates && rm -rf /var/lib/apt/lists/*
+#15 CACHED
+
+#16 [ollama 3/4] COPY bin/ollama /bin/ollama
+#16 CACHED
+
+#17 [ollama 4/4] COPY lib/ollama /lib/ollama
+#17 CACHED
+
+#18 [ollama] exporting to image
+#18 exporting layers done
+#18 exporting manifest sha256:f3608f32cd4cde4c56ee02ab2aa6d52b4320264e7817ad6c96ac38700cc76e87 done
+#18 exporting config sha256:900e21e1057f1aaed5dd3b56ddcddfd6d3e5f3b90bf5859fa55acd3096039de3 done
+#18 exporting attestation manifest sha256:08d07c048df86c37d6d96eaf4124622ad4f368592c76595b96c7f6809c010ddd
+#18 exporting attestation manifest sha256:08d07c048df86c37d6d96eaf4124622ad4f368592c76595b96c7f6809c010ddd 0.0s done
+#18 exporting manifest list sha256:63eac82f43f08081f22ccf038d98c4ca66b7f31fefc85a8ea314fbc60e0a8fb6 0.0s done
+#18 naming to docker.io/library/repaircalc-ollama-cpu:local done
+#18 unpacking to docker.io/library/repaircalc-ollama-cpu:local 0.0s done
+#18 DONE 0.1s
+
+#19 [estimator 3/3] COPY repaircalc_estimator ./repaircalc_estimator
+#19 DONE 0.1s
+
+#20 [estimator] exporting to image
+#20 exporting layers 0.2s done
+#20 ...
+
+#21 [ollama] resolving provenance for metadata file
+#21 DONE 0.0s
+
+#20 [estimator] exporting to image
+#20 exporting manifest sha256:9ebc1b290f038a12e77826445e82b6fc13887da544097a111eea5e239397c512 0.0s done
+#20 exporting config sha256:c8553ca7b3e709c4cdd821085131fc7560d426445cd26974c23624a5372be893 0.0s done
+#20 exporting attestation manifest sha256:acdd07c1c4b3fff4f48ae58f808755b12975594d208d4fe3fc417ec8478084e2 0.0s done
+#20 exporting manifest list sha256:b18f4216332e80ed250d0c2b4a17a00547e21909fc8b4e8784ac79f5baa26e67
+#20 exporting manifest list sha256:b18f4216332e80ed250d0c2b4a17a00547e21909fc8b4e8784ac79f5baa26e67 0.0s done
+#20 naming to docker.io/library/repaircalc-estimator:local done
+#20 unpacking to docker.io/library/repaircalc-estimator:local 0.0s done
+#20 DONE 0.4s
+
+#22 [estimator] resolving provenance for metadata file
+#22 DONE 0.0s
+
+#23 [backend internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-21
+#23 ...
+
+#24 [frontend internal] load metadata for docker.io/library/node:22-alpine
+#24 DONE 1.5s
+
+#23 [init-data internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-21
+#23 DONE 1.5s
+
+#25 [frontend internal] load metadata for docker.io/library/nginx:1.28-alpine
+#25 DONE 1.5s
+
+#26 [backend internal] load metadata for docker.io/library/eclipse-temurin:21-jre-jammy
+#26 DONE 1.5s
+
+#27 [frontend internal] load .dockerignore
+#27 transferring context: 138B done
+#27 DONE 0.0s
+
+#28 [init-data internal] load .dockerignore
+#28 transferring context: 111B done
+#28 DONE 0.0s
+
+#29 [frontend internal] load build context
+#29 DONE 0.0s
+
+#30 [backend internal] load build context
+#30 transferring context: 9.97kB 0.0s done
+#30 transferring context: 9.97kB 0.0s done
+#30 DONE 0.1s
+
+#31 [init-data stage-1 1/6] FROM docker.io/library/eclipse-temurin:21-jre-jammy@sha256:9603446cf51296842eab342514857cf7ab55a8891cd564e6c68ec237fae65a16
+#31 resolve docker.io/library/eclipse-temurin:21-jre-jammy@sha256:9603446cf51296842eab342514857cf7ab55a8891cd564e6c68ec237fae65a16 0.1s done
+#31 DONE 0.1s
+
+#32 [backend build 1/6] FROM docker.io/library/maven:3.9-eclipse-temurin-21@sha256:99e61abcff91a9b1333463bd8451fb18495d6eba9250ac66a338b518f8278320
+#32 resolve docker.io/library/maven:3.9-eclipse-temurin-21@sha256:99e61abcff91a9b1333463bd8451fb18495d6eba9250ac66a338b518f8278320 0.1s done
+#32 DONE 0.1s
+
+#33 [frontend build 1/6] FROM docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
+#33 resolve docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914 0.1s done
+#33 DONE 0.1s
+
+#34 [backend build 5/6] COPY src ./src
+#34 CACHED
+
+#35 [backend stage-1 5/6] COPY data /app/data
+#35 CACHED
+
+#36 [backend stage-1 3/6] WORKDIR /app
+#36 CACHED
+
+#37 [backend build 4/6] RUN mvn -B dependency:go-offline
+#37 CACHED
+
+#38 [backend stage-1 4/6] COPY --from=build /build/target/repaircalc-backend-0.1.0-SNAPSHOT.jar /app/backend.jar
+#38 CACHED
+
+#39 [backend stage-1 2/6] RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*     && groupadd --gid 10001 app && useradd --uid 10001 --gid app --no-create-home app
+#39 CACHED
+
+#40 [backend build 6/6] RUN mvn -B -DskipTests package
+#40 CACHED
+
+#41 [backend build 3/6] COPY pom.xml ./
+#41 CACHED
+
+#42 [backend build 2/6] WORKDIR /build
+#42 CACHED
+
+#43 [backend stage-1 6/6] COPY docker/init-data.sh /app/init-data.sh
+#43 CACHED
+
+#44 [frontend production 1/4] FROM docker.io/library/nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+#44 resolve docker.io/library/nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236 0.1s done
+#44 DONE 0.1s
+
+#29 [frontend internal] load build context
+#29 transferring context: 2.01kB 0.0s done
+#29 DONE 0.0s
+
+#45 [frontend build 5/6] COPY . .
+#45 CACHED
+
+#46 [frontend build 4/6] RUN npm ci --no-fund
+#46 CACHED
+
+#47 [frontend production 3/4] COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
+#47 CACHED
+
+#48 [frontend production 2/4] COPY nginx/nginx.conf /etc/nginx/nginx.conf
+#48 CACHED
+
+#49 [frontend build 2/6] WORKDIR /app
+#49 CACHED
+
+#50 [frontend build 3/6] COPY package.json package-lock.json ./
+#50 CACHED
+
+#51 [frontend build 6/6] RUN npm run build
+#51 CACHED
+
+#52 [frontend production 4/4] COPY --from=build /app/dist /usr/share/nginx/html
+#52 CACHED
+
+#53 [frontend] exporting to image
+#53 exporting layers done
+#53 exporting manifest sha256:03fa8157c8422d4e370febb8895d25fd8ead6d99b52268e772e8896e3ced4c46 0.0s done
+#53 exporting config sha256:e77cf8624b1e0fa0eee18df98d2d87c38f17c054f08196872b0c07d65faecd14
+#53 exporting config sha256:e77cf8624b1e0fa0eee18df98d2d87c38f17c054f08196872b0c07d65faecd14 done
+#53 exporting attestation manifest sha256:9ee29483252babe795d5c8c14cdce1f7f6209d26c794194199ccc4d7fefebcda 0.1s done
+#53 exporting manifest list sha256:b79d65e8cca911965112986d405e62673aea9120d605421d07d849958a3a8da2
+#53 ...
+
+#54 [init-data] exporting to image
+#54 exporting layers 0.0s done
+#54 exporting manifest sha256:907bbc423564a8f5a0d80d7776ac7e9e5341a126ce39e2839008a895629659ce done
+#54 exporting config sha256:3fd059e2b3c84d0fa98d0e0f5bf747efdd41a67d640b0af5a45def2cf08ce5ef done
+#54 exporting attestation manifest sha256:3adca6ddbb26cf6b11f3dca7861b4e5a030a009f5f8d46faa76c77518de0c95e 0.1s done
+#54 exporting manifest list sha256:8daa8f560e89231c131fdce8c1415c8b4ca67de2247bae89094ef963e1c1686e 0.0s done
+#54 naming to docker.io/library/repaircalc-backend:local 0.0s done
+#54 unpacking to docker.io/library/repaircalc-backend:local 0.0s done
+#54 DONE 0.2s
+
+#55 [backend] exporting to image
+#55 exporting layers 0.0s done
+#55 exporting manifest sha256:8507735885ec023ce8c8f8bd4da47c3e17a4159f3726c76c654dac3c3161c474 0.0s done
+#55 exporting config sha256:fce0fffd80ce917827d0d78952222e970cf185252115f576ffc13239c7a49baa 0.0s done
+#55 exporting attestation manifest sha256:8e14339973a3883d115d6770ab3237f8777a4117c2bd7b865883a782a9f0dc2c 0.1s done
+#55 exporting manifest list sha256:974aef297cc8577545a1f73c9b709ea4f9983f29aa26d181a146273ade9e5bdf 0.0s done
+#55 naming to docker.io/library/repaircalc-backend:local done
+#55 unpacking to docker.io/library/repaircalc-backend:local 0.0s done
+#55 DONE 0.3s
+
+#53 [frontend] exporting to image
+#53 exporting manifest list sha256:b79d65e8cca911965112986d405e62673aea9120d605421d07d849958a3a8da2 0.0s done
+#53 naming to docker.io/library/repaircalc-frontend:local done
+#53 unpacking to docker.io/library/repaircalc-frontend:local 0.0s done
+#53 DONE 0.3s
+
+#56 [init-data] resolving provenance for metadata file
+#56 DONE 0.1s
+
+#57 [backend] resolving provenance for metadata file
+#57 DONE 0.1s
+
+#58 [frontend] resolving provenance for metadata file
+#58 DONE 0.0s
+ Image repaircalc-frontend:local Built 
+ Image repaircalc-backend:local Built 
+ Image repaircalc-ollama-cpu:local Built 
+ Image repaircalc-backend:local Built 
+ Image repaircalc-estimator:local Built 

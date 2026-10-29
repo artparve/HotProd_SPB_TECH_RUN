@@ -1,4 +1,5 @@
 import Decimal from 'decimal.js'
+import { newId } from '../domain/id'
 import { catalog } from '../data/catalog'
 import { compatible, geometry } from '../domain/room'
 import { productInputSchema, projectSchema, roomSchema, roomLabels } from '../domain/types'
@@ -111,7 +112,7 @@ export function calculateLine(
 function assemble(lines: EstimateLine[], labor = '0.00', warnings: string[] = []): Estimate {
   const materials = lines.reduce((sum, line) => sum.plus(line.total), D(0))
   return {
-    id: crypto.randomUUID(),
+    id: newId(),
     createdAt: new Date().toISOString(),
     mode: 'demo',
     lines,

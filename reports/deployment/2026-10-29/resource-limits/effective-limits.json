@@ -1,0 +1,149 @@
+[
+  {
+    "name": "/repaircalc-backend-1",
+    "nanoCpus": 1000000000,
+    "memory": 805306368,
+    "memorySwap": 805306368,
+    "oomKilled": false,
+    "restarts": 0,
+    "health": "healthy",
+    "command": null,
+    "cgroup": {
+      "cpu.max": "100000 100000",
+      "memory.max": "805306368",
+      "memory.swap.max": "0",
+      "memory.events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory.peak": 321421312
+    }
+  },
+  {
+    "name": "/repaircalc-postgres-1",
+    "nanoCpus": 500000000,
+    "memory": 536870912,
+    "memorySwap": 536870912,
+    "oomKilled": false,
+    "restarts": 0,
+    "health": "healthy",
+    "command": [
+      "postgres"
+    ],
+    "cgroup": {
+      "cpu.max": "50000 100000",
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "memory.events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory.peak": 57368576
+    }
+  },
+  {
+    "name": "/repaircalc-frontend-1",
+    "nanoCpus": 250000000,
+    "memory": 134217728,
+    "memorySwap": 134217728,
+    "oomKilled": false,
+    "restarts": 0,
+    "health": "healthy",
+    "command": [
+      "nginx",
+      "-g",
+      "daemon off;"
+    ],
+    "cgroup": {
+      "cpu.max": "25000 100000",
+      "memory.max": "134217728",
+      "memory.swap.max": "0",
+      "memory.events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory.peak": 24088576
+    }
+  },
+  {
+    "name": "/repaircalc-estimator-1",
+    "nanoCpus": 500000000,
+    "memory": 268435456,
+    "memorySwap": 268435456,
+    "oomKilled": false,
+    "restarts": 0,
+    "health": "healthy",
+    "command": [
+      "--backend",
+      "http://backend:8000",
+      "--host",
+      "http://ollama:11434",
+      "--model",
+      "gemma4:12b",
+      "--num-threads",
+      "8",
+      "serve",
+      "--listen",
+      "0.0.0.0",
+      "--port",
+      "8010"
+    ],
+    "cgroup": {
+      "cpu.max": "50000 100000",
+      "memory.max": "268435456",
+      "memory.swap.max": "0",
+      "memory.events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory.peak": 66097152
+    }
+  },
+  {
+    "name": "/repaircalc-ollama-1",
+    "nanoCpus": 8000000000,
+    "memory": 12884901888,
+    "memorySwap": 12884901888,
+    "oomKilled": false,
+    "restarts": 0,
+    "health": "healthy",
+    "command": [
+      "serve"
+    ],
+    "cgroup": {
+      "cpu.max": "800000 100000",
+      "memory.max": "12884901888",
+      "memory.swap.max": "0",
+      "memory.events": {
+        "low": 0,
+        "high": 0,
+        "max": 2097,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory.peak": 12884901888
+    }
+  }
+]

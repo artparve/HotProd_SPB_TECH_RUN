@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { newId } from './id'
 
 export const roomTypes = ['living', 'bathroom', 'kitchen', 'children', 'balcony'] as const
 export const workTypes = ['floor', 'paint', 'wallpaper', 'electrical'] as const
@@ -123,7 +124,7 @@ export type ProductInput = z.infer<typeof productInputSchema>
 
 export function newRoom(index = 1): Room {
   return {
-    id: crypto.randomUUID(),
+    id: newId(),
     name: `Комната ${index}`,
     type: 'living',
     length: 5,

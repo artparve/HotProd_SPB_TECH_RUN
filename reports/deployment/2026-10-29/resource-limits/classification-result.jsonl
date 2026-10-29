@@ -1,0 +1,1 @@
+{"status": "error", "source": "synthetic-example", "source_id": "paint-1", "error": "unsupported evidence at description: 'Для внутренних работ.'", "monitoring": {"status": "error", "elapsed_seconds": 331.889, "first_fragment_seconds": 188.751, "fragments": 604, "received_characters": 1895, "output_tokens": null}}

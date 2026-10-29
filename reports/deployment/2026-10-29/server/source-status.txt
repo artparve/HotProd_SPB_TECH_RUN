@@ -1,0 +1,31 @@
+ M .gitignore
+ M Makefile
+ M README.md
+ M backend/classification/README.md
+ M backend/classification/repaircalc_classifier/__main__.py
+ M backend/classification/repaircalc_classifier/classifier.py
+ M backend/classification/tests/test_classifier.py
+ M backend/docs/TEAM_SETUP.md
+ M backend/estimation/README.md
+ M backend/estimation/repaircalc_estimator/__main__.py
+ M backend/estimation/repaircalc_estimator/service.py
+ M backend/estimation/tests/test_estimator.py
+ M docker/docker-compose.override.yml.example
+ M docker/docker-compose.yml
+ M docs/FRONTEND.md
+ M docs/deploy.md
+ M env/.env.example
+ M frontend/src/domain/types.ts
+ M frontend/src/services/demo.ts
+ M frontend/src/views/RoomView.vue
+?? ".~lock.\320\232\320\265\320\271\321\201_\342\204\2261_\320\274\320\270\320\272\321\200\320\276\321\201\320\265\321\200\320\262\320\270\321\201_\321\203\320\274\320\275\321\213\321\205_\320\272\320\260\320\273\321\214\320\272\321\203\320\273\321\217\321\202\320\276\321\200\320\276\320\262_\321\200\320\265\320\274\320\276\320\275\321\202\320\260_\320\270_\321\201\321\202\320\276\320\270\320\274\320\276\321\201\321\202\320\270_\321\200\320\260\320\261\320\276\321\202.docx#"
+?? backend/.dockerignore
+?? backend/Dockerfile
+?? backend/classification/.dockerignore
+?? backend/classification/Dockerfile
+?? backend/docker/
+?? backend/estimation/.dockerignore
+?? backend/estimation/Dockerfile
+?? docker/docker-compose.gpu.yml
+?? frontend/src/domain/id.ts
+?? reports/deployment/

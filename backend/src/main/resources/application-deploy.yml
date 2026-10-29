@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+
+server:
+  address: ${SERVER_ADDRESS:0.0.0.0}

@@ -1,0 +1,56 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 683B done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#2 DONE 0.9s
+
+#3 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#3 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#3 CACHED
+
+#4 [internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-21
+#4 DONE 0.7s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 111B done
+#5 DONE 0.0s
+
+#6 [build 1/6] FROM docker.io/library/maven:3.9-eclipse-temurin-21@sha256:99e61abcff91a9b1333463bd8451fb18495d6eba9250ac66a338b518f8278320
+#6 resolve docker.io/library/maven:3.9-eclipse-temurin-21@sha256:99e61abcff91a9b1333463bd8451fb18495d6eba9250ac66a338b518f8278320 0.0s done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 9.76kB done
+#7 DONE 0.0s
+
+#8 [build 5/6] COPY src ./src
+#8 CACHED
+
+#9 [build 4/6] RUN mvn -B dependency:go-offline
+#9 CACHED
+
+#10 [build 2/6] WORKDIR /build
+#10 CACHED
+
+#11 [build 3/6] COPY pom.xml ./
+#11 CACHED
+
+#12 [build 6/6] RUN mvn -B -DskipTests package
+#12 CACHED
+
+#13 exporting to image
+#13 exporting layers
+#13 exporting layers 9.8s done
+#13 exporting manifest sha256:0f651c785127571bc510832e103ce6d155fa824bc86ecc184dfdac8e7e40b84c done
+#13 exporting config sha256:e497b65834cbc9492e0691b60f14afeeeba9e832d03d6410ec4270e21cd88275 done
+#13 exporting attestation manifest sha256:4b0f4358d840c26a201d8b24fc482eafde8d9fb719428366c718882eb9ccb690 0.0s done
+#13 exporting manifest list sha256:2c4f1642ef2fce20fc0620beb0f45f79808b3bde9ef5f1ffa15e4a44f2800557 done
+#13 naming to docker.io/library/repaircalc-backend-tests:local done
+#13 unpacking to docker.io/library/repaircalc-backend-tests:local
+#13 unpacking to docker.io/library/repaircalc-backend-tests:local 13.4s done
+#13 DONE 23.3s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/ewre1gtaoa7tqdn34qv5dxv1k

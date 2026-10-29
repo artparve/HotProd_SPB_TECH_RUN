@@ -1,0 +1,5 @@
+[repaircalc-frontend:local] sha256:164eaa7ef52a40b5f0f73f7b9687c5924304b6c53ecbca1fa04a09c668af9793
+[repaircalc-backend:local] sha256:75e999b6671ba1d27a6a00d008a2b18fcfc9a942f17b0a6ad2199d2bc92dd02a
+[repaircalc-estimator:local] sha256:cd89dd47273b734f5fe464f326fe618fe89cd15ad47bbc76f66c09697050647c
+[postgres:17.11] sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f
+[ollama/ollama:0.40.13] sha256:b2f0122c476bc9fe7ce679d8bb4bd555351e25e2554eefb156f61cb0a89cf429

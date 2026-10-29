@@ -1,9 +1,108 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { catalog } from '../data/catalog'
+import { productDemo } from './demo'
 
 afterEach(() => {
   vi.unstubAllEnvs()
   vi.unstubAllGlobals()
   vi.resetModules()
+  vi.useRealTimers()
+})
+
+describe('material estimation API', () => {
+  const product = { ...catalog[0]!, id: '47f9b29f-8972-3c84-9103-6b3281bd9de7' }
+  const input = { area: 20, perimeter: 18, height: 2.7, reserve: 10, layers: 2, quantity: 6 }
+  function envelope() {
+    const estimate = { ...productDemo(product, input), mode: 'api' as const }
+    return {
+      status: 'ok',
+      estimate,
+      baseline: estimate,
+      correction: { applied: false, version: 'not-used', factor: '1' },
+      model: 'gemma4:12b',
+      toolCalls: ['calculate_material_cost'],
+      explanation: 'Справочный текст модели',
+      explanationStatus: 'unverified_model_text',
+    }
+  }
+
+  it('sends the exact structured fields to the model/tool endpoint and waits beyond 15 seconds', async () => {
+    vi.useFakeTimers()
+    vi.stubEnv('VITE_DATA_MODE', 'api')
+    let respond!: (response: Response) => void
+    const fetch = vi.fn().mockImplementation(
+      () =>
+        new Promise<Response>((resolve) => {
+          respond = resolve
+        }),
+    )
+    vi.stubGlobal('fetch', fetch)
+    const { service } = await import('./api')
+    const pending = service.materialEstimate(product, input)
+    await vi.advanceTimersByTimeAsync(16000)
+    const [url, options] = fetch.mock.calls[0]!
+    expect(url).toBe('/api/v1/materials/estimate')
+    expect(JSON.parse(options.body)).toMatchObject({
+      productId: product.id,
+      input,
+      useCorrection: false,
+    })
+    expect(options.signal.aborted).toBe(false)
+    respond(new Response(JSON.stringify(envelope())))
+    expect((await pending).estimate.total).toBe('18900.00')
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it('rejects a successful response without a real tool call', async () => {
+    vi.stubEnv('VITE_DATA_MODE', 'api')
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ ...envelope(), toolCalls: [] }))),
+    )
+    const { service } = await import('./api')
+    await expect(service.materialEstimate(product, input)).rejects.toThrow('контракту')
+  })
+
+  it('rejects a valid envelope containing a different product', async () => {
+    vi.stubEnv('VITE_DATA_MODE', 'api')
+    const body = envelope()
+    body.estimate.lines[0]!.product = { ...product, id: '30473701-b10b-3d56-a15a-8591c16486c4' }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(body))))
+    const { service } = await import('./api')
+    await expect(service.materialEstimate(product, input)).rejects.toThrow('выбранному товару')
+  })
+
+  it('preserves a completed estimate when only the explanation failed', async () => {
+    vi.stubEnv('VITE_DATA_MODE', 'api')
+    const body = {
+      ...envelope(),
+      explanation: null,
+      explanationStatus: 'unavailable',
+      explanationError: { code: 'upstream_unavailable', message: 'Ollama unavailable' },
+    }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(body))))
+    const { service } = await import('./api')
+    expect((await service.materialEstimate(product, input)).estimate.total).toBe('18900.00')
+  })
+
+  it('surfaces a model/tool failure without issuing a fallback Java request', async () => {
+    vi.stubEnv('VITE_DATA_MODE', 'api')
+    const fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          code: 'tool_call_required',
+          message: 'Model must call calculate_material_cost',
+        }),
+        { status: 502 },
+      ),
+    )
+    vi.stubGlobal('fetch', fetch)
+    const { service } = await import('./api')
+    await expect(service.materialEstimate(product, input)).rejects.toThrow(
+      'calculate_material_cost',
+    )
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('API adapter', () => {

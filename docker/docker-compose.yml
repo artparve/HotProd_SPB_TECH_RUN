@@ -1,35 +1,175 @@
 name: repaircalc
 
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-java: &java
+  image: repaircalc-backend:${IMAGE_TAG:-local}
+  build:
+    context: ../backend
+  environment: &java-env
+    SPRING_PROFILES_ACTIVE: deploy
+    SERVER_ADDRESS: 0.0.0.0
+    SERVER_PORT: "8000"
+    DB_URL: jdbc:postgresql://postgres:5432/repaircalc
+    DB_USER: repaircalc
+    DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in env/.env}
+    JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75
+  read_only: true
+  cpus: "1.0"
+  mem_limit: 768m
+  memswap_limit: 768m
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,size=128m,mode=1777
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  logging: *logging
+
 services:
+  postgres:
+    image: postgres:17.11
+    cpus: "0.5"
+    mem_limit: 512m
+    memswap_limit: 512m
+    environment:
+      POSTGRES_DB: repaircalc
+      POSTGRES_USER: repaircalc
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in env/.env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U repaircalc -d repaircalc"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    logging: *logging
+
+  init-data:
+    <<: *java
+    entrypoint: [sh, /app/init-data.sh]
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  backend:
+    <<: *java
+    expose: ["8000"]
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      init-data:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, curl, --fail, --silent, http://127.0.0.1:8000/actuator/health/readiness]
+      interval: 10s
+      timeout: 3s
+      start_period: 60s
+      retries: 12
+
+  estimator:
+    image: repaircalc-estimator:${IMAGE_TAG:-local}
+    build:
+      context: ../backend/estimation
+    command: [--backend, "http://backend:8000", --host, "${OLLAMA_URL:-http://ollama:11434}", --model, "${OLLAMA_MODEL:-gemma4:12b}", --num-threads, "${OLLAMA_NUM_THREADS:-8}", serve, --listen, 0.0.0.0, --port, "8010"]
+    cpus: "0.5"
+    mem_limit: 256m
+    memswap_limit: 256m
+    expose: ["8010"]
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8010/health', timeout=2).read()"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    logging: *logging
+
   frontend:
     image: repaircalc-frontend:${IMAGE_TAG:-local}
     build:
       context: ../frontend
       dockerfile: Dockerfile
       args:
-        VITE_DATA_MODE: ${VITE_DATA_MODE:-demo}
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
+        VITE_DATA_MODE: ${COMPOSE_DATA_MODE:-api}
+        VITE_API_BASE_URL: /api/v1
     environment:
-      # No backend is included. In API mode point to a reachable REST service.
-      API_UPSTREAM: ${DOCKER_API_UPSTREAM:-http://127.0.0.1:9}
-    expose:
-      - "8080"
+      API_UPSTREAM: http://backend:8000
+      ESTIMATION_UPSTREAM: http://estimator:8010
+    expose: ["8080"]
+    cpus: "0.25"
+    mem_limit: 128m
+    memswap_limit: 128m
+    depends_on:
+      backend:
+        condition: service_healthy
+      estimator:
+        condition: service_healthy
     restart: unless-stopped
     read_only: true
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=32m,mode=1777
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
-      interval: 30s
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/healthz]
+      interval: 10s
       timeout: 3s
       start_period: 5s
-      retries: 3
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+      retries: 6
+    logging: *logging
+
+  ollama:
+    image: ollama/ollama:${OLLAMA_IMAGE_TAG:-0.40.13}
+    profiles: [llm]
+    cpus: "${OLLAMA_CPU_LIMIT:-8.0}"
+    mem_limit: 12g
+    memswap_limit: 12g
+    environment:
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_CONTEXT_LENGTH: "8192"
+      OLLAMA_KEEP_ALIVE: "60s"
+      # Bound llama-server RAM when switching between tool and classifier prompts.
+      LLAMA_ARG_CACHE_RAM: "0"
+      LLAMA_ARG_CTX_CHECKPOINTS: "0"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, ollama, list]
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+      retries: 10
+    logging: *logging
+
+  classifier:
+    image: repaircalc-classifier:${IMAGE_TAG:-local}
+    profiles: [batch]
+    cpus: "0.5"
+    mem_limit: 384m
+    memswap_limit: 384m
+    build:
+      context: ../backend/classification
+    command: [--host, "${OLLAMA_URL:-http://ollama:11434}", --model, "${OLLAMA_MODEL:-gemma4:12b}", --status]
+    volumes:
+      - ../backend/classification/examples:/input:ro
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    logging: *logging
+
+volumes:
+  pgdata:
+  ollama-data:

@@ -1,0 +1,42 @@
+[
+  {
+    "name": "paint",
+    "case": "case-892c73c1",
+    "elapsedSeconds": 111.548,
+    "quantity": 4,
+    "total": "9960.00",
+    "modelCalls": 2,
+    "javaCalls": 1,
+    "verified": true
+  },
+  {
+    "name": "tile",
+    "case": "case-5d715b41",
+    "elapsedSeconds": 81.78,
+    "quantity": 11,
+    "total": "23760.00",
+    "modelCalls": 2,
+    "javaCalls": 1,
+    "verified": true
+  },
+  {
+    "name": "wallpaper",
+    "case": "case-4bac659b",
+    "elapsedSeconds": 83.131,
+    "quantity": 8,
+    "total": "15120.00",
+    "modelCalls": 2,
+    "javaCalls": 1,
+    "verified": true
+  },
+  {
+    "name": "socket",
+    "case": "case-bf57a81a",
+    "elapsedSeconds": 168.027,
+    "quantity": 9,
+    "total": "3141.00",
+    "modelCalls": 2,
+    "javaCalls": 1,
+    "verified": true
+  }
+]

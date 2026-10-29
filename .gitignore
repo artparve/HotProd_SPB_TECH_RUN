@@ -18,3 +18,7 @@ frontend/playwright-report/
 frontend/test-results/
 **/__pycache__/
 *.pyc
+/.~lock.*#
+
+# Local CPU Ollama runtime copied from the host for offline container builds.
+/docker/local-ollama-runtime/

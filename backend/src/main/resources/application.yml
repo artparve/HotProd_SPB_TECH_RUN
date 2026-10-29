@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: repaircalc-backend
+  profiles:
+    default: local
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://127.0.0.1:55432/repaircalc}
+    username: ${DB_USER:repaircalc}
+    password: ${DB_PASSWORD}
+    hikari:
+      connection-timeout: 3000
+      validation-timeout: 1000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: repaircalc
+  flyway:
+    default-schema: public
+    locations: classpath:db/migration
+    clean-disabled: true
+
+server:
+  port: ${SERVER_PORT:8000}
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+
+logging:
+  pattern:
+    level: '%5p [requestId=%X{requestId}]'
+
+management:
+  endpoints:
+    access:
+      default: none
+    web:
+      exposure:
+        include: health
+    jmx:
+      exposure:
+        exclude: '*'
+  endpoint:
+    health:
+      access: read-only
+      show-details: never
+      show-components: never
+      probes:
+        enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,calculationData,db

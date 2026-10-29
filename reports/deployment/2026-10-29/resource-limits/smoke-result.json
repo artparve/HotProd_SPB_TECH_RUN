@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "catalogProducts": 12,
+  "tilePackages": 16,
+  "tileTotal": "34560.00",
+  "currency": "RUB",
+  "checks": [
+    "nginx health",
+    "SPA and bundled assets",
+    "nginx -> Java -> PostgreSQL",
+    "X-Request-ID",
+    "nginx -> estimator -> Java deterministic calculation",
+    "422 validation through estimator"
+  ],
+  "inferenceRun": false
+}

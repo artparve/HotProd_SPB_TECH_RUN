@@ -1,0 +1,9 @@
+{
+  "backend/estimation/repaircalc_estimator/service.py": "50f9cf52b2abf3aa619d81f4693e27cf988f41180cb5f9350aa9d2cf7e61c0dd",
+  "backend/data/catalog-v1.json": "4cc53397dbd52262cebf0b3ee89c0b90bd4ca311f64406a3f12547633e48ee45",
+  "backend/data/rules-v1.json": "e02dfeb9475d30d3580297adb7f4858f5386084ff127766568f36e4a89f45e51",
+  "frontend/src/services/api.ts": "ded31b899a977e66fa1a74c1625bc11d2e038371ccddadc2621324cc9eabbdd5",
+  "frontend/src/views/ProductView.vue": "7f28f76c752aac83bed40a2edf79e5829d331b0813c79e8f243c179f0109c13b",
+  "frontend/src/domain/materials.ts": "a1d94f0c125ebcd0a49a2bd6b54e3b0619fa667cacc38168dd3b60925481cecc",
+  "frontend/src/components/MaterialExplanation.vue": "326aaead6807c6bc4727caf0332729385b3f7b601753d0a2c8cfa61aeffe4a3d"
+}

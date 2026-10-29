@@ -1,0 +1,8 @@
+*
+!pom.xml
+!src/
+!src/**
+!data/
+!data/**
+!docker/
+!docker/init-data.sh
