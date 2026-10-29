@@ -1,0 +1,158 @@
+{
+  "status": "PARTIAL_PASS",
+  "automatedTestsPassed": 237,
+  "tests": {
+    "javaUnit": {
+      "tests": 80,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "javaIntegration": {
+      "tests": 60,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "frontendUnit": 41,
+    "estimatorUnit": 18,
+    "classifierUnit": 24,
+    "browserDemo": 14
+  },
+  "apiSmoke": {
+    "status": "PASS",
+    "catalogProducts": 12,
+    "tilePackages": 16,
+    "tileTotal": "34560.00",
+    "currency": "RUB",
+    "checks": [
+      "nginx health",
+      "SPA and bundled assets",
+      "nginx -> Java -> PostgreSQL",
+      "X-Request-ID",
+      "nginx -> estimator -> Java deterministic calculation",
+      "422 validation through estimator"
+    ],
+    "inferenceRun": false
+  },
+  "estimate": {
+    "elapsedSeconds": 194.38,
+    "total": "4980.00",
+    "packages": 2,
+    "toolCalls": [
+      "calculate_material_cost"
+    ],
+    "explanationStatus": "unverified_model_text"
+  },
+  "classification": {
+    "status": "error",
+    "accepted": false,
+    "error": "unsupported evidence at description: 'Для внутренних работ.'",
+    "monitoring": {
+      "status": "error",
+      "elapsed_seconds": 331.889,
+      "first_fragment_seconds": 188.751,
+      "fragments": 604,
+      "received_characters": 1895,
+      "output_tokens": null
+    },
+    "metadata": {}
+  },
+  "resources": {
+    "repaircalc-backend-1": {
+      "maxSampledCpuPercent": 13.69,
+      "maxSampledMemoryMiB": 297.5
+    },
+    "repaircalc-classifier-live-check": {
+      "maxSampledCpuPercent": 50.61,
+      "maxSampledMemoryMiB": 80.22
+    },
+    "repaircalc-estimator-1": {
+      "maxSampledCpuPercent": 54.09,
+      "maxSampledMemoryMiB": 48.75
+    },
+    "repaircalc-frontend-1": {
+      "maxSampledCpuPercent": 8.91,
+      "maxSampledMemoryMiB": 20.41
+    },
+    "repaircalc-ollama-1": {
+      "maxSampledCpuPercent": 841.89,
+      "maxSampledMemoryMiB": 9964.54
+    },
+    "repaircalc-postgres-1": {
+      "maxSampledCpuPercent": 18.68,
+      "maxSampledMemoryMiB": 50.29
+    }
+  },
+  "resourceSamples": 99,
+  "catalogUnderLoad": {
+    "time": "2026-10-29T19:23:07.138938+00:00",
+    "scope": "Catalog HTTP requests through nginx while LLM estimate is running",
+    "count": 10,
+    "maxSeconds": 0.0497,
+    "medianSeconds": 0.02135,
+    "samples": [
+      {
+        "request": 1,
+        "seconds": 0.0497,
+        "products": 12
+      },
+      {
+        "request": 2,
+        "seconds": 0.0194,
+        "products": 12
+      },
+      {
+        "request": 3,
+        "seconds": 0.0208,
+        "products": 12
+      },
+      {
+        "request": 4,
+        "seconds": 0.0356,
+        "products": 12
+      },
+      {
+        "request": 5,
+        "seconds": 0.0102,
+        "products": 12
+      },
+      {
+        "request": 6,
+        "seconds": 0.0219,
+        "products": 12
+      },
+      {
+        "request": 7,
+        "seconds": 0.0188,
+        "products": 12
+      },
+      {
+        "request": 8,
+        "seconds": 0.023,
+        "products": 12
+      },
+      {
+        "request": 9,
+        "seconds": 0.024,
+        "products": 12
+      },
+      {
+        "request": 10,
+        "seconds": 0.009,
+        "products": 12
+      }
+    ]
+  },
+  "source": {
+    "branch": "codex/classification-material-cost-tools",
+    "head": "49cf0678c0e9c4e86ccad33d9252d06474f41863",
+    "uncommittedFilesSha256": {
+      "docker/docker-compose.yml": "c4d8463a6e372fe0965f5f17603fe5932ce032f408d3f87675862352893e878a",
+      "backend/estimation/repaircalc_estimator/service.py": "9f6695628610ea93c752ce2a5a6d615218fd350060bdb1541f8935adb1a1f0d1",
+      "backend/estimation/repaircalc_estimator/__main__.py": "92d993733a2cad0d0f6a436ba0c6db2a241e084c31b4560876692174b4942341",
+      "backend/classification/repaircalc_classifier/classifier.py": "2965b12754e6a0fb6006aed945cd4657e4b67c39ec304ed86628c6ea3c2e1ea1",
+      "backend/classification/repaircalc_classifier/__main__.py": "e888bc547dfc6217d9065ded79e7150206fb317a030c6aacdef35973d3647f51"
+    }
+  }
+}

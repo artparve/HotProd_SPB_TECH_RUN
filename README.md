@@ -24,10 +24,11 @@ make dev
 # http://127.0.0.1:5173
 ```
 
-Через Docker:
+Полный стек через Docker (frontend, Java, PostgreSQL и Python estimator):
 
 ```bash
 make init-config
+# Задайте собственный DB_PASSWORD в env/.env
 make up
 # http://127.0.0.1:8080
 ```
@@ -36,7 +37,7 @@ make up
 
 **Документация реализации:** [пошаговый запуск Docker](docs/deploy.md), [команды, настройки и структура](docs/FRONTEND.md), [OpenAPI](docs/openapi.yaml), [пояснения к контракту API](docs/API_CONTRACT.md), [разбор всех материалов и границы frontend](docs/FRONTEND_SCOPE.md).
 
-`make init-config` создаёт локальные настройки frontend непосредственно из Makefile, без отдельных скриптов и без перезаписи существующих файлов. Переменные frontend находятся в `env/.env`; этот файл и `docker/docker-compose.override.yml` исключены из Git. В Git хранятся `env/.env.example`, шаблон override и `package-lock.json`. Переменные backend передаются его Java-процессу отдельно; см. [инструкцию команды](backend/docs/TEAM_SETUP.md).
+`make init-config` создаёт локальные настройки frontend непосредственно из Makefile, без отдельных скриптов и без перезаписи существующих файлов. Переменные frontend находятся в `env/.env`; этот файл и `docker/docker-compose.override.yml` исключены из Git. В Git хранятся `env/.env.example`, шаблон override и `package-lock.json`. Полный Compose берёт DB_PASSWORD из этого же env-файла и запускает импорт учебного каталога/правил. Ollama включается отдельно профилем `llm`, классификатор — `batch`; см. [запуск полного стека](docs/deploy.md). Для Java на хосте переменные передаются отдельно; см. [инструкцию команды](backend/docs/TEAM_SETUP.md).
 
 ## Навигация
 

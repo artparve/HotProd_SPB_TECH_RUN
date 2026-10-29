@@ -1,0 +1,23 @@
+test_invalid_json_and_missing_route (test_estimator.HttpTests.test_invalid_json_and_missing_route) ... ok
+test_real_http_health_calculate_estimate_and_validation (test_estimator.HttpTests.test_real_http_health_calculate_estimate_and_validation) ... ok
+test_bad_backend_estimate_is_rejected (test_estimator.ServiceTests.test_bad_backend_estimate_is_rejected) ... ok
+test_calculate_does_not_call_ollama (test_estimator.ServiceTests.test_calculate_does_not_call_ollama) ... ok
+test_complete_tool_roundtrip_preserves_authoritative_estimate (test_estimator.ServiceTests.test_complete_tool_roundtrip_preserves_authoritative_estimate) ... ok
+test_cpu_thread_limit_reaches_both_ollama_calls (test_estimator.ServiceTests.test_cpu_thread_limit_reaches_both_ollama_calls) ... ok
+test_explanation_failure_keeps_calculated_result (test_estimator.ServiceTests.test_explanation_failure_keeps_calculated_result) ... ok
+test_java_errors_and_transport_errors (test_estimator.ServiceTests.test_java_errors_and_transport_errors) ... ok
+test_missing_correction_does_not_silently_fall_back (test_estimator.ServiceTests.test_missing_correction_does_not_silently_fall_back) ... ok
+test_no_call_unknown_tool_or_changed_args_never_calculate (test_estimator.ServiceTests.test_no_call_unknown_tool_or_changed_args_never_calculate) ... ok
+test_ollama_function_index_is_accepted (test_estimator.ServiceTests.test_ollama_function_index_is_accepted) ... ok
+test_truncated_model_response_is_rejected (test_estimator.ServiceTests.test_truncated_model_response_is_rejected) ... ok
+test_validation_before_network (test_estimator.ServiceTests.test_validation_before_network) ... ok
+test_correction_recalculates_via_java_and_detects_snapshot_race (test_estimator.TrainingTests.test_correction_recalculates_via_java_and_detects_snapshot_race) ... ok
+test_fit_known_coefficient_and_apply_without_double_reserve (test_estimator.TrainingTests.test_fit_known_coefficient_and_apply_without_double_reserve) ... ok
+test_reject_duplicate_sparse_nonfinite_and_mixed_units (test_estimator.TrainingTests.test_reject_duplicate_sparse_nonfinite_and_mixed_units) ... ok
+test_reject_effective_reserve_outside_java_limits (test_estimator.TrainingTests.test_reject_effective_reserve_outside_java_limits) ... ok
+test_reject_incompatible_version_and_unsupported_discrete_wallpaper (test_estimator.TrainingTests.test_reject_incompatible_version_and_unsupported_discrete_wallpaper) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 1.029s
+
+OK

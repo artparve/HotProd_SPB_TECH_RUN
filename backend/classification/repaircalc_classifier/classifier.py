@@ -16,9 +16,9 @@ MODEL_TAXONOMY = {g: [{k: v for k, v in e.items() if k != 'candidate_pattern'} f
 
 
 def build_chain(model='gemma4:12b', base_url='http://127.0.0.1:11434', timeout=600,
-                num_ctx=16384, num_predict=4096):
+                num_ctx=16384, num_predict=4096, num_threads=None):
     llm = ChatOllama(model=model, base_url=base_url, temperature=0, reasoning=False,
-                     num_ctx=num_ctx, num_predict=num_predict,
+                     num_ctx=num_ctx, num_predict=num_predict, num_thread=num_threads,
                      client_kwargs={'timeout': timeout})
     prompt = ChatPromptTemplate.from_messages([
         ('system', PROMPT), ('human', '{product_json}')

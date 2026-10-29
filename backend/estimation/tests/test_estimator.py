@@ -50,6 +50,15 @@ class FakeTransport:
 
 
 class ServiceTests(unittest.TestCase):
+    def test_cpu_thread_limit_reaches_both_ollama_calls(self):
+        transport = FakeTransport()
+        Estimator(transport=transport, num_threads=4).estimate(REQUEST)
+        chats = [body for url, body in transport.calls if url.endswith("/api/chat")]
+        self.assertEqual([body["options"]["num_thread"] for body in chats], [4, 4])
+        for invalid in (0, -1, 257, True, 1.5):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                Estimator(num_threads=invalid)
+
     def test_complete_tool_roundtrip_preserves_authoritative_estimate(self):
         transport = FakeTransport()
         result = Estimator(transport=transport).estimate(REQUEST)

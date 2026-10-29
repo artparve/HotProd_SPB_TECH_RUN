@@ -1,0 +1,27 @@
+[WebServer] (node:29907) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:29929) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 14 tests using 1 worker
+
+(node:29997) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › tests/scenarios.spec.ts:9:1 › complete estimate, alternatives, saved estimate, cart and export (2.6s)
+  ✓   2 [desktop] › tests/scenarios.spec.ts:45:1 › bathroom recommendations exclude non-waterproof fixtures (2.1s)
+  ✓   3 [desktop] › tests/scenarios.spec.ts:59:1 › product calculator rounds packages and refuses an unknown consumption (1.5s)
+  ✓   4 [desktop] › tests/scenarios.spec.ts:72:1 › invalid wall geometry does not advance the wizard (1.1s)
+  ✓   5 [desktop] › tests/scenarios.spec.ts:81:1 › layout fits the viewport and help is keyboard dismissible (1.0s)
+  ✓   6 [desktop] › tests/scenarios.spec.ts:93:1 › demo needs no external requests after local startup (1.5s)
+  ✓   7 [desktop] › tests/scenarios.spec.ts:109:1 › a corrupted local draft recovers without a blank screen (1.1s)
+(node:30539) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   8 [mobile] › tests/scenarios.spec.ts:9:1 › complete estimate, alternatives, saved estimate, cart and export (2.2s)
+  ✓   9 [mobile] › tests/scenarios.spec.ts:45:1 › bathroom recommendations exclude non-waterproof fixtures (1.5s)
+  ✓  10 [mobile] › tests/scenarios.spec.ts:59:1 › product calculator rounds packages and refuses an unknown consumption (1.4s)
+  ✓  11 [mobile] › tests/scenarios.spec.ts:72:1 › invalid wall geometry does not advance the wizard (1.0s)
+  ✓  12 [mobile] › tests/scenarios.spec.ts:81:1 › layout fits the viewport and help is keyboard dismissible (1.3s)
+  ✓  13 [mobile] › tests/scenarios.spec.ts:93:1 › demo needs no external requests after local startup (1.4s)
+  ✓  14 [mobile] › tests/scenarios.spec.ts:109:1 › a corrupted local draft recovers without a blank screen (1.3s)
+
+  14 passed (26.0s)

@@ -1,0 +1,6 @@
+*
+!requirements.txt
+!repaircalc_classifier/
+!repaircalc_classifier/*.py
+!repaircalc_classifier/taxonomy.json
+!repaircalc_classifier/prompt.txt

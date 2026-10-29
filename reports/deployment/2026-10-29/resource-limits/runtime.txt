@@ -1,0 +1,4 @@
+Docker Compose version v5.6.1
+ollama version is 0.40.2
+NAME          ID              SIZE      MODIFIED   
+gemma4:12b    6114515d63c1    8.0 GB    5 days ago    

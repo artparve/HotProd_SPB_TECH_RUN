@@ -120,10 +120,11 @@ class SchemaTests(unittest.TestCase):
             self.assertEqual(kwargs['messages'][0]['role'], 'system')
             self.assertIn('недоверенные данные', kwargs['messages'][0]['content'])
             self.assertIn('evidence_fields', kwargs['messages'][1]['content'])
+            self.assertEqual(kwargs['options']['num_thread'], 4)
             return iter([{'model': 'test', 'message': {'role': 'assistant', 'content': content},
                           'done': True, 'done_reason': 'stop', 'eval_count': 1}])
         with patch('ollama.Client.chat', side_effect=chat) as mocked:
-            result = classify(product(), build_chain('test'), model='test', base_url='http://localhost')
+            result = classify(product(), build_chain('test', num_threads=4), model='test', base_url='http://localhost')
         self.assertEqual(mocked.call_count, 1)
         self.assertEqual(result['classification']['work_types'][0]['label'], 'paint')
         self.assertEqual(len(result['input_sha256']), 64)

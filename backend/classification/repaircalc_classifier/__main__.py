@@ -36,6 +36,7 @@ def main():
     parser.add_argument('--host', default='http://127.0.0.1:11434')
     parser.add_argument('--timeout', type=positive, default=600)
     parser.add_argument('--num-ctx', type=positive, default=16384)
+    parser.add_argument('--num-threads', type=positive, help='CPU threads for Ollama')
     parser.add_argument('--num-predict', type=positive, default=4096)
     parser.add_argument('--output', type=Path, help='Новый JSONL-файл; существующий не перезаписывается')
     parser.add_argument('--live', action='store_true', help='Показывать черновой ответ по мере поступления в stderr')
@@ -76,7 +77,8 @@ def main():
             products = json_products(args.json_catalog)
         else:
             products = xml_products(args.xml_catalog)
-        chain = build_chain(args.model, args.host, args.timeout, args.num_ctx, args.num_predict)
+        chain = build_chain(args.model, args.host, args.timeout, args.num_ctx, args.num_predict,
+                            num_threads=args.num_threads)
         output = args.output.open('x', encoding='utf-8') if args.output else sys.stdout
         count, failures = 0, 0
         for product in products:

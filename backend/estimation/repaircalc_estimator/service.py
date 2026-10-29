@@ -87,10 +87,13 @@ SYSTEM = """Ты помощник RepairCalc. Для расчёта обязат
 
 class Estimator:
     def __init__(self, backend="http://127.0.0.1:8000", ollama="http://127.0.0.1:11434",
-                 model="gemma4:12b", timeout=600, transport=http_json, correction=None):
+                 model="gemma4:12b", timeout=600, transport=http_json, correction=None, num_threads=None):
         self.backend, self.ollama = backend.rstrip("/"), ollama.rstrip("/")
         self.model, self.timeout, self.transport = model, timeout, transport
         self.correction = correction
+        if num_threads is not None and (type(num_threads) is not int or not 1 <= num_threads <= 256):
+            raise ValueError("num_threads must be an integer in 1..256")
+        self.num_threads = num_threads
 
     def calculate(self, request):
         product_id, values, _ = validate_request(request)
@@ -124,6 +127,8 @@ class Estimator:
     def _chat(self, messages, tools=None):
         body = {"model": self.model, "messages": messages, "stream": False, "think": False,
                 "options": {"temperature": 0, "num_ctx": 8192, "num_predict": 2048}}
+        if self.num_threads is not None:
+            body["options"]["num_thread"] = self.num_threads
         if tools:
             body["tools"] = tools
         response = self.transport(f"{self.ollama}/api/chat", body, self.timeout)

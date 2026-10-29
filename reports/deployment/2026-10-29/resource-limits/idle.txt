@@ -1,0 +1,3 @@
+NAME    ID    SIZE    PROCESSOR    CONTEXT    RUNNER    UNTIL 
+repaircalc-ollama-1 0.00% 30.57MiB / 12GiB
+repaircalc-backend-1 0.13% 296.9MiB / 768MiB

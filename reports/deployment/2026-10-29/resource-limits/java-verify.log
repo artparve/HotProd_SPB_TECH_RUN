@@ -1,0 +1,316 @@
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< ru.repaircalc:repaircalc-backend >------------------
+[INFO] Building RepairCalc Backend 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (require-java-21) @ repaircalc-backend ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ repaircalc-backend ---
+[INFO] Copying 3 resources from src/main/resources to target/classes
+[INFO] Copying 4 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ repaircalc-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ repaircalc-backend ---
+[INFO] Copying 2 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ repaircalc-backend ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ repaircalc-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.6/surefire-junit-platform-3.5.6.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.6/surefire-junit-platform-3.5.6.pom (5.2 kB at 3.4 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-providers/3.5.6/surefire-providers-3.5.6.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-providers/3.5.6/surefire-providers-3.5.6.pom (2.5 kB at 18 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.6/common-java5-3.5.6.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.6/common-java5-3.5.6.pom (3.1 kB at 25 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.pom (3.2 kB at 19 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.pom (2.8 kB at 24 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.pom (3.0 kB at 25 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.6/surefire-junit-platform-3.5.6.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.6/surefire-junit-platform-3.5.6.jar (35 kB at 212 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.6/common-java5-3.5.6.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.jar (256 kB at 944 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.6/common-java5-3.5.6.jar (18 kB at 41 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.jar (152 kB at 328 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.jar (208 kB at 397 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.pom (3.2 kB at 28 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.pom (1.5 kB at 9.2 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.jar (246 kB at 595 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar (3.8 kB at 25 kB/s)
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+[INFO] Running ru.repaircalc.operations.HealthEndpointsTest
+17:22:13.831 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [ru.repaircalc.operations.HealthEndpointsTest]: HealthEndpointsTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+17:22:13.922 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.operations.HealthEndpointsTest
+17:22:13.975 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [ru.repaircalc.operations.HealthEndpointsTest]: HealthEndpointsTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+17:22:13.978 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.operations.HealthEndpointsTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T17:22:14.370Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.operations.HealthEndpointsTest       : Starting HealthEndpointsTest using Java 21.0.12.1 with PID 69 (started by root in /build)
+2026-10-29T17:22:14.371Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.operations.HealthEndpointsTest       : The following 1 profile is active: "test"
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-10-29T17:22:16.160Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
+2026-10-29T17:22:16.171Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-29T17:22:16.172Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.27]
+2026-10-29T17:22:16.218Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1804 ms
+2026-10-29T17:22:16.813Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-10-29T17:22:16.855Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 40363 (http) with context path '/'
+2026-10-29T17:22:16.861Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.operations.HealthEndpointsTest       : Started HealthEndpointsTest in 2.713 seconds (process running for 3.828)
+2026-10-29T17:22:17.031Z  INFO [requestId=] 69 --- [repaircalc-backend] [1-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-29T17:22:17.031Z  INFO [requestId=] 69 --- [repaircalc-backend] [1-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-29T17:22:17.032Z  INFO [requestId=] 69 --- [repaircalc-backend] [1-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-10-29T17:22:17.181Z  INFO [requestId=82270441-6da5-4ac4-9f00-7d654155e747] 69 --- [repaircalc-backend] [1-auto-1-exec-1] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T17:22:17.254Z  INFO [requestId=41bd40a3-af2d-4e06-99af-59ecfa64208b] 69 --- [repaircalc-backend] [1-auto-1-exec-2] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=404
+2026-10-29T17:22:17.259Z  INFO [requestId=8deb7f07-3638-4f8a-bcd2-4600f9c8589d] 69 --- [repaircalc-backend] [1-auto-1-exec-3] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=404
+2026-10-29T17:22:17.262Z  INFO [requestId=b55f574e-6413-4338-8b08-3c40ada79f53] 69 --- [repaircalc-backend] [1-auto-1-exec-4] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=404
+2026-10-29T17:22:17.282Z  INFO [requestId=cb2b79d9-e4a1-4c50-a426-b53c5e43e28e] 69 --- [repaircalc-backend] [1-auto-1-exec-5] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=503
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.624 s -- in ru.repaircalc.operations.HealthEndpointsTest
+[INFO] Running ru.repaircalc.operations.DatabaseConfigurationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.117 s -- in ru.repaircalc.operations.DatabaseConfigurationTest
+[INFO] Running ru.repaircalc.common.web.CommonWebMvcTest
+2026-10-29T17:22:17.440Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ru.repaircalc.common.web.CommonWebMvcTest]: CommonWebMvcTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-29T17:22:17.533Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.common.web.CommonWebMvcTest
+2026-10-29T17:22:17.534Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ru.repaircalc.common.web.CommonWebMvcTest]: CommonWebMvcTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-29T17:22:17.543Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.common.web.CommonWebMvcTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T17:22:17.566Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.common.web.CommonWebMvcTest          : Starting CommonWebMvcTest using Java 21.0.12.1 with PID 69 (started by root in /build)
+2026-10-29T17:22:17.567Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.common.web.CommonWebMvcTest          : No active profile set, falling back to 1 default profile: "local"
+2026-10-29T17:22:17.770Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-29T17:22:17.770Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-29T17:22:17.771Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-29T17:22:17.806Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.common.web.CommonWebMvcTest          : Started CommonWebMvcTest in 0.254 seconds (process running for 4.773)
+2026-10-29T17:22:17.828Z  INFO [requestId=239dcd99-90ca-4708-81ee-49ff27cc589b] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=404
+2026-10-29T17:22:17.887Z ERROR [requestId=595593d6-4230-4522-bfc8-ed1fde6e43e1] 69 --- [repaircalc-backend] [           main] r.r.common.web.ApiExceptionHandler       : Handler method returned an invalid result
+2026-10-29T17:22:17.888Z  INFO [requestId=595593d6-4230-4522-bfc8-ed1fde6e43e1] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=500
+2026-10-29T17:22:17.922Z  INFO [requestId=885c03b1-5b15-42be-be96-c71807309484] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=400
+2026-10-29T17:22:17.935Z  INFO [requestId=8fafb428-5840-406e-b452-48e9491588b5] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T17:22:17.951Z  INFO [requestId=6fd810d5-c9c7-49cc-9aa7-a91b919fafee] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=422
+2026-10-29T17:22:17.969Z ERROR [requestId=f0c3dc99-cf68-4ff0-8991-46f8fa148687] 69 --- [repaircalc-backend] [           main] r.r.common.web.ApiExceptionHandler       : Unhandled request exception of type java.lang.IllegalStateException
+2026-10-29T17:22:17.969Z  INFO [requestId=f0c3dc99-cf68-4ff0-8991-46f8fa148687] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=500
+2026-10-29T17:22:17.977Z  INFO [requestId=e530133c-a223-44a4-9eba-b1d274cd8833] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T17:22:17.985Z  INFO [requestId=0b54e67c-39e0-41ac-9cce-32359f5dd0a3] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T17:22:17.985Z  INFO [requestId=935ba259-0c32-48e7-8d1c-5b77073a00b9] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T17:22:18.008Z  WARN [requestId=e1073b0a-a38f-4b71-8657-ad7c5e2c7be1] 69 --- [repaircalc-backend] [           main] o.s.web.servlet.PageNotFound             : Request method 'GET' is not supported
+2026-10-29T17:22:18.009Z  INFO [requestId=e1073b0a-a38f-4b71-8657-ad7c5e2c7be1] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=405
+2026-10-29T17:22:18.033Z  INFO [requestId=47b607c3-fce0-4eaf-bf6f-e488a5ce2748] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=422
+2026-10-29T17:22:18.042Z  INFO [requestId=e2adc25f-5c3b-49bf-b96e-0f7e7b1f6e7e] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=, status=500
+2026-10-29T17:22:18.049Z  INFO [requestId=47cba1f9-3d0c-40c0-9dd6-4eaea9fba0fb] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=415
+2026-10-29T17:22:18.056Z  INFO [requestId=3c2ed19b-c50c-408c-ae56-16cfdec9b299] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=422
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.626 s -- in ru.repaircalc.common.web.CommonWebMvcTest
+[INFO] Running ru.repaircalc.RepairCalcApplicationTest
+2026-10-29T17:22:18.064Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ru.repaircalc.RepairCalcApplicationTest]: RepairCalcApplicationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-29T17:22:18.071Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.RepairCalcApplicationTest
+2026-10-29T17:22:18.103Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ru.repaircalc.RepairCalcApplicationTest]: RepairCalcApplicationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-29T17:22:18.106Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.RepairCalcApplicationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T17:22:18.125Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.repaircalc.RepairCalcApplicationTest   : Starting RepairCalcApplicationTest using Java 21.0.12.1 with PID 69 (started by root in /build)
+2026-10-29T17:22:18.125Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.repaircalc.RepairCalcApplicationTest   : The following 1 profile is active: "test"
+2026-10-29T17:22:18.459Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-10-29T17:22:18.469Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.repaircalc.RepairCalcApplicationTest   : Started RepairCalcApplicationTest in 0.359 seconds (process running for 5.436)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.412 s -- in ru.repaircalc.RepairCalcApplicationTest
+[INFO] Running ru.repaircalc.catalog.CatalogReadServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.256 s -- in ru.repaircalc.catalog.CatalogReadServiceTest
+[INFO] Running ru.repaircalc.catalog.web.CatalogControllerTest
+2026-10-29T17:22:18.763Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ru.repaircalc.catalog.web.CatalogControllerTest]: CatalogControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-29T17:22:18.774Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.catalog.web.CatalogControllerTest
+2026-10-29T17:22:18.774Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ru.repaircalc.catalog.web.CatalogControllerTest]: CatalogControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-29T17:22:18.779Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.catalog.web.CatalogControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T17:22:18.806Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.catalog.web.CatalogControllerTest    : Starting CatalogControllerTest using Java 21.0.12.1 with PID 69 (started by root in /build)
+2026-10-29T17:22:18.806Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.catalog.web.CatalogControllerTest    : No active profile set, falling back to 1 default profile: "local"
+2026-10-29T17:22:18.924Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-29T17:22:18.924Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-29T17:22:18.925Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-10-29T17:22:18.931Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.catalog.web.CatalogControllerTest    : Started CatalogControllerTest in 0.149 seconds (process running for 5.898)
+2026-10-29T17:22:18.939Z ERROR [requestId=2fd12476-3184-46e4-971f-99558e77aadf] 69 --- [repaircalc-backend] [           main] r.r.common.web.ApiExceptionHandler       : Unhandled request exception of type java.lang.IllegalStateException
+2026-10-29T17:22:18.941Z  INFO [requestId=2fd12476-3184-46e4-971f-99558e77aadf] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=500
+2026-10-29T17:22:18.943Z ERROR [requestId=92d715ee-42c6-40c5-a734-793ac6281744] 69 --- [repaircalc-backend] [           main] r.r.common.web.ApiExceptionHandler       : Unhandled request exception of type org.springframework.transaction.TransactionSystemException
+2026-10-29T17:22:18.944Z  INFO [requestId=92d715ee-42c6-40c5-a734-793ac6281744] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=500
+2026-10-29T17:22:18.952Z  INFO [requestId=e145bdfc-1043-46a2-8b81-6a697a766c49] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=503
+2026-10-29T17:22:18.953Z  INFO [requestId=88ed0eda-0819-4944-81df-91b4c97c13ba] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=503
+2026-10-29T17:22:18.954Z  INFO [requestId=6bdd6ab8-308a-48bf-8e62-7e241b4e5db0] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=503
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.195 s -- in ru.repaircalc.catalog.web.CatalogControllerTest
+[INFO] Running ru.repaircalc.calculation.ProductCalculationServiceTest
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.007 s <<< FAILURE! -- in ru.repaircalc.calculation.ProductCalculationServiceTest
+[ERROR] ru.repaircalc.calculation.ProductCalculationServiceTest.buildsOneLineFromOneSnapshotWithAnInjectedUtcClockAndExactTotals -- Time elapsed: 0.005 s <<< ERROR!
+java.nio.file.NoSuchFileException: data/rules-v1.json
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at java.base/java.nio.file.Files.readString(Files.java:3359)
+	at java.base/java.nio.file.Files.readString(Files.java:3318)
+	at ru.repaircalc.calculation.ProductCalculationServiceTest.buildsOneLineFromOneSnapshotWithAnInjectedUtcClockAndExactTotals(ProductCalculationServiceTest.java:28)
+
+[INFO] Running ru.repaircalc.calculation.domain.PackagingTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in ru.repaircalc.calculation.domain.PackagingTest
+[INFO] Running ru.repaircalc.calculation.domain.MoneyTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in ru.repaircalc.calculation.domain.MoneyTest
+[INFO] Running ru.repaircalc.calculation.domain.GeometryTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 s -- in ru.repaircalc.calculation.domain.GeometryTest
+[INFO] Running ru.repaircalc.calculation.domain.ReserveTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in ru.repaircalc.calculation.domain.ReserveTest
+[INFO] Running ru.repaircalc.calculation.domain.MaterialCalculatorTest
+[INFO] Tests run: 21, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 s -- in ru.repaircalc.calculation.domain.MaterialCalculatorTest
+[INFO] Running ru.repaircalc.calculation.domain.CalculationInputTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.101 s -- in ru.repaircalc.calculation.domain.CalculationInputTest
+[INFO] Running ru.repaircalc.calculation.CalculationSnapshotServiceTest
+[ERROR] Tests run: 5, Failures: 0, Errors: 5, Skipped: 0, Time elapsed: 0.010 s <<< FAILURE! -- in ru.repaircalc.calculation.CalculationSnapshotServiceTest
+[ERROR] ru.repaircalc.calculation.CalculationSnapshotServiceTest.transactionBoundaryFailuresCannotLeakDatabaseDetails -- Time elapsed: 0.002 s <<< ERROR!
+java.nio.file.NoSuchFileException: data/rules-v1.json
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at java.base/java.nio.file.Files.readString(Files.java:3359)
+	at java.base/java.nio.file.Files.readString(Files.java:3318)
+	at ru.repaircalc.calculation.CalculationSnapshotServiceTest.preparePair(CalculationSnapshotServiceTest.java:32)
+
+[ERROR] ru.repaircalc.calculation.CalculationSnapshotServiceTest.storedRuleReferenceMustMatchTheActualCatalogFingerprint -- Time elapsed: 0.002 s <<< ERROR!
+java.nio.file.NoSuchFileException: data/rules-v1.json
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at java.base/java.nio.file.Files.readString(Files.java:3359)
+	at java.base/java.nio.file.Files.readString(Files.java:3318)
+	at ru.repaircalc.calculation.CalculationSnapshotServiceTest.preparePair(CalculationSnapshotServiceTest.java:32)
+
+[ERROR] ru.repaircalc.calculation.CalculationSnapshotServiceTest.programmingErrorsAreNotDisguisedAsDependencyFailures -- Time elapsed: 0.001 s <<< ERROR!
+java.nio.file.NoSuchFileException: data/rules-v1.json
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at java.base/java.nio.file.Files.readString(Files.java:3359)
+	at java.base/java.nio.file.Files.readString(Files.java:3318)
+	at ru.repaircalc.calculation.CalculationSnapshotServiceTest.preparePair(CalculationSnapshotServiceTest.java:32)
+
+[ERROR] ru.repaircalc.calculation.CalculationSnapshotServiceTest.selectsEachVersionExactlyOnceAndRetainsDetachedSnapshots -- Time elapsed: 0.001 s <<< ERROR!
+java.nio.file.NoSuchFileException: data/rules-v1.json
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at java.base/java.nio.file.Files.readString(Files.java:3359)
+	at java.base/java.nio.file.Files.readString(Files.java:3318)
+	at ru.repaircalc.calculation.CalculationSnapshotServiceTest.preparePair(CalculationSnapshotServiceTest.java:32)
+
+[ERROR] ru.repaircalc.calculation.CalculationSnapshotServiceTest.catalogWithoutRulesIsUnavailable -- Time elapsed: 0.001 s <<< ERROR!
+java.nio.file.NoSuchFileException: data/rules-v1.json
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at java.base/java.nio.file.Files.readString(Files.java:3359)
+	at java.base/java.nio.file.Files.readString(Files.java:3318)
+	at ru.repaircalc.calculation.CalculationSnapshotServiceTest.preparePair(CalculationSnapshotServiceTest.java:32)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   CalculationSnapshotServiceTest.preparePair:32 » NoSuchFile data/rules-v1.json
+[ERROR]   CalculationSnapshotServiceTest.preparePair:32 » NoSuchFile data/rules-v1.json
+[ERROR]   CalculationSnapshotServiceTest.preparePair:32 » NoSuchFile data/rules-v1.json
+[ERROR]   CalculationSnapshotServiceTest.preparePair:32 » NoSuchFile data/rules-v1.json
+[ERROR]   CalculationSnapshotServiceTest.preparePair:32 » NoSuchFile data/rules-v1.json
+[ERROR]   ProductCalculationServiceTest.buildsOneLineFromOneSnapshotWithAnInjectedUtcClockAndExactTotals:28 » NoSuchFile data/rules-v1.json
+[INFO] 
+[ERROR] Tests run: 80, Failures: 0, Errors: 6, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  13.466 s
+[INFO] Finished at: 2026-10-29T17:22:19Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.6:test (default-test) on project repaircalc-backend: 
+[ERROR] 
+[ERROR] See /build/target/surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

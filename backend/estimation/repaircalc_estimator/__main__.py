@@ -79,6 +79,7 @@ def main(argv=None):
     parser.add_argument("--host", default="http://127.0.0.1:11434", help="Ollama base URL")
     parser.add_argument("--model", default="gemma4:12b")
     parser.add_argument("--timeout", type=float, default=600)
+    parser.add_argument("--num-threads", type=int, help="Ollama CPU threads (1..256)")
     parser.add_argument("--correction", type=Path)
     commands = parser.add_subparsers(dest="command", required=True)
     for name in ("calculate", "estimate"):
@@ -95,12 +96,15 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if not 0 < args.timeout <= 3600:
         parser.error("--timeout must be in (0, 3600]")
+    if args.num_threads is not None and not 1 <= args.num_threads <= 256:
+        parser.error("--num-threads must be in 1..256")
     try:
         if args.command == "train":
             result = train(json.loads(args.input.read_text(encoding="utf-8")), args.min_samples)
         else:
             artifact = json.loads(args.correction.read_text(encoding="utf-8")) if args.correction else None
-            estimator = Estimator(args.backend, args.host, args.model, args.timeout, correction=artifact)
+            estimator = Estimator(args.backend, args.host, args.model, args.timeout, correction=artifact,
+                                  num_threads=args.num_threads)
             if args.command == "serve":
                 with make_server(estimator, args.listen, args.port) as server:
                     print(f"Listening on http://{args.listen}:{server.server_port}", file=sys.stderr)

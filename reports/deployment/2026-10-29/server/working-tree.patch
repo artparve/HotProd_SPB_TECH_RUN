@@ -1,0 +1,883 @@
+diff --git a/Makefile b/Makefile
+index 167943b..83f4f1a 100644
+--- a/Makefile
++++ b/Makefile
+@@ -4,7 +4,8 @@ NODE ?= node
+ NPM ?= npm
+ DOCKER ?= docker
+ 
+-COMPOSE = $(DOCKER) compose --project-directory docker --env-file env/.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml
++COMPOSE_CLI ?= $(DOCKER) compose
++COMPOSE = $(COMPOSE_CLI) --project-directory docker --env-file env/.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml
+ COPY_CONFIG = $(NODE) -e "const fs = require('node:fs'); try { fs.copyFileSync(process.argv[1], process.argv[2], fs.constants.COPYFILE_EXCL); console.log('Created: ' + process.argv[2]); } catch (error) { if (error.code === 'EEXIST' && fs.statSync(process.argv[2]).isFile()) process.exit(0); throw error; }"
+ 
+ .PHONY: help init init-config install dev build preview format typecheck test check e2e e2e-install up down logs ps config image release release-image
+@@ -19,10 +20,10 @@ help:
+ 	@echo "check / test  - all checks or unit/component/contract tests"
+ 	@echo "e2e-install   - download Playwright Chromium once"
+ 	@echo "e2e           - desktop and mobile browser tests"
+-	@echo "up / down     - start or stop Docker Compose"
++	@echo "up / down     - start or stop full Docker stack"
+ 	@echo "logs / ps     - container logs or status"
+ 	@echo "config        - validate Compose without starting containers"
+-	@echo "image         - build Docker image using env/.env (including IMAGE_TAG)"
++	@echo "image         - build application Docker images using env/.env"
+ 	@echo "release       - clean dependency install, checks and production build"
+ 	@echo "release-image - release plus Docker image; no archive or deployment"
+ 
+@@ -85,7 +86,7 @@ config:
+ 	$(COMPOSE) config --quiet
+ 
+ image:
+-	$(COMPOSE) build frontend
++	$(COMPOSE) build
+ 
+ # Recursive makes are intentionally sequential, including under make -j:
+ # npm ci must finish before any check reads node_modules.
+diff --git a/backend/classification/README.md b/backend/classification/README.md
+index b20bd08..15a3ad7 100644
+--- a/backend/classification/README.md
++++ b/backend/classification/README.md
+@@ -167,3 +167,12 @@ PYTHONPATH=backend/classification backend/classification/.venv/bin/python -m rep
+ Требуется загруженная модель в Ollama. Выбирайте новую выходную папку: results.jsonl не перезаписывается. Метаданные содержат digest модели и параметры запуска; каждая строка результата — полный ответ, проверки и длительность.
+ 
+ В реальном прогоне обнаружено смешение «зашпатлёванной» поверхности со штукатуркой. В таксономии v2 добавлено отдельное основание `putty` (теперь 17 оснований), уточнён промпт v2. [Первый прогон и обнаруженная ошибка](../../reports/classification/live-2026-10-24/README.md), [повторный тест с точным списком оснований](../../reports/classification/live-2026-10-24-putty-fix/README.md).
++
++## CPU в полном Compose
++
++`--num-threads 8` передаётся как `num_thread` провайдеру Ollama; без параметра
++используется автоматический выбор. Квота всего контейнера Ollama по умолчанию
++составляет 8 CPU; сервис classifier лишь отправляет запрос и проверяет ответ.
++Для локального smoke используйте один товар с `--num-ctx 8192 --num-threads 8`,
++запуская его отдельно от объяснений смет. Результаты повторной проверки — в
++[отчёте ресурсов](../../reports/deployment/2026-10-29/resource-limits/README.md).
+diff --git a/backend/classification/repaircalc_classifier/__main__.py b/backend/classification/repaircalc_classifier/__main__.py
+index bf2e47b..dcbe385 100644
+--- a/backend/classification/repaircalc_classifier/__main__.py
++++ b/backend/classification/repaircalc_classifier/__main__.py
+@@ -36,6 +36,7 @@ def main():
+     parser.add_argument('--host', default='http://127.0.0.1:11434')
+     parser.add_argument('--timeout', type=positive, default=600)
+     parser.add_argument('--num-ctx', type=positive, default=16384)
++    parser.add_argument('--num-threads', type=positive, help='CPU threads for Ollama')
+     parser.add_argument('--num-predict', type=positive, default=4096)
+     parser.add_argument('--output', type=Path, help='Новый JSONL-файл; существующий не перезаписывается')
+     parser.add_argument('--live', action='store_true', help='Показывать черновой ответ по мере поступления в stderr')
+@@ -76,7 +77,8 @@ def main():
+             products = json_products(args.json_catalog)
+         else:
+             products = xml_products(args.xml_catalog)
+-        chain = build_chain(args.model, args.host, args.timeout, args.num_ctx, args.num_predict)
++        chain = build_chain(args.model, args.host, args.timeout, args.num_ctx, args.num_predict,
++                            num_threads=args.num_threads)
+         output = args.output.open('x', encoding='utf-8') if args.output else sys.stdout
+         count, failures = 0, 0
+         for product in products:
+diff --git a/backend/classification/repaircalc_classifier/classifier.py b/backend/classification/repaircalc_classifier/classifier.py
+index b49020f..4c2d611 100644
+--- a/backend/classification/repaircalc_classifier/classifier.py
++++ b/backend/classification/repaircalc_classifier/classifier.py
+@@ -16,9 +16,9 @@ MODEL_TAXONOMY = {g: [{k: v for k, v in e.items() if k != 'candidate_pattern'} f
+ 
+ 
+ def build_chain(model='gemma4:12b', base_url='http://127.0.0.1:11434', timeout=600,
+-                num_ctx=16384, num_predict=4096):
++                num_ctx=16384, num_predict=4096, num_threads=None):
+     llm = ChatOllama(model=model, base_url=base_url, temperature=0, reasoning=False,
+-                     num_ctx=num_ctx, num_predict=num_predict,
++                     num_ctx=num_ctx, num_predict=num_predict, num_thread=num_threads,
+                      client_kwargs={'timeout': timeout})
+     prompt = ChatPromptTemplate.from_messages([
+         ('system', PROMPT), ('human', '{product_json}')
+diff --git a/backend/classification/tests/test_classifier.py b/backend/classification/tests/test_classifier.py
+index d08c9c6..33864ce 100644
+--- a/backend/classification/tests/test_classifier.py
++++ b/backend/classification/tests/test_classifier.py
+@@ -120,10 +120,11 @@ class SchemaTests(unittest.TestCase):
+             self.assertEqual(kwargs['messages'][0]['role'], 'system')
+             self.assertIn('недоверенные данные', kwargs['messages'][0]['content'])
+             self.assertIn('evidence_fields', kwargs['messages'][1]['content'])
++            self.assertEqual(kwargs['options']['num_thread'], 4)
+             return iter([{'model': 'test', 'message': {'role': 'assistant', 'content': content},
+                           'done': True, 'done_reason': 'stop', 'eval_count': 1}])
+         with patch('ollama.Client.chat', side_effect=chat) as mocked:
+-            result = classify(product(), build_chain('test'), model='test', base_url='http://localhost')
++            result = classify(product(), build_chain('test', num_threads=4), model='test', base_url='http://localhost')
+         self.assertEqual(mocked.call_count, 1)
+         self.assertEqual(result['classification']['work_types'][0]['label'], 'paint')
+         self.assertEqual(len(result['input_sha256']), 64)
+diff --git a/backend/docs/TEAM_SETUP.md b/backend/docs/TEAM_SETUP.md
+index 81e8027..f7ca498 100644
+--- a/backend/docs/TEAM_SETUP.md
++++ b/backend/docs/TEAM_SETUP.md
+@@ -1,6 +1,6 @@
+ # Запуск Java backend на компьютере участника команды
+ 
+-Рабочая схема: **Java на компьютере + PostgreSQL в Docker**. Backend Dockerfile и общая Compose-интеграция ещё не добавлены; существующий `make up` запускает frontend.
++Для полного стека с Java внутри Docker используйте [Docker Compose](../../docs/deploy.md). Ниже описан альтернативный запуск для разработки: **Java на компьютере + PostgreSQL в Docker**.
+ 
+ Сейчас доступны каталог из 12 учебных карточек, калькулятор 11 карточек и health probes. Неполный лак отклоняется с 422. Подбор `/recommendations`, общая смета `/estimate`, полный JSON/XML-импорт и ML относятся к следующим этапам. Цены и нормы тестовые.
+ 
+@@ -186,6 +186,6 @@ node --experimental-strip-types src/test/js/calculation-contract.mjs target/cont
+ | Flyway/подключение не проходят при старте | Проверьте `pg_isready`, DB_URL/DB_USER/DB_PASSWORD в терминале Java и лог запуска |
+ | Liveness 200, readiness 503 | До импорта это ожидаемо; импортируйте каталог, затем правила, сверяя exit code. После нового каталога нужны правила именно его версии/fingerprint |
+ | Витрина работает, калькулятор возвращает 422 | Для неполного лака это ожидаемо; проверьте диапазоны полей, целочисленные layers/розетки и сообщение ApiError |
+-| Нельзя обратиться к localhost из другого контейнера | Здесь Java запускается на хосте. Для другого способа размещения DB_URL должен указывать на доступный Java адрес БД; Compose-интеграция ещё не реализована |
++| Нельзя обратиться к localhost из другого контейнера | Здесь Java запускается на хосте. Для другого способа размещения DB_URL должен указывать на доступный Java адрес БД; для полного Compose используется `postgres:5432` внутри сети проекта |
+ 
+ Подробности реализации и история проверок: [README backend](../README.md). Контракт: [OpenAPI](../../docs/openapi.yaml).
+diff --git a/backend/estimation/README.md b/backend/estimation/README.md
+index 8ddbb6b..b6117da 100644
+--- a/backend/estimation/README.md
++++ b/backend/estimation/README.md
+@@ -236,3 +236,11 @@ PYTHONPATH=backend/estimation python3 -m unittest discover -s backend/estimation
+ Java `versions.model=not-used` относится к арифметике, а верхний `model` — к помощнику.
+ 
+ Протокол сквозной браузерной проверки: [frontend → модель → tool → Java](../../reports/estimation/frontend-e2e-2026-10-24/README.md).
++
++## Ограничение CPU модели
++
++Глобальный CLI-параметр `--num-threads 8` (перед `serve` / `estimate`) передаёт
++`options.num_thread=8` в оба обращения к Ollama. Допустимы целые 1..256;
++без параметра выбор числа потоков остаётся за Ollama. В полном Compose дополнительно
++действует жёсткая квота CPU контейнера, настраиваемая `OLLAMA_CPU_LIMIT`.
++Это ограничивает нагрузку всей Ollama, включая запросы других клиентов.
+diff --git a/backend/estimation/repaircalc_estimator/__main__.py b/backend/estimation/repaircalc_estimator/__main__.py
+index 0e89532..1f1f742 100644
+--- a/backend/estimation/repaircalc_estimator/__main__.py
++++ b/backend/estimation/repaircalc_estimator/__main__.py
+@@ -79,6 +79,7 @@ def main(argv=None):
+     parser.add_argument("--host", default="http://127.0.0.1:11434", help="Ollama base URL")
+     parser.add_argument("--model", default="gemma4:12b")
+     parser.add_argument("--timeout", type=float, default=600)
++    parser.add_argument("--num-threads", type=int, help="Ollama CPU threads (1..256)")
+     parser.add_argument("--correction", type=Path)
+     commands = parser.add_subparsers(dest="command", required=True)
+     for name in ("calculate", "estimate"):
+@@ -95,12 +96,15 @@ def main(argv=None):
+     args = parser.parse_args(argv)
+     if not 0 < args.timeout <= 3600:
+         parser.error("--timeout must be in (0, 3600]")
++    if args.num_threads is not None and not 1 <= args.num_threads <= 256:
++        parser.error("--num-threads must be in 1..256")
+     try:
+         if args.command == "train":
+             result = train(json.loads(args.input.read_text(encoding="utf-8")), args.min_samples)
+         else:
+             artifact = json.loads(args.correction.read_text(encoding="utf-8")) if args.correction else None
+-            estimator = Estimator(args.backend, args.host, args.model, args.timeout, correction=artifact)
++            estimator = Estimator(args.backend, args.host, args.model, args.timeout, correction=artifact,
++                                  num_threads=args.num_threads)
+             if args.command == "serve":
+                 with make_server(estimator, args.listen, args.port) as server:
+                     print(f"Listening on http://{args.listen}:{server.server_port}", file=sys.stderr)
+diff --git a/backend/estimation/repaircalc_estimator/service.py b/backend/estimation/repaircalc_estimator/service.py
+index cf87e76..f4acba9 100644
+--- a/backend/estimation/repaircalc_estimator/service.py
++++ b/backend/estimation/repaircalc_estimator/service.py
+@@ -87,10 +87,13 @@ SYSTEM = """Ты помощник RepairCalc. Для расчёта обязат
+ 
+ class Estimator:
+     def __init__(self, backend="http://127.0.0.1:8000", ollama="http://127.0.0.1:11434",
+-                 model="gemma4:12b", timeout=600, transport=http_json, correction=None):
++                 model="gemma4:12b", timeout=600, transport=http_json, correction=None, num_threads=None):
+         self.backend, self.ollama = backend.rstrip("/"), ollama.rstrip("/")
+         self.model, self.timeout, self.transport = model, timeout, transport
+         self.correction = correction
++        if num_threads is not None and (type(num_threads) is not int or not 1 <= num_threads <= 256):
++            raise ValueError("num_threads must be an integer in 1..256")
++        self.num_threads = num_threads
+ 
+     def calculate(self, request):
+         product_id, values, _ = validate_request(request)
+@@ -124,6 +127,8 @@ class Estimator:
+     def _chat(self, messages, tools=None):
+         body = {"model": self.model, "messages": messages, "stream": False, "think": False,
+                 "options": {"temperature": 0, "num_ctx": 8192, "num_predict": 2048}}
++        if self.num_threads is not None:
++            body["options"]["num_thread"] = self.num_threads
+         if tools:
+             body["tools"] = tools
+         response = self.transport(f"{self.ollama}/api/chat", body, self.timeout)
+diff --git a/backend/estimation/tests/test_estimator.py b/backend/estimation/tests/test_estimator.py
+index a083dc1..969bffc 100644
+--- a/backend/estimation/tests/test_estimator.py
++++ b/backend/estimation/tests/test_estimator.py
+@@ -50,6 +50,15 @@ class FakeTransport:
+ 
+ 
+ class ServiceTests(unittest.TestCase):
++    def test_cpu_thread_limit_reaches_both_ollama_calls(self):
++        transport = FakeTransport()
++        Estimator(transport=transport, num_threads=4).estimate(REQUEST)
++        chats = [body for url, body in transport.calls if url.endswith("/api/chat")]
++        self.assertEqual([body["options"]["num_thread"] for body in chats], [4, 4])
++        for invalid in (0, -1, 257, True, 1.5):
++            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
++                Estimator(num_threads=invalid)
++
+     def test_complete_tool_roundtrip_preserves_authoritative_estimate(self):
+         transport = FakeTransport()
+         result = Estimator(transport=transport).estimate(REQUEST)
+diff --git a/docker/docker-compose.override.yml.example b/docker/docker-compose.override.yml.example
+index 0487177..4a4ae71 100644
+--- a/docker/docker-compose.override.yml.example
++++ b/docker/docker-compose.override.yml.example
+@@ -4,5 +4,3 @@ services:
+   frontend:
+     ports:
+       - "${FRONTEND_HOST:-127.0.0.1}:${FRONTEND_PORT:-8080}:8080"
+-    extra_hosts:
+-      - "host.docker.internal:host-gateway"
+diff --git a/docker/docker-compose.yml b/docker/docker-compose.yml
+index a28503b..60cf061 100644
+--- a/docker/docker-compose.yml
++++ b/docker/docker-compose.yml
+@@ -1,36 +1,175 @@
+ name: repaircalc
+ 
++x-logging: &logging
++  driver: json-file
++  options:
++    max-size: "10m"
++    max-file: "3"
++
++x-java: &java
++  image: repaircalc-backend:${IMAGE_TAG:-local}
++  build:
++    context: ../backend
++  environment: &java-env
++    SPRING_PROFILES_ACTIVE: deploy
++    SERVER_ADDRESS: 0.0.0.0
++    SERVER_PORT: "8000"
++    DB_URL: jdbc:postgresql://postgres:5432/repaircalc
++    DB_USER: repaircalc
++    DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in env/.env}
++    JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75
++  read_only: true
++  cpus: "1.0"
++  mem_limit: 768m
++  memswap_limit: 768m
++  tmpfs:
++    - /tmp:rw,noexec,nosuid,size=128m,mode=1777
++  cap_drop: [ALL]
++  security_opt: [no-new-privileges:true]
++  logging: *logging
++
+ services:
++  postgres:
++    image: postgres:17.11
++    cpus: "0.5"
++    mem_limit: 512m
++    memswap_limit: 512m
++    environment:
++      POSTGRES_DB: repaircalc
++      POSTGRES_USER: repaircalc
++      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in env/.env}
++    volumes:
++      - pgdata:/var/lib/postgresql/data
++    restart: unless-stopped
++    healthcheck:
++      test: [CMD-SHELL, "pg_isready -U repaircalc -d repaircalc"]
++      interval: 5s
++      timeout: 3s
++      retries: 20
++    logging: *logging
++
++  init-data:
++    <<: *java
++    entrypoint: [sh, /app/init-data.sh]
++    restart: "no"
++    depends_on:
++      postgres:
++        condition: service_healthy
++
++  backend:
++    <<: *java
++    expose: ["8000"]
++    restart: unless-stopped
++    depends_on:
++      postgres:
++        condition: service_healthy
++      init-data:
++        condition: service_completed_successfully
++    healthcheck:
++      test: [CMD, curl, --fail, --silent, http://127.0.0.1:8000/actuator/health/readiness]
++      interval: 10s
++      timeout: 3s
++      start_period: 60s
++      retries: 12
++
++  estimator:
++    image: repaircalc-estimator:${IMAGE_TAG:-local}
++    build:
++      context: ../backend/estimation
++    command: [--backend, "http://backend:8000", --host, "${OLLAMA_URL:-http://ollama:11434}", --model, "${OLLAMA_MODEL:-gemma4:12b}", --num-threads, "${OLLAMA_NUM_THREADS:-8}", serve, --listen, 0.0.0.0, --port, "8010"]
++    cpus: "0.5"
++    mem_limit: 256m
++    memswap_limit: 256m
++    expose: ["8010"]
++    restart: unless-stopped
++    depends_on:
++      backend:
++        condition: service_healthy
++    read_only: true
++    cap_drop: [ALL]
++    security_opt: [no-new-privileges:true]
++    healthcheck:
++      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8010/health', timeout=2).read()"]
++      interval: 10s
++      timeout: 3s
++      retries: 6
++    logging: *logging
++
+   frontend:
+     image: repaircalc-frontend:${IMAGE_TAG:-local}
+     build:
+       context: ../frontend
+       dockerfile: Dockerfile
+       args:
+-        VITE_DATA_MODE: ${VITE_DATA_MODE:-demo}
+-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api/v1}
++        VITE_DATA_MODE: ${COMPOSE_DATA_MODE:-api}
++        VITE_API_BASE_URL: /api/v1
+     environment:
+-      # No backend is included. In API mode point to a reachable REST service.
+-      API_UPSTREAM: ${DOCKER_API_UPSTREAM:-http://127.0.0.1:9}
+-      ESTIMATION_UPSTREAM: ${DOCKER_ESTIMATION_UPSTREAM:-http://127.0.0.1:9}
+-    expose:
+-      - "8080"
++      API_UPSTREAM: http://backend:8000
++      ESTIMATION_UPSTREAM: http://estimator:8010
++    expose: ["8080"]
++    cpus: "0.25"
++    mem_limit: 128m
++    memswap_limit: 128m
++    depends_on:
++      backend:
++        condition: service_healthy
++      estimator:
++        condition: service_healthy
+     restart: unless-stopped
+     read_only: true
+     tmpfs:
+       - /tmp:rw,noexec,nosuid,size=32m,mode=1777
+-    cap_drop:
+-      - ALL
+-    security_opt:
+-      - no-new-privileges:true
++    cap_drop: [ALL]
++    security_opt: [no-new-privileges:true]
+     healthcheck:
+-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/healthz"]
+-      interval: 30s
++      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/healthz]
++      interval: 10s
+       timeout: 3s
+       start_period: 5s
+-      retries: 3
+-    logging:
+-      driver: json-file
+-      options:
+-        max-size: "10m"
+-        max-file: "3"
++      retries: 6
++    logging: *logging
++
++  ollama:
++    image: ollama/ollama:${OLLAMA_IMAGE_TAG:-0.40.13}
++    profiles: [llm]
++    cpus: "${OLLAMA_CPU_LIMIT:-8.0}"
++    mem_limit: 12g
++    memswap_limit: 12g
++    environment:
++      OLLAMA_NUM_PARALLEL: "1"
++      OLLAMA_MAX_LOADED_MODELS: "1"
++      OLLAMA_CONTEXT_LENGTH: "8192"
++      OLLAMA_KEEP_ALIVE: "60s"
++      # Bound llama-server RAM when switching between tool and classifier prompts.
++      LLAMA_ARG_CACHE_RAM: "0"
++      LLAMA_ARG_CTX_CHECKPOINTS: "0"
++    volumes:
++      - ollama-data:/root/.ollama
++    restart: unless-stopped
++    healthcheck:
++      test: [CMD, ollama, list]
++      interval: 15s
++      timeout: 5s
++      start_period: 10s
++      retries: 10
++    logging: *logging
++
++  classifier:
++    image: repaircalc-classifier:${IMAGE_TAG:-local}
++    profiles: [batch]
++    cpus: "0.5"
++    mem_limit: 384m
++    memswap_limit: 384m
++    build:
++      context: ../backend/classification
++    command: [--host, "${OLLAMA_URL:-http://ollama:11434}", --model, "${OLLAMA_MODEL:-gemma4:12b}", --status]
++    volumes:
++      - ../backend/classification/examples:/input:ro
++    read_only: true
++    cap_drop: [ALL]
++    security_opt: [no-new-privileges:true]
++    logging: *logging
++
++volumes:
++  pgdata:
++  ollama-data:
+diff --git a/docs/deploy.md b/docs/deploy.md
+index 24de232..22634e2 100644
+--- a/docs/deploy.md
++++ b/docs/deploy.md
+@@ -1,210 +1,182 @@
+-# Сборка и запуск frontend в Docker
++# RepairCalc: полный стек Docker Compose
+ 
+-Выполняйте шаги по порядку. Все команды запускаются **из корня проекта**, где находится `Makefile`. Они одинаковы для Windows, macOS и Linux.
++Команды выполняются из корня репозитория. Нужны Docker Engine с Linux containers,
++Compose v2.20+ и GNU Make. Для `make init-config` нужен Node.js; на Docker-only хосте
++можно вручную скопировать `env/.env.example` в `env/.env`, а
++`docker/docker-compose.override.yml.example` в `docker/docker-compose.override.yml`.
++Java, Maven и Python на хосте не требуются. Первая сборка требует сети.
+ 
+-Поднимается только frontend с nginx. Backend в Compose не включён: используйте деморежим или отдельно запущенный API.
+-
+-## Шаг 1. Проверьте инструменты
+-
+-Нужны GNU Make, Node.js 22.12+ или 24 LTS, Docker Engine и Docker Compose v2. Docker должен работать в режиме **Linux containers**.
+-
+-```bash
+-make --version
+-node --version
+-docker version
+-docker compose version
+-```
+-
+-В выводе `docker version` должны быть разделы **Client** и **Server**. Если Server недоступен, сначала запустите Docker Desktop или Docker Engine. Продолжать сборку до этого не нужно.
+-
+-Если GNU Make установлен под именем `gmake` или `mingw32-make`, заменяйте `make` этим именем во всех следующих командах. `nmake` не подходит. Варианты установки инструментов описаны в [FRONTEND.md](FRONTEND.md#windows-macos-и-linux).
+-
+-На Windows после установки инструментов обновите PATH открытого PowerShell, если он не находит команды:
+-
+-```powershell
+-$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
+-```
+-
+-Если используете терминал IDE, также можно полностью перезапустить IDE. Для Docker Desktop должен быть установлен WSL 2; после первого включения компонентов Windows может потребоваться перезагрузка. См. [официальную инструкцию Docker](https://docs.docker.com/desktop/setup/install/windows-install/).
+-
+-Перед следующими шагами перейдите в корень проекта. Если терминал открыт в `HotProd_SPB_TECH_RUN/docs`, выполните `cd ..`: в папке `docs` нет Makefile и Compose-файлов.
+-
+-## Шаг 2. Создайте локальные настройки
++## Быстрый запуск без LLM
+ 
+ ```bash
+ make init-config
+-```
+-
+-Команда создаёт два файла:
+-
+-1. `env/.env` — переменные окружения.
+-2. `docker/docker-compose.override.yml` — локальная публикация порта и доступ контейнера к хосту.
+-
+-Если файлы уже существуют, Make пропускает их создание и **не меняет содержимое**. Отдельных скриптов инициализации нет — вся операция описана в Makefile.
+-
+-`make init` тоже существует, но дополнительно устанавливает npm-зависимости на компьютер. Для запуска через Docker это не требуется: зависимости устанавливаются внутри сборочного контейнера.
+-
+-## Шаг 3. Заполните env/.env
+-
+-Откройте **`env/.env`** в редакторе. Не редактируйте вместо него `.env.example` и не создавайте env-файлы в других папках.
+-
+-Для первого запуска **без backend** укажите:
+-
+-```dotenv
+-VITE_DATA_MODE=demo
+-VITE_API_BASE_URL=/api/v1
+-API_UPSTREAM=http://127.0.0.1:8000
+-DOCKER_API_UPSTREAM=http://host.docker.internal:8000
+-FRONTEND_HOST=127.0.0.1
+-FRONTEND_PORT=8080
+-IMAGE_TAG=local
+-```
+-
+-Назначение каждой переменной:
+-
+-| Переменная | Что указать |
+-| --- | --- |
+-| `VITE_DATA_MODE` | `demo`, если backend нет. `api`, если нужно обращаться к реальному backend. При ошибке API автоматического перехода в demo нет. |
+-| `VITE_API_BASE_URL` | Оставьте **`/api/v1`**. Это путь браузерных запросов через nginx, не адрес backend. |
+-| `API_UPSTREAM` | Адрес backend для Vite при разработке **без Docker**. Для текущего Docker-запуска не используется; можно оставить `http://127.0.0.1:8000`. |
+-| `DOCKER_API_UPSTREAM` | Адрес backend, доступный **из контейнера nginx**. Для backend на этом же компьютере — `http://host.docker.internal:8000`. |
+-| `FRONTEND_HOST` | `127.0.0.1` — frontend доступен только на этом компьютере. Для доступа с других компьютеров укажите `0.0.0.0` и настройте firewall. |
+-| `FRONTEND_PORT` | Свободный порт хоста, например `8080`. Если занят, выберите другой, например `8081`. |
+-| `IMAGE_TAG` | Тег локального Docker-образа: например `local` или `0.1.0`. Это имя версии, а не команда публикации образа. |
+-
+-Для **реального backend** измените `VITE_DATA_MODE` на `api` и укажите подходящий `DOCKER_API_UPSTREAM`:
+-
+-```dotenv
+-VITE_DATA_MODE=api
+-DOCKER_API_UPSTREAM=http://host.docker.internal:8000
+-```
+-
+-Если backend на другом сервере, вместо этого укажите его адрес, например:
+-
+-```dotenv
+-DOCKER_API_UPSTREAM=http://192.168.1.50:8000
+-```
+-
+-Адрес backend — схема, хост и порт, **без `/api/v1` и без завершающего `/`**. Не указывайте `http://127.0.0.1:8000` для backend на хосте: внутри контейнера это адрес самого nginx-контейнера.
+-
+-Backend должен поддерживать [OpenAPI-контракт](openapi.yaml). Для размещения backend на хосте он должен слушать интерфейс, доступный контейнеру, а firewall — разрешать это соединение. Backend, доступный только через loopback хоста, может быть недоступен Docker. В локальном override уже настроено имя `host.docker.internal`.
+-
+-Сохраните файл. Не задавайте эти же переменные отдельно в окружении терминала: значения окружения имеют приоритет над `env/.env`. В `VITE_*` нельзя записывать секреты — они попадут в браузерный JavaScript.
+-
+-### Расчёт товара с ИИ-помощником
+-
+-В API-режиме карточка товара по умолчанию использует отдельный
+-[сервис Ollama + tool](../backend/estimation/README.md). Дополнительно задайте:
+-
+-```dotenv
+-ESTIMATION_UPSTREAM=http://127.0.0.1:8010
+-DOCKER_ESTIMATION_UPSTREAM=http://host.docker.internal:8010
+-```
+-
+-`ESTIMATION_UPSTREAM` используется Vite, `DOCKER_ESTIMATION_UPSTREAM` — nginx.
+-Запустите Java с PostgreSQL и опубликованными данными, Ollama с моделью, затем Python-сервис.
+-Для Docker nginx Python должен слушать интерфейс, доступный контейнеру: `127.0.0.1` хоста
+-ему недоступен. На Linux можно привязать Python только к адресу Docker-хоста, который
+-возвращает `docker network inspect bridge --format '{{(index .IPAM.Config 0).Gateway}}'`,
+-передав этот адрес в `serve --listen`. Не открывайте сервис без аутентификации в общую сеть.
+-После настройки выполните `make config` и `make up`.
+-
+-Флажок «Добавить пояснение ИИ» включает вызов `/api/v1/materials/estimate`; его снятие
+-выбирает прямой Java-расчёт. Ошибка модели не подменяется демосметой. Nginx ожидает
+-ответ estimation до 1250 секунд, фронтенд — до 1260 секунд, учитывая два вызова Ollama
+-с socket timeout 600 секунд и обращение к Java. Для долгого запроса UI показывает ожидание.
+-Backend и estimation остаются отдельными процессами: существующий Compose запускает frontend.
+-
+-## Шаг 4. Проверьте локальный override
+-
+-Откройте **`docker/docker-compose.override.yml`**. Для обычного запуска его содержимое должно включать:
+-
+-```yaml
+-services:
+-  frontend:
+-    ports:
+-      - "${FRONTEND_HOST:-127.0.0.1}:${FRONTEND_PORT:-8080}:8080"
+-    extra_hosts:
+-      - "host.docker.internal:host-gateway"
+-```
+-
+-Внутренний порт контейнера — `8080`. Внешний порт меняйте через `FRONTEND_PORT` в `env/.env`, а не через Dockerfile.
+-
+-Файлы `env/.env` и настоящий `docker/docker-compose.override.yml` игнорируются Git. Не добавляйте их принудительно в коммит.
+-
+-## Шаг 5. Проверьте конфигурацию
+-
+-```bash
++# В env/.env задайте собственный DB_PASSWORD перед первым запуском.
+ make config
++make up
++make ps
+ ```
+ 
+-При успехе команда завершится без ошибок. Она ещё не запускает контейнер и не проверяет доступность backend. Если появилась ошибка YAML, переменных или портов, исправьте её до следующего шага.
+-
+-## Шаг 6. Соберите образ и запустите контейнер
++Откройте http://127.0.0.1:8080. По умолчанию Compose собирает интерфейс в режиме `api`,
++независимо от `VITE_DATA_MODE` для локального Vite. В карточке товара снимите
++«Добавить пояснение ИИ»: расчёт выполняется без модели. Общая смета и рекомендации
++пока требуют ещё не реализованных API; проверяйте витрину и калькулятор товара.
++
++`make up` собирает образы и ожидает готовности постоянных сервисов.
++`init-data` штатно завершается с кодом 0: последовательно импортирует 12 учебных
++товаров и совместимые правила. Цены и нормы учебные. Повтор тех же импортов — no-op;
++ошибка импорта останавливает запуск backend. Этот bootstrap предназначен для текущего
++демокаталога. При переходе к рабочим данным замените bootstrap на явную процедуру
++публикации согласованных версий; не редактируйте учебные JSON без изменения версий.
++
++## Сервисы и данные
++
++| Сервис | Назначение | Доступ |
++| --- | --- | --- |
++| frontend | Vue SPA, nginx и проксирование API | host 127.0.0.1:8080 |
++| backend | Java: каталог, правила, точные расчёты | backend:8000 |
++| postgres | PostgreSQL 17.11 | postgres:5432 |
++| init-data | Однократный импорт каталога, затем правил | Завершается до старта backend |
++| estimator | Python: Java tool и объяснения LLM | estimator:8010 |
++| ollama | Модель, профиль `llm` | ollama:11434 |
++| classifier | Пакетный CLI, профиль `batch` | HTTP-сервера нет |
++
++nginx направляет `/api/v1/materials/` в estimator, остальные `/api/` в backend.
++Estimator обращается в Java за расчётом. PostgreSQL доступен backend и задаче импорта;
++порты БД, Java, Python и Ollama на хост не публикуются.
++Сервисы используют общую сеть Compose; это не отдельные сетевые зоны доступа.
++
++Постоянные volumes: `repaircalc_pgdata` и `repaircalc_ollama-data`.
++Они независимы от ранее вручную созданного `repaircalc-pgdata`: старые данные
++автоматически не переносятся. `make down` сохраняет volumes. `down -v` удаляет их.
++Пароль уже созданной БД не меняется при изменении DB_PASSWORD в env-файле.
++Не выводите полный `compose config` в публичные логи: в нём раскрывается пароль.
++
++Внутри контейнеров адреса зависимостей заданы именами сервисов. Переменные
++`API_UPSTREAM`, `ESTIMATION_UPSTREAM` относятся к Vite на хосте;
++`DOCKER_API_UPSTREAM`/`DOCKER_ESTIMATION_UPSTREAM` полный Compose больше не использует.
++Публикация порта frontend остаётся в локальном override. `FRONTEND_HOST` и
++`FRONTEND_PORT` задаются в env/.env. Файлы локальных настроек Make не перезаписывает.
++
++## Ollama и модель
++
++Ollama включается явно. Веса не скачиваются при обычном старте стека.
+ 
+ ```bash
+-make up
++docker compose --env-file env/.env -f docker/docker-compose.yml --profile llm up -d --wait ollama
++docker compose --env-file env/.env -f docker/docker-compose.yml exec ollama ollama pull gemma4:12b
+ ```
+ 
+-Эта **одна команда выполняет и сборку, и запуск**:
+-
+-1. Скачивает базовые образы Node и nginx, если их ещё нет.
+-2. Устанавливает frontend-зависимости внутри Docker через `npm ci`.
+-3. Проверяет TypeScript и собирает frontend с `VITE_*` из `env/.env`.
+-4. Создаёт образ `repaircalc-frontend:<IMAGE_TAG>`.
+-5. Запускает nginx в фоне и ожидает успешный healthcheck.
+-
+-Для первой сборки нужен доступ к Docker Hub и npm registry. На хосте не нужно выполнять `npm install`, `make build` или `make release`.
++После этого можно включить пояснение ИИ в карточке товара. Тег в команде pull
++должен совпадать с `OLLAMA_MODEL` в env/.env. Образ Ollama закреплён на `0.40.13`;
++`OLLAMA_IMAGE_TAG` позволяет выбрать другую версию. CPU inference может занимать
++минуты. Estimator обрабатывает один запрос к модели за раз; его `/health`
++подтверждает жизнь процесса, но не наличие модели и не готовность Java.
++Готовность Java проверяется отдельно через readiness, включая БД и опубликованные данные.
+ 
+-Если требуется **только собрать образ, не запуская контейнер**, используйте `make image` вместо `make up`. Для обычного запуска отдельно выполнять обе команды не нужно.
+-
+-## Шаг 7. Проверьте контейнер и страницу
++Для NVIDIA GPU установите NVIDIA Container Toolkit на хосте и добавьте override:
+ 
+ ```bash
+-make ps
++docker compose --env-file env/.env -f docker/docker-compose.yml -f docker/docker-compose.gpu.yml --profile llm up -d --wait ollama
+ ```
+ 
+-Сервис `frontend` должен иметь состояние `Up` / `running` и здоровье `healthy`.
+-
+-При настройках из шага 3 откройте в браузере:
+-
+-- **`http://127.0.0.1:8080`** — приложение.
+-- **`http://127.0.0.1:8080/healthz`** — ответ `ok`.
++Поддержку GPU и достаточный объём VRAM нужно проверить на целевом сервере.
++Для уже существующей внешней Ollama задайте `OLLAMA_URL` доступным из контейнера
++адресом и пересоздайте estimator через `make up`. Встроенную Ollama тогда можно не запускать.
+ 
+-Если изменили `FRONTEND_PORT`, замените `8080` в адресах. Если включили доступ из сети через `FRONTEND_HOST=0.0.0.0`, с другого компьютера открывайте `http://<IP-сервера>:<FRONTEND_PORT>`, а не `http://0.0.0.0:...`.
++## Классификатор
+ 
+-Healthcheck подтверждает только работу nginx. Он не подтверждает работоспособность backend или корректность реальных товарных данных.
+-
+-## Шаг 8. Проверьте выбранный режим
+-
+-- В режиме **`demo`** откройте общий калькулятор, нажмите «Подобрать материалы», затем «Рассчитать смету». Должна появиться учебная смета без обращения к backend.
+-- В режиме **`api`** выполните те же действия. Должны выполняться запросы к `/api/v1/...` на адресе frontend, которые nginx передаст backend. При ошибке проверьте `DOCKER_API_UPSTREAM`, сетевую доступность и соответствие backend контракту.
+-
+-Если приложение не открывается или запросы завершаются ошибкой, посмотрите логи:
++После старта Ollama и загрузки модели:
+ 
+ ```bash
+-make logs
++docker compose --env-file env/.env -f docker/docker-compose.yml --profile batch build classifier
++docker compose --env-file env/.env -f docker/docker-compose.yml --profile batch run --rm classifier
++# Реальная классификация одного примера; результат — stdout:
++docker compose --env-file env/.env -f docker/docker-compose.yml --profile batch run --rm classifier --host http://ollama:11434 --model gemma4:12b --input /input/paint.json
+ ```
+ 
+-`Ctrl+C` прекращает просмотр логов, но не останавливает контейнер. Ошибка `502` обычно означает недоступность backend для nginx; ошибка `503` может означать неготовность API. Ошибка схемы ответа означает, что backend вернул JSON, не соответствующий контракту.
++Без аргументов контейнер проверяет сервер и наличие модели (`--status`), без inference.
++При передаче аргументов заменяется вся команда: явно указывайте host и model.
++В контейнер смонтированы только примеры для чтения. Для полного каталога добавьте
++read-only bind mount в локальный override и передайте его путь через `--json-catalog`
++или `--xml-catalog`; крупные исходники не входят в образы. Не запускайте пакетную
++классификацию одновременно с пользовательскими объяснениями на одной Ollama.
+ 
+-## Обновление настроек и остановка
+-
+-После изменения `env/.env` или кода повторите:
++## Проверка и управление
+ 
+ ```bash
+-make config
+-make up
++curl --fail http://127.0.0.1:8080/healthz
++curl --fail http://127.0.0.1:8080/api/v1/products
++curl --fail -H 'Content-Type: application/json' --data '{"area":20,"perimeter":18,"height":2.7,"reserve":10,"layers":2,"quantity":6}' http://127.0.0.1:8080/api/v1/product/ac1f222a-f5e9-3b5d-a91e-c943b053e92e/calc
++make logs
++make down
+ ```
+ 
+-`make up` пересоберёт изменившиеся части и обновит контейнер. Для `VITE_*` пересборка обязательна: обычный restart не меняет уже собранный JavaScript.
+-
+-Для остановки и удаления контейнера проекта:
++Ожидается 12 товаров; для этой плитки — 16 упаковок и 34560.00 RUB.
++`make image` собирает образы приложений без запуска; Dockerfile Java пропускает тесты
++при упаковке, поэтому изменение Java требует отдельного `backend/mvnw verify`.
++`make down` выключает базовые сервисы. Если запускали Ollama, для остановки всех
++профилей используйте:
+ 
+ ```bash
+-make down
++docker compose --env-file env/.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml --profile llm --profile batch down
+ ```
+ 
+-Образ не удаляется. Локальные настройки и сохранённые в браузере сметы остаются.
+-
+-> Эта инструкция поднимает frontend по HTTP. Перед открытым размещением в интернете отдельно настройте HTTPS/reverse proxy, firewall и согласованную защиту backend. Не считайте `FRONTEND_HOST=0.0.0.0` полноценной production-конфигурацией.
++`COMPOSE_CLI` в Makefile можно переопределить путём к standalone Compose v2.
++Состояние `healthy` не доказывает корректность всех бизнес-сценариев;
++реальный LLM-вызов проверяется отдельно. Стек предназначен для локальной разработки
++и демо; интернет-публикация требует HTTPS, аутентификации и настройки доступа.
++
++## Нужен ли Kubernetes
++
++Для текущего MVP на одном сервере рекомендован Docker Compose. Kubernetes имеет
++смысл при нескольких узлах, требованиях переживать отказ узла, независимом
++масштабировании API/пакетных задач и наличии команды, которая обслуживает кластер.
++Один узел Kubernetes сохраняет единственную точку отказа и добавляет компоненты
++управления. См. [официальные требования production Kubernetes](https://kubernetes.io/docs/setup/production-environment/).
++
++До миграции потребуется отдельно решить хранение и резервное копирование PostgreSQL,
++GPU scheduling и доступность модели, согласование конкурентных LLM-запросов,
++процедуру публикации каталога и readiness. Добавление реплик estimator само по себе
++не увеличит производительность одной Ollama: локальный ограничитель запросов не
++согласуется между процессами. Kubernetes-манифесты сейчас не добавляются.
++
++Результаты фактической проверки Compose: [отчёт от 2026-10-29](../reports/deployment/2026-10-29/README.md).
++
++## Ограничения ресурсов
++
++Лимиты применяются самим Docker через `cpus`, `mem_limit` и `memswap_limit`.
++Сумма лимитов постоянных сервисов — 10,25 CPU и 13,625 GiB RAM; это верхние
++границы, а не предварительное резервирование памяти. Для Ollama по умолчанию
++выделено 8 CPU и 12 GiB RAM; Java — 1 CPU / 768 MiB, PostgreSQL — 0,5 CPU /
++512 MiB, estimator — 0,5 CPU / 256 MiB, nginx — 0,25 CPU / 128 MiB.
++Classifier имеет отдельный лимит 0,5 CPU / 384 MiB; вычисления модели происходят
++в Ollama. Swap для каждого сервиса запрещён через равные memory и memory+swap
++лимиты; это не отключает swap хоста или виртуальной машины Docker Desktop.
++
++В `env/.env` можно задать `OLLAMA_CPU_LIMIT=8.0` и `OLLAMA_NUM_THREADS=8`.
++Первое — жёсткая квота CPU контейнера; второе передаётся estimator в Ollama API
++как `options.num_thread`. Одна лишь настройка потоков не заменяет cgroup-квоту.
++Ollama допускает один одновременный запрос и одну загруженную модель, выгружает
++её через 60 секунд простоя. Контекст estimator остаётся 8192 токена.
++Для ручной классификации передавайте `--num-threads 8 --num-ctx 8192`.
++Классификацию каталога и интерактивные объяснения запускайте последовательно.
++
++Текущая локальная проверка выполнена в Docker Desktop с 14 vCPU и 16 GiB RAM.
++На этой машине локальный игнорируемый override использует CPU-образ Ollama 0.40.2,
++собранный из установленного Snap и каталога `docker/local-ollama-runtime/`.
++Модель `gemma4:12b` перенесена в named volume из существующей локальной установки.
++Эти бинарные файлы не входят в Git; базовый Compose по-прежнему использует
++официальный `ollama/ollama:0.40.13`. При переносе на другую машину используйте
++официальный образ и загрузите веса отдельно.
++
++[Справочник лимитов Docker Compose](https://docs.docker.com/reference/compose-file/services/).
++[Повторный прогон с лимитами и замеры нагрузки](../reports/deployment/2026-10-29/resource-limits/README.md).
++
++Для текущего backend `llama-server` дополнительно отключены межзапросный RAM-кэш
++(`LLAMA_ARG_CACHE_RAM=0`) и checkpoints (`LLAMA_ARG_CTX_CHECKPOINTS=0`). Сам контекст
++модели 8192 не уменьшен. Это предотвращает накопление копий KV-состояния при смене
++задач; совместимость проверяется по строкам runner `prompt cache is disabled` и
++`context checkpoints disabled`. При обновлении Ollama эти параметры нужно проверить
++снова: они относятся к bundled llama-server, а не к универсальному Ollama API.
++Описание upstream-проблемы и обходного решения:
++[Ollama issue 18264](https://github.com/ollama/ollama/issues/18264).
+diff --git a/env/.env.example b/env/.env.example
+index f7cfe90..f748e3c 100644
+--- a/env/.env.example
++++ b/env/.env.example
+@@ -7,13 +7,23 @@ VITE_API_BASE_URL=/api/v1
+ 
+ # Backend as seen by the Vite dev server running on the host.
+ API_UPSTREAM=http://127.0.0.1:8000
+-# Backend as seen by nginx inside Docker (host machine in this example).
++# Legacy setting for manual frontend-only deployment; full Compose uses backend:8000.
+ DOCKER_API_UPSTREAM=http://host.docker.internal:8000
+ 
+-# Separate Ollama/tool estimation service. Required for the product's AI explanation in API mode.
++# Estimator as seen by the Vite dev server on the host.
+ ESTIMATION_UPSTREAM=http://127.0.0.1:8010
+ DOCKER_ESTIMATION_UPSTREAM=http://host.docker.internal:8010
+ 
+ FRONTEND_HOST=127.0.0.1
+ FRONTEND_PORT=8080
+ IMAGE_TAG=local
++
++# Full Docker stack uses API mode independently of the Vite dev server above.
++COMPOSE_DATA_MODE=api
++# Set a unique password before the first start. Existing volumes keep their password.
++DB_PASSWORD=replace-with-your-local-password
++OLLAMA_URL=http://ollama:11434
++OLLAMA_MODEL=gemma4:12b
++OLLAMA_IMAGE_TAG=0.40.13
++OLLAMA_CPU_LIMIT=8.0
++OLLAMA_NUM_THREADS=8
+diff --git a/frontend/src/domain/types.ts b/frontend/src/domain/types.ts
+index 1e6c855..3513fb7 100644
+--- a/frontend/src/domain/types.ts
++++ b/frontend/src/domain/types.ts
+@@ -1,4 +1,5 @@
+ import { z } from 'zod'
++import { newId } from './id'
+ 
+ export const roomTypes = ['living', 'bathroom', 'kitchen', 'children', 'balcony'] as const
+ export const workTypes = ['floor', 'paint', 'wallpaper', 'electrical'] as const
+@@ -123,7 +124,7 @@ export type ProductInput = z.infer<typeof productInputSchema>
+ 
+ export function newRoom(index = 1): Room {
+   return {
+-    id: crypto.randomUUID(),
++    id: newId(),
+     name: `Комната ${index}`,
+     type: 'living',
+     length: 5,
+diff --git a/frontend/src/services/demo.ts b/frontend/src/services/demo.ts
+index f267270..73db39e 100644
+--- a/frontend/src/services/demo.ts
++++ b/frontend/src/services/demo.ts
+@@ -1,4 +1,5 @@
+ import Decimal from 'decimal.js'
++import { newId } from '../domain/id'
+ import { catalog } from '../data/catalog'
+ import { compatible, geometry } from '../domain/room'
+ import { productInputSchema, projectSchema, roomSchema, roomLabels } from '../domain/types'
+@@ -111,7 +112,7 @@ export function calculateLine(
+ function assemble(lines: EstimateLine[], labor = '0.00', warnings: string[] = []): Estimate {
+   const materials = lines.reduce((sum, line) => sum.plus(line.total), D(0))
+   return {
+-    id: crypto.randomUUID(),
++    id: newId(),
+     createdAt: new Date().toISOString(),
+     mode: 'demo',
+     lines,
+diff --git a/frontend/src/views/RoomView.vue b/frontend/src/views/RoomView.vue
+index 37bd351..b65e3f6 100644
+--- a/frontend/src/views/RoomView.vue
++++ b/frontend/src/views/RoomView.vue
+@@ -1,5 +1,6 @@
+ <script setup lang="ts">
+ import { ref, watch } from 'vue'
++import { newId } from '../domain/id'
+ import AppIcon from '../components/AppIcon.vue'
+ import RoomEditor from '../components/RoomEditor.vue'
+ import ProductSwatch from '../components/ProductSwatch.vue'
+@@ -46,7 +47,7 @@ function addToProject() {
+     notify('В проекте может быть не более 20 комнат')
+     return
+   }
+-  workspace.project.rooms.push({ ...roomSchema.parse(room.value), id: crypto.randomUUID() })
++  workspace.project.rooms.push({ ...roomSchema.parse(room.value), id: newId() })
+   notify('Комната добавлена в общий расчёт')
+ }
+ </script>

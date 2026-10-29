@@ -101,9 +101,11 @@ IMAGE_TAG=local
 | `VITE_DATA_MODE` | `demo` — учебный адаптер; `api` — backend без fallback на фикстуры |
 | `VITE_API_BASE_URL` | Префикс браузерных запросов; рекомендуется `/api/v1` |
 | `API_UPSTREAM` | Адрес backend для локального Vite на хосте |
-| `DOCKER_API_UPSTREAM` | Адрес backend для nginx внутри контейнера |
+| `DOCKER_API_UPSTREAM` | Старый параметр ручного запуска nginx; полный Compose использует `backend:8000` |
 | `ESTIMATION_UPSTREAM` | Адрес Python estimation-сервиса для Vite, по умолчанию `http://127.0.0.1:8010` |
-| `DOCKER_ESTIMATION_UPSTREAM` | Адрес estimation-сервиса для nginx, например `http://host.docker.internal:8010` |
+| `DOCKER_ESTIMATION_UPSTREAM` | Старый параметр ручного запуска; полный Compose использует `estimator:8010` |
+| `COMPOSE_DATA_MODE` | Режим сборки frontend в Compose, по умолчанию `api` |
+| `DB_PASSWORD` | Пароль отдельной PostgreSQL в полном Compose |
 | `FRONTEND_HOST` | Интерфейс публикации Docker-порта, по умолчанию localhost |
 | `FRONTEND_PORT` | Порт frontend на хосте |
 | `IMAGE_TAG` | Тег Docker-образа для Compose, по умолчанию `local` |
@@ -112,15 +114,15 @@ Vite настроен на папку `env/`; Compose получает тот ж
 
 `127.0.0.1` внутри контейнера — сам контейнер, не компьютер разработчика. Поэтому для backend на хосте используются разные `API_UPSTREAM` и `DOCKER_API_UPSTREAM`. Для одного удалённого сервера можно указать одинаковый адрес, например `http://10.0.0.5:8000`, в обеих переменных. Адрес — origin без завершающего `/`.
 
-Чтобы подключить реальный backend, поставьте `VITE_DATA_MODE=api` и задайте адреса. Backend должен поддерживать [OpenAPI](openapi.yaml). После изменения env перезапустите `make dev` или выполните `make up` для пересборки контейнера.
+Для локального Vite поставьте `VITE_DATA_MODE=api` и задайте адреса. Backend должен поддерживать [OpenAPI](openapi.yaml). После изменения env перезапустите `make dev`. Полный Compose использует `COMPOSE_DATA_MODE=api` и внутренние адреса сервисов; после изменения настроек выполните `make up`.
 
 В карточке товара в API-режиме включено «Добавить пояснение ИИ». Запрос идёт в отдельный
 [Python estimation-сервис](../backend/estimation/README.md): Ollama вызывает расчётный tool,
 тот обращается к Java, затем модель поясняет результат. Суммы интерфейс берёт из проверенной
 Java-сметы `estimate`, а текст модели показывает отдельно с предупреждением. Снятие флажка
 запускает прежний Java-расчёт без Ollama. При ошибке ИИ-сервиса автоматической подмены нет.
-Для локальной разработки запустите сервис на `127.0.0.1:8010`; для nginx укажите доступный
-из контейнера `DOCKER_ESTIMATION_UPSTREAM`. Endpoint `/api/v1/materials/` имеет отдельный
+Для локальной разработки запустите сервис на `127.0.0.1:8010`; полный Compose запускает
+его автоматически. Endpoint `/api/v1/materials/` имеет отдельный
 proxy и увеличенный таймаут: на CPU первый ответ может занять несколько минут.
 
 `VITE_*` публичны и встраиваются в JavaScript при сборке. Секреты там хранить нельзя. Редактирование env не меняет уже собранный JavaScript. Дополнительные `.env.local`/`.env.<mode>` в папке `env/` штатно поддерживаются Vite, но проект их не создаёт: для единой конфигурации используйте только `env/.env`.
@@ -129,6 +131,7 @@ proxy и увеличенный таймаут: на CPU первый ответ
 
 ```bash
 make init-config
+# Задайте собственный DB_PASSWORD в env/.env перед первым запуском.
 make config
 make up
 # http://127.0.0.1:8080
@@ -136,11 +139,11 @@ make up
 
 Node нужен для автоматического создания конфигов, но **не для запуска уже собранного контейнера**. На Docker-only хосте без Node можно вручную скопировать `env/.env.example` в `env/.env`, а `docker/docker-compose.override.yml.example` в `docker/docker-compose.override.yml`. Если оба файла существуют, `make up`, `make config` и `make image` не выполняют копирование и не требуют Node.
 
-Порты публикуются только в игнорируемом `docker/docker-compose.override.yml`. Базовый Compose не публикует порт хоста. Контейнер один — frontend, без фиктивного backend/БД/Ollama.
+Порт frontend публикуется в игнорируемом `docker/docker-compose.override.yml`. Базовый Compose не публикует порты хоста. Он запускает frontend, Java, PostgreSQL, импорт учебных данных и Python estimator; Ollama доступна через профиль `llm`, классификатор — `batch`. Подробности и команды — в [инструкции полного стека](deploy.md).
 
 Build context — `frontend/`: env, большие каталоги и документы не отправляются Docker daemon. Публичные параметры передаются явно через build args. Образ: Node 22 → непривилегированный nginx, read-only root FS и writable `/tmp`. `/healthz` проверяет nginx, не backend.
 
-В локальном override есть `host.docker.internal:host-gateway` для доступа к backend на хосте, в том числе под Linux. Backend должен слушать доступный контейнеру интерфейс. Для соседнего backend-контейнера нужны его DNS-имя и общая Docker network.
+В старом локальном override может оставаться `host.docker.internal:host-gateway`. Полный стек использует DNS-имена сервисов в общей сети Compose.
 
 nginx сохраняет `/api/...` и не возвращает HTML SPA вместо ошибок API. CSP допускает same-origin подключения. TLS, внешнее iframe-встраивание, production CORS и авторизация настраиваются отдельно.
 
@@ -161,6 +164,6 @@ make release
 
 Vitest проверяет UI, расчёты, API-адаптер, структуру и ссылки OpenAPI и наборы полей OpenAPI/Zod. Межполевые ограничения также требуют серверной проверки. Playwright проверяет desktop/mobile, смету, альтернативы, корзину, JSON, неверные данные, отсутствие внешних запросов и повреждённый localStorage.
 
-Релиз создаёт **только `frontend/dist`**, с текущим `env/.env`, без принудительного переключения в demo. `make release-image` дополнительно собирает образ с `IMAGE_TAG` из этого файла. Ни архив исходников, ни SHA256, ни Git-коммиты, теги, публикация или деплой не выполняются.
+Релиз создаёт **только `frontend/dist`**, с текущим `env/.env`, без принудительного переключения в demo. `make release-image` дополнительно собирает образы приложений полного Compose с `IMAGE_TAG` из этого файла. Ни архив исходников, ни SHA256, ни Git-коммиты, теги, публикация или деплой не выполняются.
 
 Установка npm и сборка Docker требуют registry. Уже собранный demo-frontend автономен. Реальные цены, наличие, качество ML и технологическая полнота смет не имитируются как подтверждённые данные.

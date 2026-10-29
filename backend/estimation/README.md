@@ -236,3 +236,11 @@ PYTHONPATH=backend/estimation python3 -m unittest discover -s backend/estimation
 Java `versions.model=not-used` относится к арифметике, а верхний `model` — к помощнику.
 
 Протокол сквозной браузерной проверки: [frontend → модель → tool → Java](../../reports/estimation/frontend-e2e-2026-10-24/README.md).
+
+## Ограничение CPU модели
+
+Глобальный CLI-параметр `--num-threads 8` (перед `serve` / `estimate`) передаёт
+`options.num_thread=8` в оба обращения к Ollama. Допустимы целые 1..256;
+без параметра выбор числа потоков остаётся за Ollama. В полном Compose дополнительно
+действует жёсткая квота CPU контейнера, настраиваемая `OLLAMA_CPU_LIMIT`.
+Это ограничивает нагрузку всей Ollama, включая запросы других клиентов.
