@@ -124,3 +124,63 @@ export const adminErrorSchema = z.object({
   requestId: z.string(),
   details: z.array(z.object({ field: z.string(), code: z.string(), message: z.string() })),
 })
+
+const evidenceSchema = z.object({ field: z.string(), quote: z.string() })
+const labelSchema = z.object({ label: z.string(), evidence: z.array(evidenceSchema) })
+const judgmentSchema = z.object({
+  state: z.enum(['yes', 'no', 'unknown', 'conflict']),
+  evidence: z.array(evidenceSchema),
+})
+export const classificationJobSchema = z.object({
+  id: z.string().uuid(),
+  versionId: z.string().uuid(),
+  status: z.enum(['queued', 'running', 'succeeded', 'failed']),
+  attempts: z.number().int(),
+  input: z.record(z.unknown()),
+  result: z
+    .object({
+      taxonomy_version: z.string(),
+      model: z.string(),
+      classification: z.object({
+        scope: z.string(),
+        work_types: z.array(labelSchema),
+        surface_locations: z.array(labelSchema),
+        substrates: z.array(labelSchema),
+        properties: z.record(judgmentSchema),
+        needs_review: z.boolean(),
+        review_reasons: z.array(z.string()),
+      }),
+    })
+    .passthrough()
+    .nullable(),
+  errorCode: z.string().nullable(),
+  createdAt: z.string(),
+  finishedAt: z.string().nullable(),
+})
+export type ClassificationJob = z.infer<typeof classificationJobSchema>
+const taxonomyEntrySchema = z.object({ id: z.string(), name: z.string(), definition: z.string() })
+export const reviewOptionsSchema = z.object({
+  taxonomyVersion: z.string(),
+  mappingVersion: z.string(),
+  work_types: z.array(taxonomyEntrySchema),
+  surface_locations: z.array(taxonomyEntrySchema),
+  substrates: z.array(taxonomyEntrySchema),
+  properties: z.array(taxonomyEntrySchema),
+  profiles: z.array(
+    z.object({ id: z.string(), strategy: z.string(), unit: z.string(), conditions: z.string() }),
+  ),
+})
+export const readinessSchema = z.object({
+  ready: z.boolean(),
+  blockers: z.array(z.string()),
+  reviewId: z.string().uuid().nullable(),
+  baseReleaseId: z.string().uuid().nullable(),
+})
+export const reviewDecisionSchema = z.object({
+  group: z.enum(['work_types', 'surface_locations', 'substrates', 'properties']),
+  label: z.string(),
+  action: z.enum(['accept', 'reject', 'correct']),
+  value: z.string(),
+  reason: z.string().trim().min(1),
+})
+export type ReviewDecision = z.infer<typeof reviewDecisionSchema>

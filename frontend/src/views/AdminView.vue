@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminProductForm from '../components/AdminProductForm.vue'
+import AdminProductWorkflow from '../components/AdminProductWorkflow.vue'
 import { admin, AdminApiError } from '../services/admin'
 import type { AdminDraft, AdminProduct } from '../domain/admin'
 
@@ -300,10 +301,17 @@ onMounted(initialize)
           {{ new Date(product.updatedAt).toLocaleString('ru-RU') }} · {{ product.updatedBy }}
         </p>
         <p>
-          Сохранение создаёт рабочий черновик. Публикация в пользовательский каталог будет доступна
-          на следующем этапе.
+          Сохранение создаёт новую рабочую версию. Классификация и проверка относятся только к
+          сохранённой версии; перед запуском сохраните изменения формы.
         </p>
         <AdminProductForm :initial="draft" :existing="!!product" :busy="busy" @save="save" />
+        <AdminProductWorkflow
+          v-if="product"
+          :key="product.versionId"
+          :product="product"
+          :etag="etag"
+          @published="reload"
+        />
         <section v-if="product" class="admin-history" aria-label="История карточки">
           <h2>История версий и аудита</h2>
           <button :disabled="busy" @click="showHistory()">Загрузить историю</button>

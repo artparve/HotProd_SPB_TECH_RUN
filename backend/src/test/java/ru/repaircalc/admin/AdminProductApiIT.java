@@ -84,6 +84,33 @@ class AdminProductApiIT {
     }
 
     @Test
+    @org.junit.jupiter.api.Order(3)
+    void classificationAndWorkflowRoutesRequireSessionCsrfAndCurrentVersion() throws Exception {
+        try (var browser = browser()) {
+            String csrf = login(browser);
+            var created = send(browser, "POST", "/products", draft(), csrf, null);
+            var id = tree(created).path("id").asText();
+            var etag = created.headers().firstValue("ETag").orElseThrow();
+            var path = "/products/" + id;
+            assertThat(send(browser,"POST",path+"/classifications",null,null,etag).statusCode()).isEqualTo(403);
+            assertThat(send(browser,"POST",path+"/classifications",null,csrf,null).statusCode()).isEqualTo(428);
+            assertThat(send(browser,"POST",path+"/classifications",null,csrf,"\"old\"").statusCode()).isEqualTo(412);
+            var queued = send(browser,"POST",path+"/classifications",null,csrf,etag);
+            assertThat(queued.statusCode()).isEqualTo(202);
+            assertThat(tree(queued).path("status").asText()).isEqualTo("queued");
+            assertThat(send(browser,"GET",path+"/classifications",null,null,null).statusCode()).isEqualTo(200);
+            assertThat(send(browser,"GET","/review-options",null,null,null).statusCode()).isEqualTo(200);
+            assertThat(send(browser,"POST",path+"/reviews","{}",csrf,etag).statusCode()).isEqualTo(422);
+            var ready = send(browser,"GET",path+"/readiness",null,null,null);
+            assertThat(ready.statusCode()).isEqualTo(200);
+            assertThat(tree(ready).path("ready").asBoolean()).isFalse();
+            assertThat(send(browser,"POST",path+"/publish",null,csrf,etag).statusCode()).isEqualTo(422);
+            send(browser,"POST","/logout",null,csrf,null);
+            assertThat(send(browser,"GET",path+"/classifications",null,null,null).statusCode()).isEqualTo(401);
+        }
+    }
+
+    @Test
     @org.junit.jupiter.api.Order(2)
     void rejectsInvalidDraftsWithoutWritingAndRollsBackAuditFailure() throws Exception {
         try (var browser = browser()) {
@@ -115,7 +142,7 @@ class AdminProductApiIT {
     }
 
     @Test
-    @org.junit.jupiter.api.Order(3)
+    @org.junit.jupiter.api.Order(4)
     void publicRoutesStayAnonymousAndLoginHasRateLimit() throws Exception {
         try (var browser = browser()) {
             // Public catalog has no prepared release here; authentication must not intercept it.

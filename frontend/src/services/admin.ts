@@ -1,3 +1,9 @@
+import {
+  classificationJobSchema,
+  reviewOptionsSchema,
+  readinessSchema,
+  reviewDecisionSchema,
+} from '../domain/admin'
 import { z } from 'zod'
 import {
   adminDraftSchema,
@@ -74,6 +80,58 @@ async function request<T>(
 }
 
 export const admin = {
+  async classifications(id: string) {
+    return (
+      await request(
+        `/products/${encodeURIComponent(id)}/classifications`,
+        z.array(classificationJobSchema),
+      )
+    ).data
+  },
+  async classify(id: string, etag: string) {
+    return (
+      await request(
+        `/products/${encodeURIComponent(id)}/classifications`,
+        classificationJobSchema,
+        'POST',
+        undefined,
+        etag,
+      )
+    ).data
+  },
+  async reviewOptions() {
+    return (await request('/review-options', reviewOptionsSchema)).data
+  },
+  async reviews(id: string) {
+    return (
+      await request(`/products/${encodeURIComponent(id)}/reviews`, z.array(z.record(z.unknown())))
+    ).data
+  },
+  async review(id: string, etag: string, jobId: string, decisions: unknown, profileId: string) {
+    return (
+      await request(
+        `/products/${encodeURIComponent(id)}/reviews`,
+        z.record(z.unknown()),
+        'POST',
+        { jobId, decisions: z.array(reviewDecisionSchema).parse(decisions), profileId },
+        etag,
+      )
+    ).data
+  },
+  async readiness(id: string) {
+    return (await request(`/products/${encodeURIComponent(id)}/readiness`, readinessSchema)).data
+  },
+  async publish(id: string, etag: string) {
+    return (
+      await request(
+        `/products/${encodeURIComponent(id)}/publish`,
+        z.record(z.unknown()),
+        'POST',
+        undefined,
+        etag,
+      )
+    ).data
+  },
   async session() {
     const { data } = await request('/session', adminSessionSchema)
     csrfToken = data.csrfToken

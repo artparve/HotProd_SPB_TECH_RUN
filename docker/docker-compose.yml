@@ -99,6 +99,32 @@ services:
       retries: 6
     logging: *logging
 
+  classifier-worker:
+    image: repaircalc-classifier:${IMAGE_TAG:-local}
+    build:
+      context: ../backend/classification
+    profiles: [llm]
+    entrypoint: [python, -m, repaircalc_classifier.worker]
+    environment:
+      PGHOST: postgres
+      PGDATABASE: repaircalc
+      PGUSER: repaircalc
+      PGPASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in env/.env}
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-gemma4:12b}
+      OLLAMA_NUM_THREADS: ${OLLAMA_NUM_THREADS:-8}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    cpus: "0.5"
+    mem_limit: 512m
+    memswap_limit: 512m
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    logging: *logging
+
   frontend:
     image: repaircalc-frontend:${IMAGE_TAG:-local}
     build:

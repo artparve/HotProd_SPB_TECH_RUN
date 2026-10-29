@@ -13,7 +13,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(assignableTypes = {AdminProductController.class, AdminAuthController.class})
+@RestControllerAdvice(assignableTypes = {AdminProductController.class, AdminAuthController.class, AdminClassificationController.class, AdminWorkflowController.class})
 public class AdminErrorHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AdminException.class)
     ResponseEntity<Error> admin(AdminException exception, HttpServletResponse response) {
@@ -24,6 +24,10 @@ public class AdminErrorHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleExceptionInternal(Exception exception, Object body, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         var servlet = (org.springframework.web.context.request.ServletWebRequest) request;
         return new ResponseEntity<>(new Error("invalid_request", "Проверьте параметры запроса.", servlet.getResponse().getHeader("X-Request-ID"), List.of()), headers, status);
+    }
+    @ExceptionHandler({org.springframework.dao.DataAccessException.class, org.springframework.transaction.TransactionException.class})
+    ResponseEntity<Error> unavailable(Exception exception, HttpServletResponse response) {
+        return ResponseEntity.status(503).body(new Error("admin_unavailable", "Хранилище административных карточек временно недоступно.", response.getHeader("X-Request-ID"), List.of()));
     }
     @ExceptionHandler(Exception.class)
     ResponseEntity<Error> unexpected(Exception exception, HttpServletResponse response) {

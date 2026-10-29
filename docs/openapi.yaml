@@ -6,7 +6,7 @@ info:
     Контракт Java API каталога/расчёта товара и отдельного Python-сервиса materials.
     Общая смета и рекомендации пока запланированы.
     Внешний Bagisto API каталога не совместим с этим контрактом без нормализации.
-    Витрина ограничена товарами для виджета. Административные сессии и CRUD черновиков реализованы; массовый импорт пока запланирован.
+    Витрина ограничена товарами для виджета. Административные сессии, CRUD черновиков, очередь классификации, проверка меток и публикация с совместимыми правилами реализованы; массовый импорт пока запланирован.
     Денежные значения передаются десятичными строками в RUB.
     Нельзя считать неизвестные фасовку, расход или совместимость подтверждёнными.
     Административный CRUD защищён серверной сессией и CSRF; см. admin-catalog-api.json.
@@ -31,6 +31,16 @@ paths:
     $ref: './admin-catalog-api.json#/paths/~1products~1{id}'
   /admin/products/{id}/history:
     $ref: './admin-catalog-api.json#/paths/~1products~1{id}~1history'
+  /admin/products/{id}/classifications:
+    $ref: './admin-catalog-api.json#/paths/~1products~1{id}~1classifications'
+  /admin/products/{id}/reviews:
+    $ref: './admin-catalog-api.json#/paths/~1products~1{id}~1reviews'
+  /admin/products/{id}/readiness:
+    $ref: './admin-catalog-api.json#/paths/~1products~1{id}~1readiness'
+  /admin/products/{id}/publish:
+    $ref: './admin-catalog-api.json#/paths/~1products~1{id}~1publish'
+  /admin/review-options:
+    $ref: './admin-catalog-api.json#/paths/~1review-options'
   /products:
     get:
       operationId: listProducts

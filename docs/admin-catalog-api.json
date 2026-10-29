@@ -19,7 +19,9 @@
     "/session": {
       "get": {
         "operationId": "adminSession",
-        "tags": ["Admin"],
+        "tags": [
+          "Admin"
+        ],
         "summary": "Получить сессию и CSRF-токен",
         "security": [],
         "responses": {
@@ -63,7 +65,9 @@
     "/login": {
       "post": {
         "operationId": "adminLogin",
-        "tags": ["Admin"],
+        "tags": [
+          "Admin"
+        ],
         "summary": "Войти; заменить сессию и CSRF-токен",
         "security": [
           {
@@ -124,7 +128,10 @@
                     "maxLength": 1024
                   }
                 },
-                "required": ["username", "password"]
+                "required": [
+                  "username",
+                  "password"
+                ]
               }
             }
           }
@@ -134,7 +141,9 @@
     "/logout": {
       "post": {
         "operationId": "adminLogout",
-        "tags": ["Admin"],
+        "tags": [
+          "Admin"
+        ],
         "summary": "Завершить серверную сессию",
         "security": [
           {
@@ -176,7 +185,9 @@
     "/products": {
       "get": {
         "operationId": "adminListProducts",
-        "tags": ["Admin"],
+        "tags": [
+          "Admin"
+        ],
         "summary": "Список административных карточек",
         "security": [
           {
@@ -235,7 +246,12 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["draft", "review", "published", "archived"]
+              "enum": [
+                "draft",
+                "review",
+                "published",
+                "archived"
+              ]
             }
           },
           {
@@ -253,7 +269,12 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["created", "-created", "updated", "-updated"],
+              "enum": [
+                "created",
+                "-created",
+                "updated",
+                "-updated"
+              ],
               "default": "-updated"
             }
           },
@@ -283,7 +304,9 @@
       },
       "post": {
         "operationId": "adminCreateProduct",
-        "tags": ["Admin"],
+        "tags": [
+          "Admin"
+        ],
         "summary": "Создать черновик и аудит в одной транзакции",
         "security": [
           {
@@ -363,7 +386,9 @@
       ],
       "get": {
         "operationId": "adminGetProduct",
-        "tags": ["Admin"],
+        "tags": [
+          "Admin"
+        ],
         "summary": "Получить рабочую карточку",
         "security": [
           {
@@ -414,7 +439,9 @@
       },
       "put": {
         "operationId": "adminUpdateProduct",
-        "tags": ["Admin"],
+        "tags": [
+          "Admin"
+        ],
         "summary": "Создать новую неизменяемую версию",
         "security": [
           {
@@ -501,7 +528,9 @@
       ],
       "get": {
         "operationId": "adminProductHistory",
-        "tags": ["Admin"],
+        "tags": [
+          "Admin"
+        ],
         "summary": "История снимков и связанных событий создания/изменения",
         "security": [
           {
@@ -568,6 +597,399 @@
           }
         ]
       }
+    },
+    "/products/{id}/classifications": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "adminClassifications",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Последние 50 заданий, включая устаревшие версии",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ClassificationJob"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "adminClassify",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Поставить версию в устойчивую очередь; повтор pending идемпотентен",
+        "security": [
+          {
+            "AdminCookie": [],
+            "AdminCsrf": []
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClassificationJob"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Quoted current version UUID; 428 if absent, 412 if stale"
+          }
+        ]
+      }
+    },
+    "/review-options": {
+      "get": {
+        "operationId": "adminReviewOptions",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Закрытая таксономия и активные учебные профили",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewOptions"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{id}/reviews": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "adminReviews",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Последние 50 неизменяемых решений администратора",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LabelReview"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "adminReview",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Проверить каждое предложение актуального результата",
+        "security": [
+          {
+            "AdminCookie": [],
+            "AdminCsrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LabelReview"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Quoted current version UUID; 428 if absent, 412 if stale"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelReviewRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{id}/readiness": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "adminReadiness",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Вычислить блокировки публикации и расчёта",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Readiness"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{id}/publish": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "adminPublish",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Атомарно клонировать и активировать совместимые catalog/rules",
+        "security": [
+          {
+            "AdminCookie": [],
+            "AdminCsrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успешный ответ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Publication"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Quoted current version UUID; 428 if absent, 412 if stale"
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -580,7 +1002,10 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["unset", "unknown"]
+                "enum": [
+                  "unset",
+                  "unknown"
+                ]
               },
               "source": {
                 "type": "string",
@@ -589,10 +1014,14 @@
               "value": {
                 "type": "string",
                 "nullable": true,
-                "enum": [null]
+                "enum": [
+                  null
+                ]
               }
             },
-            "required": ["state"]
+            "required": [
+              "state"
+            ]
           },
           {
             "type": "object",
@@ -600,7 +1029,9 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["confirmed"]
+                "enum": [
+                  "confirmed"
+                ]
               },
               "value": {
                 "type": "string",
@@ -616,7 +1047,11 @@
                 "type": "string"
               }
             },
-            "required": ["state", "value", "source"]
+            "required": [
+              "state",
+              "value",
+              "source"
+            ]
           }
         ]
       },
@@ -628,7 +1063,10 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["unset", "unknown"]
+                "enum": [
+                  "unset",
+                  "unknown"
+                ]
               },
               "source": {
                 "type": "string",
@@ -637,10 +1075,14 @@
               "value": {
                 "type": "string",
                 "nullable": true,
-                "enum": [null]
+                "enum": [
+                  null
+                ]
               }
             },
-            "required": ["state"]
+            "required": [
+              "state"
+            ]
           },
           {
             "type": "object",
@@ -648,7 +1090,9 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["confirmed"]
+                "enum": [
+                  "confirmed"
+                ]
               },
               "value": {
                 "type": "boolean"
@@ -662,7 +1106,11 @@
                 "type": "string"
               }
             },
-            "required": ["state", "value", "source"]
+            "required": [
+              "state",
+              "value",
+              "source"
+            ]
           }
         ]
       },
@@ -674,7 +1122,10 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["unset", "unknown"]
+                "enum": [
+                  "unset",
+                  "unknown"
+                ]
               },
               "source": {
                 "type": "string",
@@ -683,10 +1134,14 @@
               "value": {
                 "type": "string",
                 "nullable": true,
-                "enum": [null]
+                "enum": [
+                  null
+                ]
               }
             },
-            "required": ["state"]
+            "required": [
+              "state"
+            ]
           },
           {
             "type": "object",
@@ -694,7 +1149,9 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["confirmed"]
+                "enum": [
+                  "confirmed"
+                ]
               },
               "value": {
                 "type": "number",
@@ -710,7 +1167,11 @@
                 "type": "string"
               }
             },
-            "required": ["state", "value", "source"]
+            "required": [
+              "state",
+              "value",
+              "source"
+            ]
           }
         ]
       },
@@ -722,7 +1183,10 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["unset", "unknown"]
+                "enum": [
+                  "unset",
+                  "unknown"
+                ]
               },
               "source": {
                 "type": "string",
@@ -731,10 +1195,14 @@
               "value": {
                 "type": "string",
                 "nullable": true,
-                "enum": [null]
+                "enum": [
+                  null
+                ]
               }
             },
-            "required": ["state"]
+            "required": [
+              "state"
+            ]
           },
           {
             "type": "object",
@@ -742,7 +1210,9 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["confirmed"]
+                "enum": [
+                  "confirmed"
+                ]
               },
               "value": {
                 "type": "number",
@@ -757,7 +1227,11 @@
                 "type": "string"
               }
             },
-            "required": ["state", "value", "source"]
+            "required": [
+              "state",
+              "value",
+              "source"
+            ]
           }
         ]
       },
@@ -769,7 +1243,10 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["unset", "unknown"]
+                "enum": [
+                  "unset",
+                  "unknown"
+                ]
               },
               "source": {
                 "type": "string",
@@ -778,10 +1255,14 @@
               "value": {
                 "type": "string",
                 "nullable": true,
-                "enum": [null]
+                "enum": [
+                  null
+                ]
               }
             },
-            "required": ["state"]
+            "required": [
+              "state"
+            ]
           },
           {
             "type": "object",
@@ -789,7 +1270,9 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["confirmed"]
+                "enum": [
+                  "confirmed"
+                ]
               },
               "value": {
                 "type": "string",
@@ -805,7 +1288,11 @@
                 "type": "string"
               }
             },
-            "required": ["state", "value", "source"]
+            "required": [
+              "state",
+              "value",
+              "source"
+            ]
           }
         ]
       },
@@ -817,7 +1304,10 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["unset", "unknown"]
+                "enum": [
+                  "unset",
+                  "unknown"
+                ]
               },
               "source": {
                 "type": "string",
@@ -826,10 +1316,14 @@
               "value": {
                 "type": "string",
                 "nullable": true,
-                "enum": [null]
+                "enum": [
+                  null
+                ]
               }
             },
-            "required": ["state"]
+            "required": [
+              "state"
+            ]
           },
           {
             "type": "object",
@@ -837,11 +1331,15 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["confirmed"]
+                "enum": [
+                  "confirmed"
+                ]
               },
               "value": {
                 "type": "string",
-                "enum": ["RUB"]
+                "enum": [
+                  "RUB"
+                ]
               },
               "source": {
                 "type": "string",
@@ -852,7 +1350,11 @@
                 "type": "string"
               }
             },
-            "required": ["state", "value", "source"]
+            "required": [
+              "state",
+              "value",
+              "source"
+            ]
           }
         ]
       },
@@ -864,7 +1366,10 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["unset", "unknown"]
+                "enum": [
+                  "unset",
+                  "unknown"
+                ]
               },
               "source": {
                 "type": "string",
@@ -873,10 +1378,14 @@
               "value": {
                 "type": "string",
                 "nullable": true,
-                "enum": [null]
+                "enum": [
+                  null
+                ]
               }
             },
-            "required": ["state"]
+            "required": [
+              "state"
+            ]
           },
           {
             "type": "object",
@@ -884,7 +1393,9 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["confirmed"]
+                "enum": [
+                  "confirmed"
+                ]
               },
               "value": {
                 "type": "string",
@@ -899,7 +1410,11 @@
                 "type": "string"
               }
             },
-            "required": ["state", "value", "source"]
+            "required": [
+              "state",
+              "value",
+              "source"
+            ]
           }
         ]
       },
@@ -911,7 +1426,10 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["unset", "unknown"]
+                "enum": [
+                  "unset",
+                  "unknown"
+                ]
               },
               "source": {
                 "type": "string",
@@ -920,10 +1438,14 @@
               "value": {
                 "type": "string",
                 "nullable": true,
-                "enum": [null]
+                "enum": [
+                  null
+                ]
               }
             },
-            "required": ["state"]
+            "required": [
+              "state"
+            ]
           },
           {
             "type": "object",
@@ -931,11 +1453,20 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["confirmed"]
+                "enum": [
+                  "confirmed"
+                ]
               },
               "value": {
                 "type": "string",
-                "enum": ["м²", "л", "кг", "м", "шт.", "полотен"]
+                "enum": [
+                  "м²",
+                  "л",
+                  "кг",
+                  "м",
+                  "шт.",
+                  "полотен"
+                ]
               },
               "source": {
                 "type": "string",
@@ -946,7 +1477,11 @@
                 "type": "string"
               }
             },
-            "required": ["state", "value", "source"]
+            "required": [
+              "state",
+              "value",
+              "source"
+            ]
           }
         ]
       },
@@ -958,7 +1493,10 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["unset", "unknown"]
+                "enum": [
+                  "unset",
+                  "unknown"
+                ]
               },
               "source": {
                 "type": "string",
@@ -967,10 +1505,14 @@
               "value": {
                 "type": "string",
                 "nullable": true,
-                "enum": [null]
+                "enum": [
+                  null
+                ]
               }
             },
-            "required": ["state"]
+            "required": [
+              "state"
+            ]
           },
           {
             "type": "object",
@@ -978,7 +1520,9 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["confirmed"]
+                "enum": [
+                  "confirmed"
+                ]
               },
               "value": {
                 "type": "string",
@@ -1005,7 +1549,11 @@
                 "type": "string"
               }
             },
-            "required": ["state", "value", "source"]
+            "required": [
+              "state",
+              "value",
+              "source"
+            ]
           }
         ]
       },
@@ -1017,7 +1565,10 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["unset", "unknown"]
+                "enum": [
+                  "unset",
+                  "unknown"
+                ]
               },
               "source": {
                 "type": "string",
@@ -1026,10 +1577,14 @@
               "value": {
                 "type": "string",
                 "nullable": true,
-                "enum": [null]
+                "enum": [
+                  null
+                ]
               }
             },
-            "required": ["state"]
+            "required": [
+              "state"
+            ]
           },
           {
             "type": "object",
@@ -1037,7 +1592,9 @@
             "properties": {
               "state": {
                 "type": "string",
-                "enum": ["confirmed"]
+                "enum": [
+                  "confirmed"
+                ]
               },
               "value": {
                 "type": "string",
@@ -1060,7 +1617,11 @@
                 "type": "string"
               }
             },
-            "required": ["state", "value", "source"]
+            "required": [
+              "state",
+              "value",
+              "source"
+            ]
           }
         ]
       },
@@ -1173,7 +1734,10 @@
                   "maxLength": 4000
                 }
               },
-              "required": ["name", "value"]
+              "required": [
+                "name",
+                "value"
+              ]
             }
           },
           "sources": {
@@ -1193,11 +1757,17 @@
                   "maxLength": 4000
                 }
               },
-              "required": ["label"]
+              "required": [
+                "label"
+              ]
             }
           }
         },
-        "required": ["sourceNamespace", "externalId", "name"],
+        "required": [
+          "sourceNamespace",
+          "externalId",
+          "name"
+        ],
         "description": "Полный снимок черновика. Отсутствующее проверяемое поле означает unset. Пробелы по краям обязательных строк недопустимы. confirmed требует значения и источника; автор подтверждения назначается сервером из сессии. При сохранении все confirmed-поля подтверждает текущий администратор."
       },
       "AdminProduct": {
@@ -1224,7 +1794,12 @@
           },
           "status": {
             "type": "string",
-            "enum": ["draft", "review", "published", "archived"]
+            "enum": [
+              "draft",
+              "review",
+              "published",
+              "archived"
+            ]
           },
           "snapshot": {
             "$ref": "#/components/schemas/AdminDraft"
@@ -1324,7 +1899,12 @@
             "minimum": 0
           }
         },
-        "required": ["items", "page", "size", "total"]
+        "required": [
+          "items",
+          "page",
+          "size",
+          "total"
+        ]
       },
       "AdminHistoryPage": {
         "type": "object",
@@ -1351,7 +1931,12 @@
             "minimum": 0
           }
         },
-        "required": ["items", "page", "size", "total"]
+        "required": [
+          "items",
+          "page",
+          "size",
+          "total"
+        ]
       },
       "AdminSession": {
         "type": "object",
@@ -1369,7 +1954,11 @@
             "minLength": 1
           }
         },
-        "required": ["authenticated", "username", "csrfToken"]
+        "required": [
+          "authenticated",
+          "username",
+          "csrfToken"
+        ]
       },
       "AdminError": {
         "type": "object",
@@ -1400,11 +1989,596 @@
                   "type": "string"
                 }
               },
-              "required": ["field", "code", "message"]
+              "required": [
+                "field",
+                "code",
+                "message"
+              ]
             }
           }
         },
-        "required": ["code", "message", "requestId", "details"]
+        "required": [
+          "code",
+          "message",
+          "requestId",
+          "details"
+        ]
+      },
+      "ClassificationJob": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "versionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed"
+            ]
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "input": {
+            "type": "object",
+            "description": "Immutable normalized classifier input for this product version"
+          },
+          "result": {
+            "type": "object",
+            "nullable": true,
+            "required": [
+              "taxonomy_version",
+              "model",
+              "classification"
+            ],
+            "properties": {
+              "taxonomy_version": {
+                "type": "string"
+              },
+              "model": {
+                "type": "string"
+              },
+              "classification": {
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "in_scope",
+                      "out_of_scope",
+                      "uncertain"
+                    ]
+                  },
+                  "work_types": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        },
+                        "evidence": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "field": {
+                                "type": "string"
+                              },
+                              "quote": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "field",
+                              "quote"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "evidence"
+                      ]
+                    }
+                  },
+                  "surface_locations": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        },
+                        "evidence": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "field": {
+                                "type": "string"
+                              },
+                              "quote": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "field",
+                              "quote"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "evidence"
+                      ]
+                    }
+                  },
+                  "substrates": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "label": {
+                          "type": "string"
+                        },
+                        "evidence": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "field": {
+                                "type": "string"
+                              },
+                              "quote": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "field",
+                              "quote"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "label",
+                        "evidence"
+                      ]
+                    }
+                  },
+                  "properties": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "yes",
+                            "no",
+                            "unknown",
+                            "conflict"
+                          ]
+                        },
+                        "evidence": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "field": {
+                                "type": "string"
+                              },
+                              "quote": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "field",
+                              "quote"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "state",
+                        "evidence"
+                      ]
+                    }
+                  },
+                  "needs_review": {
+                    "type": "boolean"
+                  },
+                  "review_reasons": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "scope",
+                  "work_types",
+                  "surface_locations",
+                  "substrates",
+                  "properties",
+                  "needs_review",
+                  "review_reasons"
+                ]
+              }
+            },
+            "additionalProperties": true
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "versionId",
+          "status",
+          "attempts",
+          "input",
+          "result",
+          "errorCode",
+          "createdAt",
+          "finishedAt"
+        ]
+      },
+      "ReviewDecision": {
+        "type": "object",
+        "properties": {
+          "group": {
+            "type": "string",
+            "enum": [
+              "work_types",
+              "surface_locations",
+              "substrates",
+              "properties"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "accept",
+              "reject",
+              "correct"
+            ]
+          },
+          "value": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "group",
+          "label",
+          "action",
+          "reason"
+        ]
+      },
+      "LabelReviewRequest": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewDecision"
+            }
+          },
+          "profileId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "jobId",
+          "decisions",
+          "profileId"
+        ]
+      },
+      "Readiness": {
+        "type": "object",
+        "properties": {
+          "ready": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reviewId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "baseReleaseId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "ready",
+          "blockers",
+          "reviewId",
+          "baseReleaseId"
+        ]
+      },
+      "LabelReview": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "product_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewDecision"
+            }
+          },
+          "approved": {
+            "type": "object"
+          },
+          "java_works": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mapping_version": {
+            "type": "string"
+          },
+          "profile_id": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "product_id",
+          "version_id",
+          "job_id",
+          "decisions",
+          "approved",
+          "java_works",
+          "mapping_version",
+          "profile_id",
+          "created_at",
+          "created_by"
+        ]
+      },
+      "Publication": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "product_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "review_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "release_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rule_set_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "product_id",
+          "version_id",
+          "review_id",
+          "release_id",
+          "rule_set_id",
+          "created_at",
+          "created_by"
+        ]
+      },
+      "ReviewOptions": {
+        "type": "object",
+        "properties": {
+          "work_types": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "definition": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "definition"
+              ]
+            }
+          },
+          "surface_locations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "definition": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "definition"
+              ]
+            }
+          },
+          "substrates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "definition": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "definition"
+              ]
+            }
+          },
+          "properties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "definition": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "definition"
+              ]
+            }
+          },
+          "taxonomyVersion": {
+            "type": "string"
+          },
+          "mappingVersion": {
+            "type": "string"
+          },
+          "profiles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "strategy": {
+                  "type": "string"
+                },
+                "unit": {
+                  "type": "string"
+                },
+                "conditions": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "strategy",
+                "unit",
+                "conditions"
+              ]
+            }
+          }
+        },
+        "required": [
+          "work_types",
+          "surface_locations",
+          "substrates",
+          "properties",
+          "taxonomyVersion",
+          "mappingVersion",
+          "profiles"
+        ]
       }
     },
     "securitySchemes": {
