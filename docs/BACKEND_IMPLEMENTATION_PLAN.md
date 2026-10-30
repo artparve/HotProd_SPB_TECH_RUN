@@ -1,3 +1,5 @@
+> Исторический срез до реализации Java + MongoDB + Python. Для текущих путей, решений и проверок используйте [AI_CONTEXT.md](AI_CONTEXT.md) и [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md). Ниже сохранён исходный аудит.
+
 # План реализации Java-бэкенда RepairCalc
 
 Дата: 24 октября 2026 года.

@@ -1,6 +1,7 @@
+> Production запускает единый `python -m repaircalc_llm`. Очередь и Mongo принадлежат Java; самостоятельные CLI ниже — offline-инструменты. Общие prompts/taxonomy/examples находятся в корневом `data/`. См. [запуск](../../docs/deploy.md).
+
 # Классификация товаров: LangChain + structured output
 
-Для карточек админки добавлен PostgreSQL-worker: `python -m repaircalc_classifier.worker`. Очередь, аренды, повторные попытки, переменные окружения и проверка человеком описаны в [административной вертикали](../../docs/admin-workflow.md). CLI ниже остаётся самостоятельным инструментом.
 
 Автономный Python-модуль для multi-label классификации JSON/XML-карточек через локальный Ollama. Существующее Java API не изменено. Модель возвращает виды работ, места применения, материалы основания и свойства; для каждого утверждения требуется цитата из карточки. Полные списки и обоснование по данным — в [отчёте](../../reports/classification/README.md).
 
@@ -20,7 +21,7 @@
 Проверить сервер и модель без запуска inference (из корня репозитория):
 
 ```bash
-PYTHONPATH=backend/classification backend/classification/.venv/bin/python -m repaircalc_classifier --status
+PYTHONPATH=llm/classification llm/classification/.venv/bin/python -m repaircalc_classifier --status
 ```
 
 В JSON отдельно указаны `reachable` (Ollama отвечает), `installed` (нужная модель установлена) и `loaded` (модель сейчас в памяти). `loaded=false` нормально перед первым запуском: запрос загрузит установленную модель. Наличие в памяти не доказывает, что модель генерирует ответ. При недоступном `/api/ps` состояние `loaded=null`, подробности — в `runtime_error`; это не подменяет успешную проверку сервера через `/api/tags`. Exit 0 означает доступный сервер с установленной моделью, exit 1 — сервер недоступен или модель отсутствует. Модель автоматически не скачивается.
@@ -28,13 +29,13 @@ PYTHONPATH=backend/classification backend/classification/.venv/bin/python -m rep
 Обычный запуск теперь показывает ход запроса каждые 10 секунд. Чтобы также видеть ответ по мере генерации:
 
 ```bash
-PYTHONPATH=backend/classification backend/classification/.venv/bin/python -m repaircalc_classifier \
-  --input backend/classification/examples/paint.json \
+PYTHONPATH=llm/classification llm/classification/.venv/bin/python -m repaircalc_classifier \
+  --input data/classification/examples/paint.json \
   --model gemma4:12b --live --progress-interval 10 \
   --output /tmp/paint-live-new.jsonl
 ```
 
-Временно установленное окружение текущей машины также подходит: замените `backend/classification/.venv/bin/python` на `/tmp/repaircalc-classifier-venv/bin/python`.
+Временно установленное окружение текущей машины также подходит: замените `llm/classification/.venv/bin/python` на `/tmp/repaircalc-classifier-venv/bin/python`.
 
 Что видно в терминале:
 
@@ -54,12 +55,12 @@ PYTHONPATH=backend/classification backend/classification/.venv/bin/python -m rep
 Команды ниже выполняются **из корня репозитория**. Нужен Python 3.11+ с venv/pip и доступный Ollama. Проверено на Python 3.14 с версиями из requirements.txt. Установка зависимостей и загрузка модели требуют сети; первая загрузка модели может быть большой. Если Ollama ещё не запущен, в отдельном терминале выполните `ollama serve`.
 
 ```bash
-python3 -m venv backend/classification/.venv
-backend/classification/.venv/bin/python -m pip install -r backend/classification/requirements.txt
+python3 -m venv llm/classification/.venv
+llm/classification/.venv/bin/python -m pip install -r llm/classification/requirements.txt
 # Тег из существующего smoke-скрипта проекта; можно указать другую установленную модель.
 ollama pull gemma4:12b
-PYTHONPATH=backend/classification backend/classification/.venv/bin/python -m repaircalc_classifier \
-  --input backend/classification/examples/paint.json \
+PYTHONPATH=llm/classification llm/classification/.venv/bin/python -m repaircalc_classifier \
+  --input data/classification/examples/paint.json \
   --model gemma4:12b \
   --output /tmp/paint-classification.jsonl
 ```
@@ -67,11 +68,11 @@ PYTHONPATH=backend/classification backend/classification/.venv/bin/python -m rep
 Windows PowerShell (из корня репозитория):
 
 ```powershell
-py -m venv backend/classification/.venv
-& backend/classification/.venv/Scripts/python.exe -m pip install -r backend/classification/requirements.txt
+py -m venv llm/classification/.venv
+& llm/classification/.venv/Scripts/python.exe -m pip install -r llm/classification/requirements.txt
 ollama pull gemma4:12b
-$env:PYTHONPATH = 'backend/classification'
-& backend/classification/.venv/Scripts/python.exe -m repaircalc_classifier --input backend/classification/examples/paint.json --model gemma4:12b --output paint-classification.jsonl
+$env:PYTHONPATH = 'llm/classification'
+& llm/classification/.venv/Scripts/python.exe -m repaircalc_classifier --input data/classification/examples/paint.json --model gemma4:12b --output paint-classification.jsonl
 ```
 
 `--model` — тег модели на указанном сервере. `--host` по умолчанию `http://127.0.0.1:11434`; CLI не загружает модель сам. Это позволяет использовать уже установленную модель, поддерживающую Ollama JSON Schema. При первоначальной проверке Ollama отвечал с `models=[]`. После загрузки модели пользователем выполнены реальные диагностические прогоны Gemma; [результаты и ограничения](../../reports/classification/live-2026-10-24/README.md). Модуль не загружает веса автоматически.
@@ -80,17 +81,17 @@ $env:PYTHONPATH = 'backend/classification'
 
 ```bash
 # Один товар по JSON id (не cod_good):
-PYTHONPATH=backend/classification backend/classification/.venv/bin/python -m repaircalc_classifier \
+PYTHONPATH=llm/classification llm/classification/.venv/bin/python -m repaircalc_classifier \
   --json-catalog products_final.json --source-id 123 \
   --output /tmp/product-123.jsonl
 
 # Первые 10 XML-офферов с полным путём категории:
-PYTHONPATH=backend/classification backend/classification/.venv/bin/python -m repaircalc_classifier \
+PYTHONPATH=llm/classification llm/classification/.venv/bin/python -m repaircalc_classifier \
   --xml-catalog export_yandex_spb.xml --limit 10 \
   --output /tmp/xml-classification.jsonl
 
 # Подготовленная выборка из 12 реальных карточек:
-PYTHONPATH=backend/classification backend/classification/.venv/bin/python -m repaircalc_classifier \
+PYTHONPATH=llm/classification llm/classification/.venv/bin/python -m repaircalc_classifier \
   --input reports/classification/sample_products.json --limit 12 \
   --output /tmp/sample-classification.jsonl
 ```
@@ -101,7 +102,7 @@ JSON-каталог читается полностью в память; XML о�
 
 ## Использование из кода
 
-При `PYTHONPATH=backend/classification` и установленных зависимостях:
+При `PYTHONPATH=llm/classification` и установленных зависимостях:
 
 ```python
 from repaircalc_classifier.classifier import build_chain, classify
@@ -144,8 +145,8 @@ needs_review=false
 ## Проверки и ограничения
 
 ```bash
-PYTHONPATH=backend/classification backend/classification/.venv/bin/python \
-  -m unittest discover -s backend/classification/tests -v
+PYTHONPATH=llm/classification llm/classification/.venv/bin/python \
+  -m unittest discover -s llm/classification/tests -v
 ```
 
 24 теста проходят. Проверены мониторинг, live-поток, отделение stdout/stderr, статусы сервера/модели, ошибки и прерывания; также адаптеры, сохранение повторов/единиц, недопустимые метки, выдуманные цитаты, конфликты, unknown/out_of_scope и полный путь LangChain → нативная схема Ollama → Pydantic → проверка evidence с имитацией транспорта API. Это не тест точности LLM. Входные инструкции внутри карточек отмечены в системном промпте как недоверенные данные; одного промпта недостаточно для гарантии защиты от любых инъекций.
@@ -161,8 +162,8 @@ JSON Schema гарантирует структуру, а проверка ци�
 Семь карточек с заранее заданными проверками: отрицание влагостойкости, IP44 без выдуманного основания, конфликт повторных атрибутов, универсальный грунт, реальная плитка, щепа для копчения и реальная краска. Это небольшая диагностическая выборка, а не независимый benchmark.
 
 ```bash
-PYTHONPATH=backend/classification backend/classification/.venv/bin/python -m repaircalc_classifier.live_test \
-  --cases backend/classification/examples/live_cases.json \
+PYTHONPATH=llm/classification llm/classification/.venv/bin/python -m repaircalc_classifier.live_test \
+  --cases data/classification/examples/live_cases.json \
   --output /tmp/repaircalc-live-new-run
 ```
 

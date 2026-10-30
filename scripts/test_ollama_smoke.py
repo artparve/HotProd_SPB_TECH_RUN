@@ -1,4 +1,4 @@
-"""Offline protocol/progress checks: python3 -m unittest discover -s backend/scripts -p 'test_ollama_smoke.py'."""
+"""Offline protocol/progress checks: python3 -m unittest discover -s scripts -p 'test_ollama_smoke.py'."""
 
 import contextlib
 import io

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import AppIcon from '../components/AppIcon.vue'
 import RoomEditor from '../components/RoomEditor.vue'
 import RoomPlan from '../components/RoomPlan.vue'
@@ -9,7 +9,7 @@ import RoomInspirationGallery from '../components/RoomInspirationGallery.vue'
 import { workspace } from '../composables/useWorkspace'
 import { useAsync } from '../composables/useAsync'
 import { newRoom, projectSchema, roomLabels } from '../domain/types'
-import type { Estimate, Product } from '../domain/types'
+import type { Estimate, Product, Project } from '../domain/types'
 import { geometry, compatible } from '../domain/room'
 import { service } from '../services/api'
 import { money, number } from '../domain/format'
@@ -27,6 +27,8 @@ const showValidation = ref(false)
 const room = computed(() => project.rooms[activeRoom.value]!)
 const { busy, error, run } = useAsync()
 const products = ref<Product[]>(imported?.products || [])
+const recommended = ref<Record<string, Product[]>>({})
+const alternativeWarnings = ref<string[]>([])
 const selections = ref<Record<string, string>>(imported?.result.selections || {})
 const estimate = ref<Estimate | null>(imported?.estimate || null)
 const inspiration = ref(
@@ -76,8 +78,40 @@ function removeRoom() {
 }
 function choices(roomId: string, kind: Product['kind']) {
   const target = project.rooms.find((r) => r.id === roomId)!
-  return products.value.filter((product) => product.kind === kind && compatible(product, target))
+  return (recommended.value[roomId] || []).filter(
+    (product) => product.kind === kind && compatible(product, target),
+  )
 }
+async function alternatives(snapshot: Project) {
+  const values = await Promise.all(
+    snapshot.rooms.map(async (room) => ({
+      roomId: room.id,
+      result: await service.recommendations(room),
+    })),
+  )
+  return {
+    products: Object.fromEntries(
+      values.map(({ roomId, result }) => [roomId, result.products.map((item) => item.product)]),
+    ),
+    warnings: [
+      ...new Set(
+        values
+          .filter(({ result }) => !result.products.length)
+          .flatMap(({ result }) => result.warnings),
+      ),
+    ],
+  }
+}
+onMounted(() => {
+  if (!imported) return
+  void run(async () => {
+    const fingerprint = JSON.stringify(project)
+    const response = await alternatives(projectSchema.parse(project))
+    if (fingerprint !== JSON.stringify(project)) return
+    recommended.value = response.products
+    alternativeWarnings.value = response.warnings
+  })
+})
 async function applyInspiration(value: PreparedInspiration) {
   await run(async () => {
     const target = room.value
@@ -99,6 +133,7 @@ async function applyInspiration(value: PreparedInspiration) {
       snapshot.rooms.length === 1
         ? value.estimate
         : await service.estimate(snapshot, nextSelections)
+    const available = await alternatives(snapshot)
     validateInspirationEstimate(value.result, response)
     if (fingerprint !== JSON.stringify(project) || room.value.id !== target.id)
       throw new Error('Проект изменился. Повторите подбор интерьера для текущих параметров.')
@@ -106,6 +141,8 @@ async function applyInspiration(value: PreparedInspiration) {
     // Let the ordinary project invalidation watcher finish before applying the new result.
     await nextTick()
     products.value = value.products
+    recommended.value = available.products
+    alternativeWarnings.value = available.warnings
     selections.value = nextSelections
     estimate.value = response
     inspiration.value = { title: value.image.title, warnings: value.result.warnings }
@@ -128,9 +165,12 @@ async function next() {
     if (step.value === 1) {
       const catalog = await service.catalog()
       const response = await service.estimate(snapshot, selections.value)
+      const available = await alternatives(snapshot)
       if (fingerprint !== JSON.stringify(project))
         throw new Error('Параметры изменились. Повторите подбор для новых размеров.')
       products.value = catalog
+      recommended.value = available.products
+      alternativeWarnings.value = available.warnings
       estimate.value = response
       step.value = 2
     } else {
@@ -143,18 +183,41 @@ async function next() {
   })
 }
 async function replace(key: string, event: Event) {
-  const previous = selections.value[key]
-  selections.value[key] = (event.target as HTMLSelectElement).value
+  if (busy.value) return
+  const control = event.target as HTMLSelectElement
+  const previous =
+    selections.value[key] ||
+    estimate.value?.lines.find((line) => `${line.roomId}:${line.product.kind}` === key)?.product
+      .id ||
+    ''
+  const nextSelections = { ...selections.value, [key]: (event.target as HTMLSelectElement).value }
   const fingerprint = JSON.stringify(project)
   const result = await run(async () => {
-    const result = await service.estimate(projectSchema.parse(project), { ...selections.value })
+    const snapshot = projectSchema.parse(project)
+    const roomId = key.slice(0, key.lastIndexOf(':'))
+    // Ask Java which lines the new technology requires before retaining earlier alternatives.
+    const preview = await service.estimate(
+      snapshot,
+      Object.fromEntries(
+        Object.entries(nextSelections).filter(
+          ([selectedKey]) =>
+            selectedKey === key || selectedKey.slice(0, selectedKey.lastIndexOf(':')) !== roomId,
+        ),
+      ),
+    )
+    const keys = new Set(preview.lines.map((line) => `${line.roomId}:${line.product.kind}`))
+    const retained = Object.fromEntries(
+      Object.entries(nextSelections).filter(([selectedKey]) => keys.has(selectedKey)),
+    )
+    const result = await service.estimate(snapshot, retained)
     if (fingerprint !== JSON.stringify(project))
       throw new Error('Параметры изменились. Повторите подбор для новых размеров.')
-    return result
+    return { estimate: result, selections: retained }
   })
-  if (result) estimate.value = result
-  else if (previous) selections.value[key] = previous
-  else delete selections.value[key]
+  if (result) {
+    estimate.value = result.estimate
+    selections.value = result.selections
+  } else control.value = previous
 }
 </script>
 
@@ -320,6 +383,14 @@ async function replace(key: string, event: Event) {
       </template>
 
       <template v-else-if="step === 2">
+        <p
+          v-for="warning in alternativeWarnings"
+          :key="warning"
+          class="alert warning"
+          role="status"
+        >
+          {{ warning }}
+        </p>
         <div class="panel-heading">
           <div class="section-title">
             <span class="section-icon"><AppIcon name="layers" /></span>

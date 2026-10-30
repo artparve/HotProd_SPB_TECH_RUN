@@ -1,3 +1,5 @@
+> Историческая детализация frontend/экспериментов. Текущие маршруты, Mongo-архитектура и запуск описаны в [AI_CONTEXT.md](AI_CONTEXT.md), [deploy.md](deploy.md) и [OpenAPI](openapi.yaml).
+
 # Проверка сервиса расхода и стоимости
 
 Из корня репозитория, с запущенными Java `127.0.0.1:8000` и Ollama `127.0.0.1:11434`.
@@ -8,14 +10,14 @@
 curl --fail-with-body http://127.0.0.1:8000/actuator/health/readiness
 curl --fail-with-body http://127.0.0.1:11434/api/tags
 
-PYTHONPATH=backend/estimation python3 -m unittest discover -s backend/estimation/tests -v
+PYTHONPATH=llm/estimation python3 -m unittest discover -s llm/estimation/tests -v
 
-PYTHONPATH=backend/estimation python3 -m repaircalc_estimator calculate \
-  --input backend/estimation/examples/tile.json --output /tmp/tile-estimate.json
-PYTHONPATH=backend/estimation python3 -m repaircalc_estimator calculate \
-  --input backend/estimation/examples/wallpaper.json --output /tmp/wallpaper-estimate.json
-PYTHONPATH=backend/estimation python3 -m repaircalc_estimator estimate \
-  --input backend/estimation/examples/paint.json --output /tmp/paint-estimate.json
+PYTHONPATH=llm/estimation python3 -m repaircalc_estimator calculate \
+  --input data/estimation/examples/tile.json --output /tmp/tile-estimate.json
+PYTHONPATH=llm/estimation python3 -m repaircalc_estimator calculate \
+  --input data/estimation/examples/wallpaper.json --output /tmp/wallpaper-estimate.json
+PYTHONPATH=llm/estimation python3 -m repaircalc_estimator estimate \
+  --input data/estimation/examples/paint.json --output /tmp/paint-estimate.json
 ```
 
 | Пример | need | Упаковки | Куплено | Остаток | total, RUB |
@@ -32,12 +34,12 @@ PYTHONPATH=backend/estimation python3 -m repaircalc_estimator estimate \
 Проверка синтетической ML-поправки:
 
 ```bash
-PYTHONPATH=backend/estimation python3 -m repaircalc_estimator train \
-  --input backend/estimation/examples/synthetic-orders.json \
+PYTHONPATH=llm/estimation python3 -m repaircalc_estimator train \
+  --input data/estimation/examples/synthetic-orders.json \
   --output /tmp/repaircalc-coefficients.json
-PYTHONPATH=backend/estimation python3 -m repaircalc_estimator \
+PYTHONPATH=llm/estimation python3 -m repaircalc_estimator \
   --correction /tmp/repaircalc-coefficients.json calculate \
-  --input backend/estimation/examples/paint-corrected.json --output /tmp/paint-corrected.json
+  --input data/estimation/examples/paint-corrected.json --output /tmp/paint-corrected.json
 ```
 
 Ожидаются `factor="1.1"`, эффективный запас 21%, `baseline.lines[0].need=5.28`,
@@ -48,15 +50,15 @@ HTTP-проверка:
 
 ```bash
 # Отдельный терминал; Ctrl+C останавливает сервис.
-PYTHONPATH=backend/estimation python3 -m repaircalc_estimator serve
+PYTHONPATH=llm/estimation python3 -m repaircalc_estimator serve
 ```
 
 ```bash
 curl --fail-with-body http://127.0.0.1:8010/health
 curl --fail-with-body http://127.0.0.1:8010/api/v1/materials/calculate \
-  -H 'Content-Type: application/json' --data-binary @backend/estimation/examples/tile.json
+  -H 'Content-Type: application/json' --data-binary @data/estimation/examples/tile.json
 curl --fail-with-body http://127.0.0.1:8010/api/v1/materials/estimate \
-  -H 'Content-Type: application/json' --data-binary @backend/estimation/examples/paint.json
+  -H 'Content-Type: application/json' --data-binary @data/estimation/examples/paint.json
 ```
 
 Если модель не вызвала инструмент — 502 `tool_call_required`; если она обрезала ответ —

@@ -52,6 +52,27 @@ afterEach(() => {
 })
 
 describe('RoomInspirationGallery', () => {
+  it.each(['unavailable', 'no_matches'] as const)(
+    'keeps input and skips calculation for %s',
+    async (status) => {
+      const input = project()
+      vi.mocked(service.analyzeRoomInspiration).mockResolvedValueOnce({
+        status,
+        imageId: image.id,
+        project: structuredClone(input),
+        selections: {},
+        warnings: ['Продолжите вручную.'],
+      })
+      const wrapper = await render(input)
+      await wrapper.get('.inspiration-card-body button').trigger('click')
+      await flushPromises()
+      expect(service.catalog).not.toHaveBeenCalled()
+      expect(service.estimate).not.toHaveBeenCalled()
+      expect(wrapper.emitted('prepared')).toBeUndefined()
+      expect(wrapper.get('[role="alert"]').text()).toContain('Продолжите вручную')
+      expect(input.rooms[0]!.length).toBe(5)
+    },
+  )
   it('shows the backend feed and loads a full-size preview on hover', async () => {
     const wrapper = await render()
     expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)

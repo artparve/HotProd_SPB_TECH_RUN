@@ -112,8 +112,10 @@ const links = [
         <div v-if="workspace.storageMessage" class="alert warning" role="status">
           {{ workspace.storageMessage }}
         </div>
-        <p v-if="apiStatus.catalogWarning" class="alert" role="status">{{ apiStatus.catalogWarning }}</p>
-      <RouterView :key="route.path" />
+        <p v-if="apiStatus.catalogWarning" class="alert" role="status">
+          {{ apiStatus.catalogWarning }}
+        </p>
+        <RouterView :key="route.path" />
       </main>
       <footer class="page-footer">
         <span>RepairCalc · Умный подход к ремонту</span

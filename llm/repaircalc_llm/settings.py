@@ -36,9 +36,14 @@ class Settings:
         parsed = urlsplit(url)
         if len(token) < 32 or parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username:
             raise ValueError("Set a service token of at least 32 characters and a valid Ollama URL")
+        model = os.environ.get("OLLAMA_MODEL", "gemma4:12b")
+        if not model.strip() or len(model) > 256:
+            raise ValueError("OLLAMA_MODEL must contain 1–256 characters")
+        integer("IMAGE_MAX_BYTES", 8388608, maximum=33554432)
+        integer("IMAGE_MAX_PIXELS", 12000000, maximum=100000000)
         return cls(token=token, host=os.environ.get("LLM_ADDRESS", "127.0.0.1"),
                    port=integer("LLM_PORT", 8010, maximum=65535), ollama=url,
-                   model=os.environ.get("OLLAMA_MODEL", "gemma4:12b"),
+                   model=model,
                    timeout=integer("OLLAMA_TIMEOUT_SECONDS", 600, maximum=1800),
                    concurrency=integer("LLM_CONCURRENCY", 1, maximum=16),
                    body_limit=integer("LLM_BODY_MAX_BYTES", 12582912),

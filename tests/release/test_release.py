@@ -20,14 +20,15 @@ from scripts import release
 
 class ReleaseTests(unittest.TestCase):
     def setUp(self):
-        base = "D:/Temp/opencode" if sys.platform == "win32" else None
+        base = None
         self.directory = tempfile.TemporaryDirectory(dir=base)
         self.addCleanup(self.directory.cleanup)
         root = Path(self.directory.name)
         self.environ = {
             "DEPLOY_HOST": "stand.example.org", "DEPLOY_USER": "deploy",
             "REGISTRY_USERNAME": "ci-user", "REGISTRY_PASSWORD": "private-registry-value",
-            "DB_PASSWORD": "private-db-value",
+            "MONGO_PASSWORD": "private-db-value",
+            "MONGO_ROOT_PASSWORD": "private-root", "MONGO_KEYFILE_SECRET": "synthetic-base64-key", "INTERNAL_SERVICE_TOKEN": "synthetic-012345678901234567890123456789",
             "PATH": os.environ.get("PATH", ""),
         }
         for setting in ("DEPLOY_SSH_KEY_FILE",):
@@ -107,7 +108,7 @@ class ReleaseTests(unittest.TestCase):
             self.assertEqual(secret_file.read_text(encoding="utf-8"), release.deployment_secret_dotenv(self.environ))
             self.assertNotIn("private-db-value", env_file.read_text())
             self.assertNotIn("private-db-value", json.dumps(variables))
-            self.assertNotIn("DB_PASSWORD", kwargs["env"])
+            self.assertNotIn("MONGO_PASSWORD", kwargs["env"])
             self.assertEqual(kwargs["env"]["ANSIBLE_HOST_KEY_CHECKING"], "True")
             self.assertEqual(kwargs["env"]["ANSIBLE_NO_LOG"], "True")
             self.assertNotIn("shell", kwargs)
@@ -127,10 +128,10 @@ class ReleaseTests(unittest.TestCase):
     def test_generates_only_allowlisted_settings_with_defaults(self):
         self.environ["UNRELATED_SECRET"] = "do-not-copy"
         dotenv = release.deployment_dotenv(self.environ)
-        self.assertNotIn('DB_PASSWORD=', dotenv)
+        self.assertNotIn('MONGO_PASSWORD=', dotenv)
         self.assertNotIn('ADMIN_PASSWORD_HASH=', dotenv)
         secret_dotenv = release.deployment_secret_dotenv(self.environ)
-        self.assertIn('DB_PASSWORD="private-db-value"\n', secret_dotenv)
+        self.assertIn('MONGO_PASSWORD="private-db-value"\n', secret_dotenv)
         self.assertNotIn('ADMIN_USERNAME=', secret_dotenv)
         self.assertIn('ADMIN_USERNAME=""\n', dotenv)
         self.assertIn('ADMIN_COOKIE_SECURE="true"\n', dotenv)
@@ -139,7 +140,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertNotIn("private-registry-value", dotenv)
 
     def test_required_password_and_multiline_values_fail_without_printing_secrets(self):
-        for name, value in [("DB_PASSWORD", ""), ("DB_PASSWORD", "private-db-value\nINJECTED=value"),
+        for name, value in [("MONGO_PASSWORD", ""), ("MONGO_PASSWORD", "private-db-value\nINJECTED=value"),
                             ("ADMIN_PASSWORD_HASH", "private-value\r"), ("OLLAMA_URL", "private-value\x00")]:
             with self.subTest(name=name, value=value), patch.dict(self.environ, {name: value}):
                 output = io.StringIO()
@@ -170,11 +171,11 @@ class ReleaseTests(unittest.TestCase):
         if version.returncode:
             self.skipTest("Compose CLI is not available in this controller environment")
         env = {name: value for name, value in os.environ.items() if name not in release.DEPLOYMENT_ENV_DEFAULTS}
-        env.update(DB_PASSWORD="configuration-check-only", IMAGE_PREFIX="ghcr.io/owner/repo",
+        env.update({key: "configuration-check-only" for key in release.DEPLOYMENT_SECRET_DEFAULTS}, IMAGE_PREFIX="ghcr.io/owner/repo",
                    IMAGE_TAG="sha-" + "a" * 40, FRONTEND_PORT="8080", COMPOSE_PROFILES="")
         for host in ("0.0.0.0", "127.0.0.1", "::"):
             with self.subTest(host=host):
-                env["FRONTEND_HOST"] = host
+                env["FRONTEND_BIND_ADDRESS"] = host
                 result = subprocess.run([
                     shutil.which("docker"), "compose", "--env-file", "env/.env.example", "--env-file", "env/secret.env.example",
                     "-f", "docker/docker-compose.yml", "-f", "docker/docker-compose.release.yml",
@@ -192,8 +193,8 @@ class ReleaseTests(unittest.TestCase):
                                  capture_output=True, text=True, timeout=30)
         if version.returncode:
             self.skipTest("Compose CLI is not available in this controller environment")
-        values = dict(self.environ, DB_NAME="stand_db", DB_USER="stand_user", DB_URL="jdbc:postgresql://127.0.0.1:55432/wrong",
-                      POSTGRES_IMAGE_TAG="17.11", OLLAMA_MEMORY_LIMIT="6g")
+        values = dict(self.environ, MONGO_DATABASE="stand_db", MONGO_USER="stand_user", DB_URL="jdbc:postgresql://127.0.0.1:55432/wrong",
+                      MONGO_IMAGE_TAG="8.0", OLLAMA_MEMORY_LIMIT="6g")
         public_file = Path(self.directory.name, ".env")
         secret_file = Path(self.directory.name, "secret.env")
         public_file.write_text(release.deployment_dotenv(values))
@@ -207,13 +208,13 @@ class ReleaseTests(unittest.TestCase):
         ], cwd=release.ROOT, env=env, capture_output=True, text=True, encoding="utf-8", timeout=30)
         self.assertEqual(result.returncode, 0, result.stderr)
         services = json.loads(result.stdout)["services"]
-        self.assertEqual(services["postgres"]["environment"]["POSTGRES_DB"], "stand_db")
-        self.assertEqual(services["postgres"]["environment"]["POSTGRES_USER"], "stand_user")
-        self.assertEqual(services["backend"]["environment"]["DB_URL"], "jdbc:postgresql://postgres:5432/stand_db")
-        self.assertEqual(services["backend"]["environment"]["DB_PASSWORD"], "private-db-value")
-        self.assertEqual(services["classifier-worker"]["environment"]["PGUSER"], "stand_user")
+        self.assertEqual(services["mongo-init"]["environment"]["MONGO_DATABASE"], "stand_db")
+        self.assertEqual(services["mongo-init"]["environment"]["MONGO_USER"], "stand_user")
+        self.assertEqual(services["backend"]["environment"]["MONGO_URI"], "mongodb://mongo:27017/stand_db?replicaSet=rs0&directConnection=true")
+        self.assertEqual(services["backend"]["environment"]["MONGO_PASSWORD"], "private-db-value")
+        self.assertNotIn("MONGO_PASSWORD", services["llm"]["environment"])
         self.assertEqual(int(services["ollama"]["mem_limit"]), 6 * 1024 ** 3)
-        self.assertNotIn("DB_PASSWORD", public_file.read_text())
+        self.assertNotIn("MONGO_PASSWORD", public_file.read_text())
         self.assertNotIn("DB_URL", public_file.read_text())
 
     @unittest.skipUnless(shutil.which("docker"), "requires Compose CLI, not Docker Engine")
@@ -222,7 +223,7 @@ class ReleaseTests(unittest.TestCase):
                                  capture_output=True, text=True, timeout=30)
         if version.returncode:
             self.skipTest("Compose CLI is not available in this controller environment")
-        environ = dict(self.environ, DB_PASSWORD="  $SHELL ${EXPAND} $$ ' \" \\end\\ пароль  ",
+        environ = dict(self.environ, MONGO_PASSWORD="  $SHELL ${EXPAND} $$ ' \" \\end\\ пароль  ",
                        ADMIN_PASSWORD_HASH="pbkdf2-sha256$600000$quote's\\salt$hash")
         root = Path(self.directory.name)
         env_file = root / "generated.env"
@@ -230,7 +231,7 @@ class ReleaseTests(unittest.TestCase):
         secret_file = root / "secret.env"
         secret_file.write_text(release.deployment_secret_dotenv(environ), encoding="utf-8")
         compose = root / "compose.yml"
-        compose.write_text('services:\n  check:\n    image: busybox\n    environment:\n      DB_PASSWORD: ${DB_PASSWORD}\n      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH}\n', encoding="utf-8")
+        compose.write_text('services:\n  check:\n    image: busybox\n    environment:\n      MONGO_PASSWORD: ${MONGO_PASSWORD}\n      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH}\n', encoding="utf-8")
         process_env = {name: value for name, value in os.environ.items() if name not in release.DEPLOYMENT_ENV_DEFAULTS}
         result = subprocess.run([shutil.which("docker"), "compose", "-p", "release-env-test", "--env-file", str(env_file),
                                  "--env-file", str(secret_file),
@@ -240,7 +241,7 @@ class ReleaseTests(unittest.TestCase):
         actual = json.loads(result.stdout)["services"]["check"]["environment"]
         # Compose config escapes dollars again for its reusable output. Compare with
         # values supplied directly by the process environment, bypassing dotenv parsing.
-        process_env.update({name: environ[name] for name in ("DB_PASSWORD", "ADMIN_PASSWORD_HASH")})
+        process_env.update({name: environ[name] for name in ("MONGO_PASSWORD", "ADMIN_PASSWORD_HASH")})
         reference = subprocess.run(result.args, capture_output=True, text=True, encoding="utf-8", env=process_env, timeout=30)
         self.assertEqual(reference.returncode, 0, reference.stderr)
         expected = json.loads(reference.stdout)["services"]["check"]["environment"]

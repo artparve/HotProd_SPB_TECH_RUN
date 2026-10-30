@@ -1,3 +1,5 @@
+> Историческая детализация frontend/экспериментов. Текущие маршруты, Mongo-архитектура и запуск описаны в [AI_CONTEXT.md](AI_CONTEXT.md), [deploy.md](deploy.md) и [OpenAPI](openapi.yaml).
+
 # Отдельный тест Gemma 4 12B через Ollama
 
 ## Что предусмотрено в текущем бэкенде
@@ -10,7 +12,7 @@
 - `docker/docker-compose.yml` запускает только frontend, без Ollama и Java backend.
 - Локальная LLM есть в планируемой архитектуре корневого README. Её подключение к Java API ещё не реализовано.
 
-`backend/scripts/ollama_smoke.py` — независимый ручной smoke test. Он обращается напрямую к отдельному серверу Ollama, скачивает модель при `--pull` и выполняет текстовый inference через `/api/chat`. Java, PostgreSQL, frontend и Python-пакеты ему не нужны. Сам процесс Ollama запускается отдельно.
+`scripts/ollama_smoke.py` — независимый ручной smoke test. Он обращается напрямую к отдельному серверу Ollama, скачивает модель при `--pull` и выполняет текстовый inference через `/api/chat`. Java, PostgreSQL, frontend и Python-пакеты ему не нужны. Сам процесс Ollama запускается отдельно.
 
 ## Модель
 
@@ -33,23 +35,23 @@ ollama serve
 
 ```bash
 # Первый запуск: скачивание весов, загрузка в память и тестовый ответ.
-python3 backend/scripts/ollama_smoke.py --pull
+python3 scripts/ollama_smoke.py --pull
 
 # Повторный запуск с собственным запросом.
-python3 backend/scripts/ollama_smoke.py --prompt "Перечисли три этапа подготовки стены к покраске."
+python3 scripts/ollama_smoke.py --prompt "Перечисли три этапа подготовки стены к покраске."
 
 # Полный ответ API со счётчиками токенов и длительностями.
-python3 backend/scripts/ollama_smoke.py --json > /tmp/gemma4-response.json
+python3 scripts/ollama_smoke.py --json > /tmp/gemma4-response.json
 ```
 
-На Windows из корня репозитория: `py -3 backend/scripts/ollama_smoke.py --pull`.
+На Windows из корня репозитория: `py -3 scripts/ollama_smoke.py --pull`.
 
 Веса также можно загрузить заранее командой `ollama pull gemma4:12b`, после чего запускать скрипт без `--pull`. Скачивание требует интернета на машине с Ollama; повторный inference уже загруженной локальной модели не требует Hugging Face токена или облачного API-ключа.
 
 Для отдельно работающего сервера Ollama:
 
 ```bash
-python3 backend/scripts/ollama_smoke.py --host http://SERVER:11434 --timeout 1200
+python3 scripts/ollama_smoke.py --host http://SERVER:11434 --timeout 1200
 ```
 
 `SERVER` замените адресом доступного сервера. Настройка доступа к серверу выполняется отдельно. По умолчанию скрипт использует только `http://127.0.0.1:11434`; переменные Java backend ему не передаются.
@@ -65,7 +67,7 @@ python3 backend/scripts/ollama_smoke.py --host http://SERVER:11434 --timeout 120
 На этой машине служба `snap.ollama.listener.service` использует `/var/snap/ollama/common/models` — подтверждено конфигурацией запущенного сервера 24.10.2026. Запуск с явным отображением проверенного пути:
 
 ```bash
-python3 backend/scripts/ollama_smoke.py --pull --models-dir /var/snap/ollama/common/models
+python3 scripts/ollama_smoke.py --pull --models-dir /var/snap/ollama/common/models
 ```
 
 `--models-dir` только выводит путь, **не меняет место скачивания**. Чтобы выбрать другое хранилище, требуется настроить сам сервер (`OLLAMA_MODELS` или соответствующая настройка установленного пакета); см. [Ollama FAQ](https://docs.ollama.com/faq#where-are-models-stored).
@@ -75,7 +77,7 @@ python3 backend/scripts/ollama_smoke.py --pull --models-dir /var/snap/ollama/com
 Для сохранения прогресса в файл на Linux/macOS:
 
 ```bash
-python3 backend/scripts/ollama_smoke.py --pull 2> /tmp/gemma4-download.log
+python3 scripts/ollama_smoke.py --pull 2> /tmp/gemma4-download.log
 # В другом терминале:
 tail -f /tmp/gemma4-download.log
 ```

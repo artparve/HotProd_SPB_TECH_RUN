@@ -12,7 +12,7 @@ from repaircalc_estimator.__main__ import make_server
 from repaircalc_estimator.service import Estimator, ServiceError, http_json, validate_request
 from repaircalc_estimator.training import corrected_input, train
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[3] / "data/estimation"
 REQUEST = json.loads((ROOT / "examples/paint.json").read_text())
 PRODUCT = REQUEST["productId"]
 

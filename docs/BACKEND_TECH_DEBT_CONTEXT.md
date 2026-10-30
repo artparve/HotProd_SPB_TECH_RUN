@@ -1,3 +1,5 @@
+> Исторический срез до реализации Java + MongoDB + Python. Для текущих путей, решений и проверок используйте [AI_CONTEXT.md](AI_CONTEXT.md) и [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md). Ниже сохранён исходный аудит.
+
 # Backend: расхождения с первоначальным планом и технический долг
 
 Дата: **30.10.2026**. Исследована ветка **backend**, HEAD **d0d8ca8** (`Merge branch 'main' into backend`), созданная локально с tracking `origin/backend`. Remote не обновлялся через fetch: это срез доступной локальной ссылки, а не проверка последнего состояния GitHub.

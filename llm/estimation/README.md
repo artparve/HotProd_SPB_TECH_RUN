@@ -1,3 +1,5 @@
+> Production запускает единый `python -m repaircalc_llm`. Очередь и Mongo принадлежат Java; самостоятельные CLI ниже — offline-инструменты. Общие prompts/taxonomy/examples находятся в корневом `data/`. См. [запуск](../../docs/deploy.md).
+
 # Расход и стоимость материалов: Ollama + tool калькулятор
 
 Python 3.11+. Отдельный CLI и HTTP-сервис на `127.0.0.1:8010`.
@@ -17,16 +19,16 @@ LangChain для этого небольшого ограниченного ци
 Подробности: [CONFIG.md](../../docs/CONFIG.md). Прямые CLI-команды ниже по-прежнему
 не читают dotenv самостоятельно; передавайте настройки аргументами/env процесса.
 
-Все команды из корня репозитория. Нужны запущенные Java backend с PostgreSQL,
+Все команды из корня репозитория. Нужны запущенные Java backend с MongoDB,
 опубликованным каталогом и правилами ([настройка](../docs/TEAM_SETUP.md)) и Ollama
 с установленной моделью ([проверка](../docs/OLLAMA_SMOKE.md)). Сервис не скачивает веса
 и не запускает другие процессы автоматически. Для планов установите зависимости
 в изолированное окружение: `python3 -m venv /tmp/repaircalc-plans-venv`, затем
-`/tmp/repaircalc-plans-venv/bin/pip install -r backend/estimation/requirements.txt`.
+`/tmp/repaircalc-plans-venv/bin/pip install -r llm/estimation/requirements.txt`.
 Дальнейшие Python-команды для планов запускайте этим окружением (либо внутри образа estimator).
 
 ```bash
-export PYTHONPATH=backend/estimation
+export PYTHONPATH=llm/estimation
 python3 -m repaircalc_estimator serve
 ```
 
@@ -36,7 +38,7 @@ python3 -m repaircalc_estimator serve
 curl http://127.0.0.1:8010/health
 curl --fail-with-body http://127.0.0.1:8010/api/v1/materials/estimate \
   -H 'Content-Type: application/json' \
-  --data-binary @backend/estimation/examples/paint.json
+  --data-binary @data/estimation/examples/paint.json
 ```
 
 `GET /health` проверяет только жизнь Python-процесса; `dependenciesChecked=false`.
@@ -48,27 +50,27 @@ Ollama проверяется существующим smoke-скриптом. �
 CLI без запуска HTTP-сервера:
 
 ```bash
-PYTHONPATH=backend/estimation python3 -m repaircalc_estimator estimate \
-  --input backend/estimation/examples/paint.json --output /tmp/paint-estimate.json
+PYTHONPATH=llm/estimation python3 -m repaircalc_estimator estimate \
+  --input data/estimation/examples/paint.json --output /tmp/paint-estimate.json
 
 # Детерминированный режим: только Java, без Ollama.
-PYTHONPATH=backend/estimation python3 -m repaircalc_estimator calculate \
-  --input backend/estimation/examples/tile.json
+PYTHONPATH=llm/estimation python3 -m repaircalc_estimator calculate \
+  --input data/estimation/examples/tile.json
 
 # Общие параметры ставятся ПЕРЕД подкомандой.
-PYTHONPATH=backend/estimation python3 -m repaircalc_estimator \
+PYTHONPATH=llm/estimation python3 -m repaircalc_estimator \
   --backend http://127.0.0.1:8000 --host http://127.0.0.1:11434 \
   --model gemma4:12b --timeout 600 estimate \
-  --input backend/estimation/examples/wallpaper.json
+  --input data/estimation/examples/wallpaper.json
 ```
 
 PowerShell:
 
 ```powershell
-$env:PYTHONPATH = 'backend/estimation'
+$env:PYTHONPATH = 'llm/estimation'
 py -3 -m repaircalc_estimator serve
 # Или одиночный запрос:
-py -3 -m repaircalc_estimator estimate --input backend/estimation/examples/paint.json
+py -3 -m repaircalc_estimator estimate --input data/estimation/examples/paint.json
 ```
 
 `--timeout` задаёт socket timeout Ollama, не общий дедлайн двух обращений к модели.
@@ -103,7 +105,7 @@ Java имеет отдельный timeout 30 секунд. CLI пишет ре�
 Для воспроизводимого эксперимента без публикации порта Ollama:
 
 ```bash
-PYTHONPATH=backend/estimation python3 backend/scripts/room_plan_experiment.py \
+PYTHONPATH=llm/estimation python3 backend/scripts/room_plan_experiment.py \
   --image 'Кухня · 18,3 м².png' \
   --docker-container repaircalc-ollama-1 \
   --output-dir /tmp/room-plan-kitchen-run-1
@@ -243,16 +245,16 @@ Java-профиль расчёта. Для исходных карточек н�
 
 ```bash
 # СИНТЕТИЧЕСКИЙ пример проверяет механику; не модель, обученная на реальных заказах.
-PYTHONPATH=backend/estimation python3 -m repaircalc_estimator train \
-  --input backend/estimation/examples/synthetic-orders.json \
+PYTHONPATH=llm/estimation python3 -m repaircalc_estimator train \
+  --input data/estimation/examples/synthetic-orders.json \
   --output /tmp/repaircalc-coefficients.json
 
-PYTHONPATH=backend/estimation python3 -m repaircalc_estimator \
+PYTHONPATH=llm/estimation python3 -m repaircalc_estimator \
   --correction /tmp/repaircalc-coefficients.json calculate \
-  --input backend/estimation/examples/paint-corrected.json
+  --input data/estimation/examples/paint-corrected.json
 
 # Для HTTP: тот же артефакт и useCorrection=true в запросе.
-PYTHONPATH=backend/estimation python3 -m repaircalc_estimator \
+PYTHONPATH=llm/estimation python3 -m repaircalc_estimator \
   --correction /tmp/repaircalc-coefficients.json serve
 ```
 
@@ -275,7 +277,7 @@ PYTHONPATH=backend/estimation python3 -m repaircalc_estimator \
 ## Проверки
 
 ```bash
-PYTHONPATH=backend/estimation python3 -m unittest discover -s backend/estimation/tests -v
+PYTHONPATH=llm/estimation python3 -m unittest discover -s llm/estimation/tests -v
 ```
 
 Тесты формул уже существуют в Java; Python проверяет контракт, tool calling, ошибки,

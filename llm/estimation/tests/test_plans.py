@@ -12,7 +12,7 @@ from repaircalc_estimator.__main__ import make_server
 from repaircalc_estimator.plans import PlanExtractor, SCHEMA, decode_request, prepare_image, validate_draft
 from repaircalc_estimator.service import Estimator, ServiceError, http_json
 
-EXAMPLES = Path(__file__).resolve().parents[1] / "examples/plans"
+EXAMPLES = Path(__file__).resolve().parent / "fixtures/plans"
 
 
 def example(name="complete"):

@@ -8,7 +8,7 @@ on:
         type: environment
         required: true
       commit_sha:
-        description: Full lowercase SHA of a successful master CI run
+        description: Full lowercase SHA of a successful main CI run
         type: string
         required: true
 
@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment:
@@ -39,27 +39,106 @@ jobs:
       DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
       DEPLOY_FRONTEND_HOST: ${{ vars.DEPLOY_FRONTEND_HOST || '0.0.0.0' }}
       DEPLOY_FRONTEND_PORT: ${{ vars.DEPLOY_FRONTEND_PORT || '8080' }}
-      DB_NAME: ${{ vars.DB_NAME || 'repaircalc' }}
-      DB_USER: ${{ vars.DB_USER || 'repaircalc' }}
-      POSTGRES_IMAGE_TAG: ${{ vars.POSTGRES_IMAGE_TAG || '17.11' }}
-      ADMIN_USERNAME: ${{ vars.ADMIN_USERNAME }}
+      LOG_MAX_SIZE: ${{ vars.LOG_MAX_SIZE || '10m' }}
+      LOG_MAX_FILES: ${{ vars.LOG_MAX_FILES || '3' }}
+      IMAGE_TAG: ${{ vars.IMAGE_TAG || 'local' }}
+      MAVEN_IMAGE: ${{ vars.MAVEN_IMAGE || 'maven:3.9-eclipse-temurin-21' }}
+      MAVEN_CENTRAL_URL: ${{ vars.MAVEN_CENTRAL_URL || 'https://repo.maven.apache.org/maven2' }}
+      JAVA_IMAGE: ${{ vars.JAVA_IMAGE || 'eclipse-temurin:21-jre-jammy' }}
+      BACKEND_ADDRESS: ${{ vars.BACKEND_ADDRESS || '0.0.0.0' }}
+      BACKEND_PORT: ${{ vars.BACKEND_PORT || '8000' }}
+      MONGO_PORT: ${{ vars.MONGO_PORT || '27017' }}
+      MONGO_DATABASE: ${{ vars.MONGO_DATABASE || 'repaircalc' }}
+      MONGO_REPLICA_SET: ${{ vars.MONGO_REPLICA_SET || 'rs0' }}
+      MONGO_USER: ${{ vars.MONGO_USER || 'repaircalc' }}
+      MONGO_SERVER_SELECTION_TIMEOUT_MS: ${{ vars.MONGO_SERVER_SELECTION_TIMEOUT_MS || '3000' }}
+      MONGO_CONNECT_TIMEOUT_MS: ${{ vars.MONGO_CONNECT_TIMEOUT_MS || '3000' }}
+      MONGO_READ_TIMEOUT_MS: ${{ vars.MONGO_READ_TIMEOUT_MS || '10000' }}
+      MONGO_TRANSACTION_MAX_ATTEMPTS: ${{ vars.MONGO_TRANSACTION_MAX_ATTEMPTS || '3' }}
+      DATA_DIR: ${{ vars.DATA_DIR || 'data' }}
+      CATALOG_FILE: ${{ vars.CATALOG_FILE || '' }}
+      CATALOG_MAPPINGS_FILE: ${{ vars.CATALOG_MAPPINGS_FILE || '' }}
+      RULES_FILE: ${{ vars.RULES_FILE || '' }}
+      CLASSIFICATION_TAXONOMY: ${{ vars.CLASSIFICATION_TAXONOMY || '' }}
+      CLASSIFICATION_PROMPT: ${{ vars.CLASSIFICATION_PROMPT || '' }}
+      PLAN_DATA_DIR: ${{ vars.PLAN_DATA_DIR || '' }}
+      INSPIRATIONS_DIR: ${{ vars.INSPIRATIONS_DIR || '' }}
+      INSPIRATIONS_MANIFEST: ${{ vars.INSPIRATIONS_MANIFEST || '' }}
+      ADMIN_USERNAME: ${{ vars.ADMIN_USERNAME || '' }}
       ADMIN_COOKIE_SECURE: ${{ vars.ADMIN_COOKIE_SECURE || 'true' }}
       ADMIN_SESSION_SECONDS: ${{ vars.ADMIN_SESSION_SECONDS || '1800' }}
+      ADMIN_BODY_MAX_BYTES: ${{ vars.ADMIN_BODY_MAX_BYTES || '262144' }}
+      LLM_PORT: ${{ vars.LLM_PORT || '8010' }}
+      LLM_CONNECT_TIMEOUT_SECONDS: ${{ vars.LLM_CONNECT_TIMEOUT_SECONDS || '3' }}
+      LLM_REQUEST_TIMEOUT_SECONDS: ${{ vars.LLM_REQUEST_TIMEOUT_SECONDS || '1260' }}
+      LLM_RESPONSE_MAX_BYTES: ${{ vars.LLM_RESPONSE_MAX_BYTES || '1048576' }}
+      CLASSIFICATION_ENABLED: ${{ vars.CLASSIFICATION_ENABLED || 'true' }}
+      CLASSIFICATION_MAX_ATTEMPTS: ${{ vars.CLASSIFICATION_MAX_ATTEMPTS || '3' }}
+      CLASSIFICATION_LEASE_MS: ${{ vars.CLASSIFICATION_LEASE_MS || '90000' }}
+      CLASSIFICATION_HEARTBEAT_MS: ${{ vars.CLASSIFICATION_HEARTBEAT_MS || '20000' }}
+      CLASSIFICATION_RETRY_MS: ${{ vars.CLASSIFICATION_RETRY_MS || '15000' }}
+      CLASSIFICATION_POLL_MS: ${{ vars.CLASSIFICATION_POLL_MS || '2000' }}
+      IMAGE_MAX_BYTES: ${{ vars.IMAGE_MAX_BYTES || '8388608' }}
+      IMAGE_MAX_PIXELS: ${{ vars.IMAGE_MAX_PIXELS || '12000000' }}
+      INSPIRATION_THUMBNAIL_SIZE: ${{ vars.INSPIRATION_THUMBNAIL_SIZE || '480' }}
+      INSPIRATION_PAGE_LIMIT: ${{ vars.INSPIRATION_PAGE_LIMIT || '24' }}
+      JAVA_TOOL_OPTIONS: ${{ vars.JAVA_TOOL_OPTIONS || '-XX:MaxRAMPercentage=75' }}
+      BACKEND_CPU_LIMIT: ${{ vars.BACKEND_CPU_LIMIT || '1.0' }}
+      BACKEND_MEMORY_LIMIT: ${{ vars.BACKEND_MEMORY_LIMIT || '768m' }}
+      BACKEND_TMP_LIMIT: ${{ vars.BACKEND_TMP_LIMIT || '128m' }}
+      MONGO_IMAGE_TAG: ${{ vars.MONGO_IMAGE_TAG || '8.0' }}
+      MONGO_ROOT_USER: ${{ vars.MONGO_ROOT_USER || 'root' }}
+      MONGO_CPU_LIMIT: ${{ vars.MONGO_CPU_LIMIT || '1.0' }}
+      MONGO_MEMORY_LIMIT: ${{ vars.MONGO_MEMORY_LIMIT || '1g' }}
+      HEALTH_INTERVAL: ${{ vars.HEALTH_INTERVAL || '10s' }}
+      HEALTH_TIMEOUT: ${{ vars.HEALTH_TIMEOUT || '5s' }}
+      HEALTH_RETRIES: ${{ vars.HEALTH_RETRIES || '12' }}
+      MONGO_INIT_TIMEOUT_MS: ${{ vars.MONGO_INIT_TIMEOUT_MS || '60000' }}
+      BACKEND_START_PERIOD: ${{ vars.BACKEND_START_PERIOD || '60s' }}
+      PYTHON_IMAGE: ${{ vars.PYTHON_IMAGE || 'python:3.12-slim' }}
+      LLM_ADDRESS: ${{ vars.LLM_ADDRESS || '0.0.0.0' }}
       OLLAMA_URL: ${{ vars.OLLAMA_URL || 'http://ollama:11434' }}
       OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL || 'gemma4:12b' }}
+      OLLAMA_TIMEOUT_SECONDS: ${{ vars.OLLAMA_TIMEOUT_SECONDS || '600' }}
+      OLLAMA_CONTEXT_LENGTH: ${{ vars.OLLAMA_CONTEXT_LENGTH || '16384' }}
+      OLLAMA_NUM_PREDICT: ${{ vars.OLLAMA_NUM_PREDICT || '4096' }}
       OLLAMA_NUM_THREADS: ${{ vars.OLLAMA_NUM_THREADS || '8' }}
+      OLLAMA_RESPONSE_MAX_BYTES: ${{ vars.OLLAMA_RESPONSE_MAX_BYTES || '2097152' }}
+      LLM_CONCURRENCY: ${{ vars.LLM_CONCURRENCY || '1' }}
+      LLM_BODY_MAX_BYTES: ${{ vars.LLM_BODY_MAX_BYTES || '12582912' }}
+      LLM_SOCKET_TIMEOUT_SECONDS: ${{ vars.LLM_SOCKET_TIMEOUT_SECONDS || '30' }}
+      LLM_CPU_LIMIT: ${{ vars.LLM_CPU_LIMIT || '1.0' }}
+      LLM_MEMORY_LIMIT: ${{ vars.LLM_MEMORY_LIMIT || '512m' }}
+      NODE_IMAGE: ${{ vars.NODE_IMAGE || 'node:22-alpine' }}
+      NGINX_IMAGE: ${{ vars.NGINX_IMAGE || 'nginx:1.28-alpine' }}
+      FRONTEND_PORT: ${{ vars.FRONTEND_PORT || '8080' }}
+      API_CONNECT_TIMEOUT: ${{ vars.API_CONNECT_TIMEOUT || '3s' }}
+      API_READ_TIMEOUT: ${{ vars.API_READ_TIMEOUT || '1265s' }}
+      API_MAX_BODY_SIZE: ${{ vars.API_MAX_BODY_SIZE || '12m' }}
+      DNS_RESOLVER: ${{ vars.DNS_RESOLVER || '127.0.0.11' }}
+      FRONTEND_BIND_ADDRESS: ${{ vars.FRONTEND_BIND_ADDRESS || '127.0.0.1' }}
+      FRONTEND_PUBLIC_PORT: ${{ vars.FRONTEND_PUBLIC_PORT || '8080' }}
+      FRONTEND_CPU_LIMIT: ${{ vars.FRONTEND_CPU_LIMIT || '0.25' }}
+      FRONTEND_MEMORY_LIMIT: ${{ vars.FRONTEND_MEMORY_LIMIT || '128m' }}
+      FRONTEND_TMP_LIMIT: ${{ vars.FRONTEND_TMP_LIMIT || '32m' }}
       OLLAMA_IMAGE_TAG: ${{ vars.OLLAMA_IMAGE_TAG || '0.40.13' }}
       OLLAMA_CPU_LIMIT: ${{ vars.OLLAMA_CPU_LIMIT || '8.0' }}
       OLLAMA_MEMORY_LIMIT: ${{ vars.OLLAMA_MEMORY_LIMIT || '12g' }}
+      OLLAMA_MAX_LOADED_MODELS: ${{ vars.OLLAMA_MAX_LOADED_MODELS || '1' }}
+      OLLAMA_KEEP_ALIVE: ${{ vars.OLLAMA_KEEP_ALIVE || '60s' }}
+      OLLAMA_CACHE_RAM: ${{ vars.OLLAMA_CACHE_RAM || '0' }}
+      OLLAMA_CTX_CHECKPOINTS: ${{ vars.OLLAMA_CTX_CHECKPOINTS || '0' }}
+      DEPLOY_LLM_ENABLED: ${{ vars.DEPLOY_LLM_ENABLED || 'false' }}
+      DEPLOY_LOCAL_OLLAMA: ${{ vars.DEPLOY_LOCAL_OLLAMA || 'true' }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      - name: Allow only a fully successful master CI release
+          python-version: "3.12"
+      - name: Allow only a fully successful main CI release
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -m scripts.github_actions check-release
@@ -67,11 +146,14 @@ jobs:
         with:
           ref: ${{ inputs.commit_sha }}
           persist-credentials: false
-      - run: python -m pip install -r ansible/requirements.txt
+      - run: python -m pip install -r docker/ansible/requirements.txt
       - name: Deploy the selected release
         env:
           SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          MONGO_ROOT_PASSWORD: ${{ secrets.MONGO_ROOT_PASSWORD }}
+          MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+          MONGO_KEYFILE_SECRET: ${{ secrets.MONGO_KEYFILE_SECRET }}
+          INTERNAL_SERVICE_TOKEN: ${{ secrets.INTERNAL_SERVICE_TOKEN }}
           ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
           REGISTRY_USERNAME: ${{ github.actor }}
           REGISTRY_PASSWORD: ${{ github.token }}

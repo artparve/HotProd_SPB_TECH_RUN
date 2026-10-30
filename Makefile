@@ -32,6 +32,8 @@ help:
 init: init-config
 	"$(MAKE)" install
 
+config-init: init-config
+
 init-config: env/.env env/secret.env docker/docker-compose.override.yml
 
 # File rules avoid requiring Node on a Docker-only host once configs exist.

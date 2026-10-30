@@ -95,6 +95,7 @@ class Inference:
     def analyze(self, body):
         import base64
         from jsonschema import Draft202012Validator
+        from jsonschema.exceptions import ValidationError
         from repaircalc_estimator.plans import decode_request, prepare_image
         image, _ = prepare_image(decode_request(body))
         schema = json.loads((DATA / "inspirations" / "analysis.schema.json").read_text(encoding="utf-8"))
@@ -112,7 +113,7 @@ class Inference:
                 raise ValueError()
             result = strict_json(response["message"]["content"])
             Draft202012Validator(schema).validate(result)
-        except (KeyError, TypeError, ValueError) as error:
+        except (KeyError, TypeError, ValueError, ValidationError) as error:
             raise ServiceError("invalid_model_response", "Invalid image observations", 502) from error
         return result
 

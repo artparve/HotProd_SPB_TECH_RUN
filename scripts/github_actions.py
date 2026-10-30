@@ -36,7 +36,7 @@ def check_release(environ):
     repo = repository(environ)
     token = release.required(environ, "GH_TOKEN")
     url = (f"https://api.github.com/repos/{repo}/actions/workflows/ci.yml/runs"
-           f"?head_sha={sha}&event=push&branch=master&status=success&per_page=100")
+           f"?head_sha={sha}&event=push&branch=main&status=success&per_page=100")
     request = Request(url, headers={
         "Authorization": "Bearer " + token,
         "Accept": "application/vnd.github+json",
@@ -45,10 +45,10 @@ def check_release(environ):
     with urlopen(request, timeout=30) as response:
         runs = json.load(response)["workflow_runs"]
     if not any(run.get("head_sha") == sha and run.get("conclusion") == "success"
-               and run.get("head_branch") == "master" and run.get("event") == "push"
+               and run.get("head_branch") == "main" and run.get("event") == "push"
                for run in runs):
-        raise ValueError("No successful master CI run found for this SHA; wait for all images to be published")
-    print("Successful master CI release verified.")
+        raise ValueError("No successful main CI run found for this SHA; wait for all images to be published")
+    print("Successful main CI release verified.")
     return 0
 
 
@@ -85,7 +85,7 @@ def validate_compose(environ):
         public_path = Path(directory, ".env")
         copyfile(ROOT / "env/.env.example", public_path)
         path = Path(directory, "secret.env")
-        path.write_text("DB_PASSWORD=ci-validation-only\n", encoding="utf-8")
+        path.write_text(''.join(f'{key}=ci-validation-only-01234567890123456789\n' for key in release.DEPLOYMENT_SECRET_DEFAULTS if key != 'ADMIN_PASSWORD_HASH'), encoding='utf-8')
         env = {name: value for name, value in environ.items() if name not in release.DEPLOYMENT_ENV_DEFAULTS}
         env.update(IMAGE_PREFIX="ghcr.io/repaircalc/ci", IMAGE_TAG="sha-" + "0" * 40, COMPOSE_PROFILES="")
         return subprocess.run([

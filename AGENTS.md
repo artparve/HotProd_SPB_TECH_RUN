@@ -18,13 +18,13 @@
 - Новый независимый запрос начинай в новом чате; при передаче работы оставляй
   кратко: цель, изменённые пути, проверки, оставшиеся шаги. Не сбрасывай активную задачу.
 
-Карта: `frontend/src/` — Vue/TypeScript; `backend/src/` — Java/Spring и SQL-миграции;
-`backend/data/` — учебные каталог/правила; `backend/estimation/` — Python estimator;
-`backend/classification/` — классификатор, taxonomy и prompt; `docs/openapi.yaml` — API;
+Карта: `frontend/src/` — Vue/TypeScript; `backend/src/` — Java/Spring и MongoDB;
+`data/` — учебные каталог/правила; `llm/estimation/` — Python estimator;
+`llm/classification/` — классификатор; taxonomy и prompt в `data/classification/`; `docs/openapi.yaml` — API;
 `docker/` и `docs/deploy.md` — запуск; `reports/` — исторические свидетельства по запросу.
 Java определяет формулы, округление и стоимость; текст LLM не заменяет расчёт.
 
 Проверки: frontend — `make check`; Java — `cd backend && ./mvnw test`
 (интеграционные — `./mvnw verify`, нужен Docker); estimator —
-`PYTHONPATH=backend/estimation python3 -m unittest discover -s backend/estimation/tests`.
+`PYTHONPATH=llm/estimation python3 -m unittest discover -s llm/estimation/tests`.
 Подробнее о контексте и ограничениях: `docs/AI_CONTEXT.md` (читай по необходимости).

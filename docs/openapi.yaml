@@ -2,46 +2,44 @@ openapi: 3.0.3
 info:
   title: RepairCalc Frontend API
   version: 1.0.0
-  description: |
-    Контракт Java API каталога/расчёта товара и отдельного Python-сервиса materials.
-    Общая смета и рекомендации пока запланированы.
-    Внешний Bagisto API каталога не совместим с этим контрактом без нормализации.
-    Витрина ограничена товарами для виджета. Административные сессии, CRUD черновиков, очередь классификации, проверка меток и публикация с совместимыми правилами реализованы; массовый импорт пока запланирован.
-    Денежные значения передаются десятичными строками в RUB.
-    Нельзя считать неизвестные фасовку, расход или совместимость подтверждёнными.
-    Административный CRUD защищён серверной сессией и CSRF; см. admin-catalog-api.json.
-    RoomInspirations — предлагаемый контракт ленты интерьеров и распознавания материалов;
-    реализован только frontend с демонстрационными фикстурами, backend ещё не реализован.
+  description: Java — публичный API, MongoDB — версионированные данные, Python — внутренний сервис LLM. Денежные
+    суммы передаются десятичными строками RUB. Подборка Pinterest импортируется из локального manifest; пустая лента
+    допустима. При недоступности зависимостей чтение возвращает типизированные пустые результаты с признаком деградации;
+    расчёт и запись возвращают явные ошибки. Учебные данные не являются коммерческим предложением.
 servers:
-  - url: /api/v1
-    description: Same-origin API через Vite или nginx proxy
+- url: /api/v1
+  description: Same-origin API через Vite или nginx proxy
 tags:
-  - name: Admin
-  - name: Catalog
-  - name: Estimates
-  - name: Recommendations
-  - name: RoomInspirations
+- name: Admin
+- name: Catalog
+- name: Estimates
+- name: Recommendations
+- name: RoomInspirations
 paths:
   /room-inspirations:
     get:
       operationId: listRoomInspirations
-      tags: [RoomInspirations]
+      tags:
+      - RoomInspirations
       summary: Получить ленту интерьеров для карточки комнаты
-      description: |
-        Предлагаемый endpoint, пока не реализован на backend. Стабильная cursor-пагинация,
-        до 24 элементов за страницу. Пустой items допустим; nextCursor=null означает конец.
-        URL изображений same-origin (например /api/v1/room-inspirations/{id}/image),
-        доступны через существующий proxy и CSP без запросов сторонним хостам.
-        Backend отвечает за происхождение, права и безопасность изображений.
+      description: Локальная подготовленная подборка с устойчивой cursor-пагинацией по ID. Пустой items допустим.
+        При недоступности Mongo status=unavailable и warnings объясняют пустой результат.
       parameters:
-        - name: cursor
-          in: query
-          required: false
-          description: Непрозрачный nextCursor предыдущей страницы; не номер страницы
-          schema:
-            type: string
-            minLength: 1
-            maxLength: 512
+      - name: cursor
+        in: query
+        required: false
+        description: Непрозрачный nextCursor предыдущей страницы; не номер страницы
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 24
+          default: 24
       responses:
         '200':
           description: Страница ленты
@@ -49,51 +47,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RoomInspirationFeed'
-        '400':
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        default:
+          $ref: '#/components/responses/Error'
+        '422':
           description: Недействительный или истёкший cursor; тело ApiError
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiError'
-        '503':
-          $ref: '#/components/responses/Unavailable'
-        default:
-          $ref: '#/components/responses/Error'
   /room-inspirations/{id}/analyze:
     post:
       operationId: analyzeRoomInspiration
-      tags: [RoomInspirations]
+      tags:
+      - RoomInspirations
       summary: Выделить материалы интерьера и подготовить ввод калькулятора
-      description: |
-        Предлагаемый endpoint, пока не реализован на backend. Backend получает ID изображения
-        из своей ленты (не произвольный URL/base64) и проект ровно с одной комнатой из формы
-        «Подбор для комнаты» или активной комнатой формы «Общий расчёт». По изображению подбирает
-        поддерживаемые товары из своего нормализованного каталога и задаёт works этой комнаты.
-        Все остальные параметры, ID, геометрия и условия должны остаться неизменными:
-        размеры по фотографии не определяются. Файл плана в этот запрос не входит.
-        План отправляется отдельно в /plans/extract как imageBase64. Только после явного
-        подтверждения «Применить параметры» размеры переносятся в поля комнаты.
-        Источник истины — текущие значения полей, включая ручные правки после применения.
-        Просто загруженный/распознанный, но не применённый план на подбор не влияет.
-        selections использует тот же формат roomId:productKind -> productId, что /estimate.
-        Выбранные товары должны соответствовать работам и ограничениям комнаты.
-        Frontend проверяет товары через /products, вызывает обычный /estimate с project и
-        selections и открывает /calculator на шаге выбора материалов для отдельной комнаты.
-        В общем расчёте frontend сохраняет остальные комнаты и их selections, объединяет
-        подбор активной комнаты и вызывает /estimate для полного проекта без перехода.
-        Модель не задаёт цены,
-        количество упаковок или суммы. Неподдерживаемые мебель/декор, неоднозначности и
-        добавленные сопутствующие материалы должны быть объяснены в warnings.
-        Синхронный ответ ожидается до 120 секунд; занятый/неготовый сервис возвращает 503.
-        Пустой подбор возвращает 422, а не успешный ответ или скрытую замену товара.
+      description: Java загружает изображение только по ID из импортированной подборки, Python извлекает тип отделки,
+        Java сопоставляет его с совместимым каталогом. Геометрия и условия комнаты сохраняются. status=ok предлагает
+        selections; no_matches/unavailable возвращает selections={} и исходный project. Размеры, цены и нормы не
+        определяются моделью.
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            minLength: 1
-            maxLength: 128
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
       requestBody:
         required: true
         content:
@@ -124,30 +105,39 @@ paths:
   /plans/extract:
     post:
       operationId: extractRoomPlan
-      tags: [Estimates]
+      tags:
+      - Estimates
       summary: Извлечь черновик параметров одной комнаты из изображения через Ollama
-      description: |
-        Python estimator. JSON с imageBase64, до 12 MiB тела, до 8 MiB файла,
+      description: 'Python estimator. JSON с imageBase64, до 12 MiB тела, до 8 MiB файла,
+
         до 12 млн пикселей; PNG/JPEG/WebP проверяются по содержимому.
+
         Один вызов Gemma (socket timeout по умолчанию 600 с). Общая блокировка
+
         с materials/estimate; занятый сервис возвращает 503 model_busy.
+
         Результат требует подтверждения. Координаты относительно изображения после
+
         EXIF-ориентации. Размеры нормализованы в метры, неизвестное остаётся null.
+
         dimensionsMetres.length/width=null для неподдерживаемой формы/нескольких комнат.
+
         Площадь, периметр и нулевая площадь проёмов автоматически не назначаются.
+
+        '
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: './room-plan-api.json#/components/schemas/PlanExtractRequest'
+              $ref: ./room-plan-api.json#/components/schemas/PlanExtractRequest
       responses:
         '200':
           description: Черновик модели, единицы, координаты и сведения о воспроизводимости
           content:
             application/json:
               schema:
-                $ref: './room-plan-api.json#/components/schemas/PlanExtractResult'
+                $ref: ./room-plan-api.json#/components/schemas/PlanExtractResult
         '400':
           description: Некорректный JSON или Content-Length
         '413':
@@ -163,31 +153,32 @@ paths:
         default:
           $ref: '#/components/responses/Error'
   /admin/session:
-    $ref: './admin-catalog-api.json#/paths/~1session'
+    $ref: ./admin-catalog-api.json#/paths/~1session
   /admin/login:
-    $ref: './admin-catalog-api.json#/paths/~1login'
+    $ref: ./admin-catalog-api.json#/paths/~1login
   /admin/logout:
-    $ref: './admin-catalog-api.json#/paths/~1logout'
+    $ref: ./admin-catalog-api.json#/paths/~1logout
   /admin/products:
-    $ref: './admin-catalog-api.json#/paths/~1products'
+    $ref: ./admin-catalog-api.json#/paths/~1products
   /admin/products/{id}:
-    $ref: './admin-catalog-api.json#/paths/~1products~1{id}'
+    $ref: ./admin-catalog-api.json#/paths/~1products~1{id}
   /admin/products/{id}/history:
-    $ref: './admin-catalog-api.json#/paths/~1products~1{id}~1history'
+    $ref: ./admin-catalog-api.json#/paths/~1products~1{id}~1history
   /admin/products/{id}/classifications:
-    $ref: './admin-catalog-api.json#/paths/~1products~1{id}~1classifications'
+    $ref: ./admin-catalog-api.json#/paths/~1products~1{id}~1classifications
   /admin/products/{id}/reviews:
-    $ref: './admin-catalog-api.json#/paths/~1products~1{id}~1reviews'
+    $ref: ./admin-catalog-api.json#/paths/~1products~1{id}~1reviews
   /admin/products/{id}/readiness:
-    $ref: './admin-catalog-api.json#/paths/~1products~1{id}~1readiness'
+    $ref: ./admin-catalog-api.json#/paths/~1products~1{id}~1readiness
   /admin/products/{id}/publish:
-    $ref: './admin-catalog-api.json#/paths/~1products~1{id}~1publish'
+    $ref: ./admin-catalog-api.json#/paths/~1products~1{id}~1publish
   /admin/review-options:
-    $ref: './admin-catalog-api.json#/paths/~1review-options'
+    $ref: ./admin-catalog-api.json#/paths/~1review-options
   /products:
     get:
       operationId: listProducts
-      tags: [Catalog]
+      tags:
+      - Catalog
       summary: Получить нормализованную витрину товаров для виджета
       description: Не сырой каталог и не все SKU магазина. Пустой список допустим.
       responses:
@@ -199,6 +190,11 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Product'
+          headers:
+            X-RepairCalc-Degraded:
+              description: catalog_unavailable при недоступности каталога; тело остаётся [].
+              schema:
+                type: string
         '503':
           $ref: '#/components/responses/Unavailable'
         default:
@@ -206,12 +202,11 @@ paths:
   /estimate:
     post:
       operationId: createEstimate
-      tags: [Estimates]
+      tags:
+      - Estimates
       summary: Рассчитать материалы и ориентировочные работы по проекту
-      description: |
-        Backend повторно проверяет геометрию, выбранные товары, цену и совместимость.
-        selections содержит ключи roomId:productKind и значения productId.
-        Неподходящие или устаревшие выбранные товары нельзя молча заменять.
+      description: Реализовано Java на одной согласованной паре каталога и правил. Все данные учебные. Неизвестные,
+        несовместимые и неиспользованные selections возвращают 409; отсутствие обязательных данных — 422.
       requestBody:
         required: true
         content:
@@ -223,21 +218,23 @@ paths:
                 object: apartment
                 renovation: capital
                 rooms:
-                  - id: room-1
-                    name: Санузел
-                    type: bathroom
-                    length: 3
-                    width: 2
-                    height: 2.7
-                    openings: 2
-                    humidity: high
-                    load: normal
-                    heated: true
-                    works: [floor, paint]
-                    reserve: 10
-                    layers: 2
-                    sockets: 2
-                    cableLength: 12
+                - id: room-1
+                  name: Санузел
+                  type: bathroom
+                  length: 3
+                  width: 2
+                  height: 2.7
+                  openings: 2
+                  humidity: high
+                  load: normal
+                  heated: true
+                  works:
+                  - floor
+                  - paint
+                  reserve: 10
+                  layers: 2
+                  sockets: 2
+                  cableLength: 12
               selections: {}
       responses:
         '200':
@@ -253,7 +250,8 @@ paths:
   /recommendations:
     post:
       operationId: recommendProducts
-      tags: [Recommendations]
+      tags:
+      - Recommendations
       summary: Подобрать товары по условиям комнаты с объяснениями
       requestBody:
         required: true
@@ -274,29 +272,42 @@ paths:
           $ref: '#/components/responses/Unavailable'
         default:
           $ref: '#/components/responses/Error'
+      description: Реализовано Java на одной согласованной паре каталога и правил. Все данные учебные. При недоступности
+        Mongo возвращаются пустые products и предупреждение.
   /product/{id}/calc:
     post:
       operationId: calculateProduct
-      tags: [Estimates]
+      tags:
+      - Estimates
       summary: Рассчитать потребность и целые упаковки одного товара
-      description: |
-        Возвращает Estimate с одной строкой и labor = "0.00".
+      description: 'Возвращает Estimate с одной строкой и labor = "0.00".
+
         Для покрытий/красок/смесей area означает площадь обрабатываемой поверхности.
+
         Обои используют perimeter и height, розетки/кабель — quantity в единице товара.
+
         Применяемые нормы, подрезка, запас и слои определяются версионированным профилем правил с источником.
+
         Все поля обязательны и проверяются по своим ограничениям; поля вне выбранной стратегии не участвуют в арифметике.
+
         Текущий подготовленный набор использует явно помеченные учебные данные, не нормы производителя.
+
         Для клея поддержан только тестовый профиль 4 кг/м² для условно ровного основания;
+
         толщина слоя, технология и пригодность материала для объекта этим запросом не проверяются.
+
         Для обоев приняты подрезка 0,10 м, подгон длины по известному раппорту и запас до округления полотен;
+
         проёмы не вычитаются. Неизвестный раппорт не считается нулевым.
+
+        '
       parameters:
-        - name: id
-          in: path
-          required: true
-          description: Нормализованный ID товара, не произвольно выбранный JSON/XML ID
-          schema:
-            type: string
+      - name: id
+        in: path
+        required: true
+        description: Нормализованный ID товара, не произвольно выбранный JSON/XML ID
+        schema:
+          type: string
       requestBody:
         required: true
         content:
@@ -334,14 +345,12 @@ paths:
   /materials/estimate:
     post:
       operationId: estimateMaterialWithAssistant
-      tags: [Estimates]
+      tags:
+      - Estimates
       summary: Расчёт товара через Ollama tool calling и пояснение модели
-      description: |
-        Отдельный Python-сервис вызывает Ollama, исполняет calculate_material_cost с пустыми
-        аргументами через Java API и запрашивает пояснение. Суммы берутся только из estimate.
-        Текст explanation не проверен на достоверность. При сбое пояснения рассчитанная смета
-        сохраняется, explanationStatus=unavailable. Отсутствие tool call не заменяется демо.
-        Два обращения к модели могут занять несколько минут (socket timeout 600 с каждое).
+      description: Публичный маршрут Java. Сначала выполняется достоверный расчёт Java; при estimate Python получает
+        только этот снимок для объяснения. Отсутствие модели не меняет расчёт. useCorrection=true возвращает 422,
+        пока не настроен подтверждённый коэффициент.
       requestBody:
         required: true
         content:
@@ -370,7 +379,8 @@ paths:
   /materials/calculate:
     post:
       operationId: calculateMaterialWithoutAssistant
-      tags: [Estimates]
+      tags:
+      - Estimates
       summary: Детерминированный расчёт через Python-сервис без вызова Ollama
       requestBody:
         required: true
@@ -387,16 +397,85 @@ paths:
                 $ref: '#/components/schemas/MaterialCalculation'
         default:
           $ref: '#/components/responses/Error'
+      description: Публичный маршрут Java. Сначала выполняется достоверный расчёт Java; при estimate Python получает
+        только этот снимок для объяснения. Отсутствие модели не меняет расчёт. useCorrection=true возвращает 422,
+        пока не настроен подтверждённый коэффициент.
+  /room-inspirations/{id}/image:
+    get:
+      operationId: getRoomInspirationImage
+      tags:
+      - RoomInspirations
+      summary: Получить подготовленное изображение
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+      responses:
+        '200':
+          description: Проверенный локальный файл
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+  /room-inspirations/{id}/thumbnail:
+    get:
+      operationId: getRoomInspirationThumbnail
+      tags:
+      - RoomInspirations
+      summary: Получить PNG-превью
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+      responses:
+        '200':
+          description: Проверенный локальный файл
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/Error'
+        '503':
+          $ref: '#/components/responses/Unavailable'
 components:
   securitySchemes:
     AdminCookie:
-      $ref: './admin-catalog-api.json#/components/securitySchemes/AdminCookie'
+      $ref: ./admin-catalog-api.json#/components/securitySchemes/AdminCookie
     AdminCsrf:
-      $ref: './admin-catalog-api.json#/components/securitySchemes/AdminCsrf'
+      $ref: ./admin-catalog-api.json#/components/securitySchemes/AdminCsrf
   schemas:
     RoomInspiration:
       type: object
-      required: [id, title, description, thumbnailUrl, imageUrl, alt]
+      required:
+      - id
+      - title
+      - description
+      - thumbnailUrl
+      - imageUrl
+      - alt
       properties:
         id:
           type: string
@@ -420,15 +499,22 @@ components:
           minLength: 1
           maxLength: 300
           example: Гостиная с зелёным диваном и деревянным полом
+        sourceUrl:
+          type: string
+          format: uri
+          pattern: ^https://
+          description: Ссылка на исходный Pinterest pin.
     InspirationImageUrl:
       type: string
       maxLength: 2048
-      pattern: '^/(?!/)[^\s\\#]*$'
+      pattern: ^/(?!/)[^\s\\#]*$
       description: Абсолютный путь на текущем origin; внешние URL и обратные слеши запрещены
       example: /api/v1/room-inspirations/living-warm-01/image
     RoomInspirationFeed:
       type: object
-      required: [items, nextCursor]
+      required:
+      - items
+      - nextCursor
       properties:
         items:
           type: array
@@ -440,31 +526,45 @@ components:
           nullable: true
           minLength: 1
           maxLength: 512
+        status:
+          type: string
+          enum:
+          - ok
+          - unavailable
+          default: ok
+        warnings:
+          type: array
+          items:
+            type: string
+          default: []
     RoomInspirationRequest:
       type: object
-      required: [project]
+      required:
+      - project
       properties:
         project:
           $ref: '#/components/schemas/InspirationProject'
     InspirationProject:
       description: Контекст ровно одной комнаты — отдельной или активной в общем расчёте
       allOf:
-        - $ref: '#/components/schemas/Project'
-        - type: object
-          properties:
-            rooms:
-              type: array
-              minItems: 1
-              maxItems: 1
-              items:
-                $ref: '#/components/schemas/Room'
+      - $ref: '#/components/schemas/Project'
+      - type: object
+        properties:
+          rooms:
+            type: array
+            minItems: 1
+            maxItems: 1
+            items:
+              $ref: '#/components/schemas/Room'
     RoomInspirationResult:
       type: object
-      required: [imageId, project, selections, warnings]
-      description: |
-        imageId совпадает с запрошенным ID. project сохраняет все входные параметры,
-        кроме works единственной комнаты. Ключи selections относятся к её roomId
-        и ProductKind. Эти межполевые условия проверяются отдельно.
+      required:
+      - imageId
+      - project
+      - selections
+      - warnings
+      description: 'status=ok: 1–7 совместимых selections. no_matches/unavailable: selections={}, исходный project
+        сохраняется. Отсутствующий status трактуется как ok для совместимости.'
       properties:
         imageId:
           type: string
@@ -474,7 +574,7 @@ components:
           $ref: '#/components/schemas/InspirationProject'
         selections:
           type: object
-          minProperties: 1
+          minProperties: 0
           maxProperties: 7
           description: Явно выбранные материалы; не могут молча заменяться при расчёте
           additionalProperties:
@@ -482,8 +582,8 @@ components:
             minLength: 1
             maxLength: 128
           example:
-            'room-1:covering': product-laminate-01
-            'room-1:paint': product-paint-01
+            room-1:covering: product-laminate-01
+            room-1:paint: product-paint-01
         warnings:
           type: array
           maxItems: 50
@@ -492,11 +592,36 @@ components:
             minLength: 1
             maxLength: 1000
           example:
-            - Размеры взяты из проекта; проверьте их перед окончательным расчётом.
-            - Мебель и декор на изображении не входят в подбор материалов.
+          - Размеры взяты из проекта; проверьте их перед окончательным расчётом.
+          - Мебель и декор на изображении не входят в подбор материалов.
+        status:
+          type: string
+          enum:
+          - ok
+          - no_matches
+          - unavailable
+          default: ok
+      oneOf:
+      - properties:
+          status:
+            enum:
+            - ok
+          selections:
+            minProperties: 1
+      - required:
+        - status
+        properties:
+          status:
+            enum:
+            - no_matches
+            - unavailable
+          selections:
+            maxProperties: 0
     MaterialRequest:
       type: object
-      required: [productId, input]
+      required:
+      - productId
+      - input
       additionalProperties: false
       properties:
         productId:
@@ -513,7 +638,10 @@ components:
           default: false
     MaterialCorrection:
       type: object
-      required: [applied, version, factor]
+      required:
+      - applied
+      - version
+      - factor
       properties:
         applied:
           type: boolean
@@ -521,18 +649,24 @@ components:
           type: string
         factor:
           type: string
-          pattern: '^\d+(\.\d+)?$'
+          pattern: ^\d+(\.\d+)?$
         originalReserve:
           type: string
         effectiveReserve:
           type: string
     MaterialCalculation:
       type: object
-      required: [status, estimate, baseline, correction, model]
+      required:
+      - status
+      - estimate
+      - baseline
+      - correction
+      - model
       properties:
         status:
           type: string
-          enum: [ok]
+          enum:
+          - ok
         estimate:
           $ref: '#/components/schemas/ProductEstimate'
         baseline:
@@ -543,11 +677,20 @@ components:
           type: string
     MaterialEstimate:
       type: object
-      required: [status, estimate, baseline, correction, model, toolCalls, explanation, explanationStatus]
+      required:
+      - status
+      - estimate
+      - baseline
+      - correction
+      - model
+      - toolCalls
+      - explanation
+      - explanationStatus
       properties:
         status:
           type: string
-          enum: [ok]
+          enum:
+          - ok
         estimate:
           $ref: '#/components/schemas/ProductEstimate'
         baseline:
@@ -559,57 +702,80 @@ components:
           minLength: 1
         toolCalls:
           type: array
-          minItems: 1
+          minItems: 0
           maxItems: 1
           items:
             type: string
-            enum: [calculate_material_cost]
+            enum:
+            - calculate_material_cost
         explanation:
           type: string
           nullable: true
-          description: |
-            Пояснение модели в Markdown. Frontend поддерживает заголовки, списки, таблицы,
+          description: 'Пояснение модели в Markdown. Frontend поддерживает заголовки, списки, таблицы,
+
             выделение, цитаты и код. Сырой HTML не исполняется, изображения не загружаются,
+
             ссылки ограничены безопасными протоколами. Не источник расчётных сумм.
+
+            '
         explanationStatus:
           type: string
-          enum: [unverified_model_text, unavailable]
+          enum:
+          - unverified_model_text
+          - unavailable
         explanationError:
           $ref: '#/components/schemas/ApiError'
+      description: Проверенная смета Java сохраняется при сбое любой стадии объяснения. При explanationStatus=unavailable
+        разрешены model=not-used и toolCalls=[]. Текст модели не заменяет суммы.
     Money:
       type: string
-      pattern: '^\d+(\.\d{1,2})?$'
+      pattern: ^\d+(\.\d{1,2})?$
       description: Неотрицательная десятичная сумма в RUB, без разделителей тысяч
       example: '2160.00'
     Work:
       type: string
-      enum: [floor, paint, wallpaper, electrical]
+      enum:
+      - floor
+      - paint
+      - wallpaper
+      - electrical
     ProductKind:
       type: string
-      enum: [covering, paint, primer, wallpaper, adhesive, socket, cable]
+      enum:
+      - covering
+      - paint
+      - primer
+      - wallpaper
+      - adhesive
+      - socket
+      - cable
     Room:
       type: object
-      description: |
-        Геометрия: площадь пола length × width, стены 2 × (length + width) × height − openings.
+      description: 'Геометрия: площадь пола length × width, стены 2 × (length + width) × height − openings.
+
         Дополнительные проверки backend: openings строго меньше полной площади стен;
+
         paint и wallpaper не могут одновременно отделывать всю одну поверхность.
+
         Условия влажности, нагрузки и отопления задаются явно, тип комнаты их не подменяет.
+
+        '
       required:
-        - id
-        - name
-        - type
-        - length
-        - width
-        - height
-        - openings
-        - humidity
-        - load
-        - heated
-        - works
-        - reserve
-        - layers
-        - sockets
-        - cableLength
+      - id
+      - name
+      - type
+      - length
+      - width
+      - height
+      - openings
+      - humidity
+      - load
+      - heated
+      - works
+      - reserve
+      - layers
+      - sockets
+      - cableLength
       properties:
         id:
           type: string
@@ -619,7 +785,12 @@ components:
           maxLength: 60
         type:
           type: string
-          enum: [living, bathroom, kitchen, children, balcony]
+          enum:
+          - living
+          - bathroom
+          - kitchen
+          - children
+          - balcony
         length:
           type: number
           minimum: 0
@@ -644,10 +815,14 @@ components:
           description: Суммарная площадь окон и дверей, м²
         humidity:
           type: string
-          enum: [normal, high]
+          enum:
+          - normal
+          - high
         load:
           type: string
-          enum: [normal, high]
+          enum:
+          - normal
+          - high
         heated:
           type: boolean
         works:
@@ -677,14 +852,23 @@ components:
           description: Явно заданная длина кабельных трасс, м
     Project:
       type: object
-      required: [object, renovation, rooms]
+      required:
+      - object
+      - renovation
+      - rooms
       properties:
         object:
           type: string
-          enum: [apartment, house, studio]
+          enum:
+          - apartment
+          - house
+          - studio
         renovation:
           type: string
-          enum: [cosmetic, capital, designer]
+          enum:
+          - cosmetic
+          - capital
+          - designer
         rooms:
           type: array
           minItems: 1
@@ -693,7 +877,9 @@ components:
             $ref: '#/components/schemas/Room'
     EstimateRequest:
       type: object
-      required: [project, selections]
+      required:
+      - project
+      - selections
       properties:
         project:
           $ref: '#/components/schemas/Project'
@@ -706,13 +892,20 @@ components:
             room-1:covering: normalized-product-1
     RecommendationsRequest:
       type: object
-      required: [room]
+      required:
+      - room
       properties:
         room:
           $ref: '#/components/schemas/Room'
     ProductInput:
       type: object
-      required: [area, perimeter, height, reserve, layers, quantity]
+      required:
+      - area
+      - perimeter
+      - height
+      - reserve
+      - layers
+      - quantity
       properties:
         area:
           type: number
@@ -746,24 +939,25 @@ components:
           minimum: 0
           exclusiveMinimum: true
           maximum: 5000
-          description: Для розеток — целое число электроточек без процентного запаса; для кабеля — длина трассы в метрах с запасом из профиля
+          description: Для розеток — целое число электроточек без процентного запаса; для кабеля — длина трассы
+            в метрах с запасом из профиля
     Product:
       type: object
       required:
-        - id
-        - name
-        - category
-        - kind
-        - price
-        - packageSize
-        - unit
-        - saleUnit
-        - works
-        - wet
-        - highLoad
-        - unheated
-        - description
-        - source
+      - id
+      - name
+      - category
+      - kind
+      - price
+      - packageSize
+      - unit
+      - saleUnit
+      - works
+      - wet
+      - highLoad
+      - unheated
+      - description
+      - source
       properties:
         id:
           type: string
@@ -780,9 +974,8 @@ components:
           nullable: true
           minimum: 0
           exclusiveMinimum: true
-          description: >-
-            Количество unit в одной saleUnit; null — неизвестно. У обоев packageSize=null:
-            число целых полотен из рулона рассчитывается по его геометрии, высоте, раппорту и подрезке профиля.
+          description: 'Количество unit в одной saleUnit; null — неизвестно. У обоев packageSize=null: число целых
+            полотен из рулона рассчитывается по его геометрии, высоте, раппорту и подрезке профиля.'
         unit:
           type: string
           description: Единица потребности и остатка, например м², л, кг, м, шт. или полотна
@@ -813,9 +1006,9 @@ components:
           type: number
           minimum: 0
           exclusiveMinimum: true
-          description: >-
-            Справочная норма каталога в unit/м². Применяемую норму задаёт версионированный профиль правил с источником:
-            для краски — на один слой, для грунтовки и клея — на один цикл. Противоречие норм требует уточнения.
+          description: 'Справочная норма каталога в unit/м². Применяемую норму задаёт версионированный профиль правил
+            с источником: для краски — на один слой, для грунтовки и клея — на один цикл. Противоречие норм требует
+            уточнения.'
         rollWidth:
           type: number
           minimum: 0
@@ -830,6 +1023,14 @@ components:
           type: number
           minimum: 0
           description: Раппорт, м; 0 — без подгона
+        materialFamily:
+          type: string
+          enum:
+          - tile
+          - laminate
+          - vinyl
+          nullable: true
+          description: Подтверждённое семейство напольного покрытия; не выводится из названия.
       example:
         id: normalized-product-1
         name: Керамогранит, условный пример
@@ -839,7 +1040,8 @@ components:
         packageSize: 1.44
         unit: м²
         saleUnit: уп.
-        works: [floor]
+        works:
+        - floor
         wet: true
         highLoad: true
         unheated: true
@@ -848,17 +1050,17 @@ components:
     EstimateLine:
       type: object
       required:
-        - id
-        - roomId
-        - roomName
-        - product
-        - quantity
-        - need
-        - purchased
-        - remainder
-        - total
-        - formula
-        - reason
+      - id
+      - roomId
+      - roomName
+      - product
+      - quantity
+      - need
+      - purchased
+      - remainder
+      - total
+      - formula
+      - reason
       properties:
         id:
           type: string
@@ -871,13 +1073,13 @@ components:
         quantity:
           type: integer
           minimum: 1
-          description: >-
-            Целое число единиц продажи в безопасном целочисленном диапазоне JavaScript, не более 9007199254740991.
+          description: Целое число единиц продажи в безопасном целочисленном диапазоне JavaScript, не более 9007199254740991.
             Если число упаковок выходит за поддерживаемый диапазон, backend возвращает 422.
         need:
           type: number
           minimum: 0
-          description: Потребность согласно профилю в product.unit; для розеток без запаса, для обоев в целых полотнах. Промежуточного округления физических величин нет.
+          description: Потребность согласно профилю в product.unit; для розеток без запаса, для обоев в целых полотнах.
+            Промежуточного округления физических величин нет.
         purchased:
           type: number
           minimum: 0
@@ -896,7 +1098,10 @@ components:
           description: Причина применения коэффициента и источник нормы
     Versions:
       type: object
-      required: [catalog, rules, model]
+      required:
+      - catalog
+      - rules
+      - model
       properties:
         catalog:
           type: string
@@ -907,18 +1112,29 @@ components:
     Estimate:
       type: object
       description: Материалы и ориентировочные работы раздельно; backend отвечает за согласованность итогов.
-      required: [id, createdAt, mode, lines, materials, labor, total, warnings, versions]
+      required:
+      - id
+      - createdAt
+      - mode
+      - lines
+      - materials
+      - labor
+      - total
+      - warnings
+      - versions
       properties:
         id:
           type: string
         createdAt:
           type: string
           format: date-time
-          pattern: 'Z$'
+          pattern: Z$
           description: ISO 8601 UTC, с суффиксом Z
         mode:
           type: string
-          enum: [api, demo]
+          enum:
+          - api
+          - demo
           description: Backend возвращает api; demo зарезервировано для учебного адаптера
         lines:
           type: array
@@ -938,21 +1154,24 @@ components:
           $ref: '#/components/schemas/Versions'
     ProductEstimate:
       allOf:
-        - $ref: '#/components/schemas/Estimate'
-        - type: object
-          properties:
-            lines:
-              type: array
-              minItems: 1
-              maxItems: 1
-              items:
-                $ref: '#/components/schemas/EstimateLine'
-            labor:
-              type: string
-              enum: ['0.00']
+      - $ref: '#/components/schemas/Estimate'
+      - type: object
+        properties:
+          lines:
+            type: array
+            minItems: 1
+            maxItems: 1
+            items:
+              $ref: '#/components/schemas/EstimateLine'
+          labor:
+            type: string
+            enum:
+            - '0.00'
     Recommendation:
       type: object
-      required: [product, reason]
+      required:
+      - product
+      - reason
       properties:
         product:
           $ref: '#/components/schemas/Product'
@@ -960,7 +1179,9 @@ components:
           type: string
     Recommendations:
       type: object
-      required: [products, warnings]
+      required:
+      - products
+      - warnings
       properties:
         products:
           type: array
@@ -973,7 +1194,9 @@ components:
     ApiError:
       type: object
       description: Предлагаемая схема ошибки; текущий frontend показывает HTTP-статус, не рендерит тело.
-      required: [code, message]
+      required:
+      - code
+      - message
       properties:
         code:
           type: string
@@ -988,7 +1211,8 @@ components:
       example:
         code: needs_clarification
         message: Не подтверждена норма расхода
-        fields: [consumption]
+        fields:
+        - consumption
   responses:
     Estimate:
       description: Смета материалов и работ с формулами и источниками

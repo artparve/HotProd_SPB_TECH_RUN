@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Record a real extraction, raw Ollama reply and timing; never downloads models.
 
-Run from repository root with PYTHONPATH=backend/estimation. --docker-container
+Run from repository root with PYTHONPATH=llm/estimation. --docker-container
 uses Python's HTTP client inside the existing Ollama container (no published port).
 Each run needs a new output directory so earlier evidence cannot be overwritten.
 """

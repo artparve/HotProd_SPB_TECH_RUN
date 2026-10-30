@@ -8,7 +8,9 @@ defineProps<{ response: MaterialEstimate }>()
 <template>
   <section class="material-explanation" aria-label="Пояснение ИИ">
     <h3>Пояснение ИИ</h3>
-    <p class="field-hint">Помощник: {{ response.model }}</p>
+    <p v-if="response.explanationStatus === 'unverified_model_text'" class="field-hint">
+      Помощник: {{ response.model }}
+    </p>
     <template v-if="response.explanationStatus === 'unverified_model_text'">
       <MarkdownText :text="response.explanation || ''" />
       <p class="field-hint">

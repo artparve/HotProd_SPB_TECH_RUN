@@ -40,7 +40,10 @@ export const materialEstimateSchema = z
       value.baseline.lines.length !== 1
     )
       context.addIssue({ code: 'custom', message: 'Expected a single-product API calculation' })
-    if (value.explanationStatus === 'unverified_model_text' && (!value.explanation?.trim() || value.model === 'not-used' || value.toolCalls.length !== 1))
+    if (
+      value.explanationStatus === 'unverified_model_text' &&
+      (!value.explanation?.trim() || value.model === 'not-used' || value.toolCalls.length !== 1)
+    )
       context.addIssue({ code: 'custom', path: ['explanation'], message: 'Explanation is empty' })
     if (value.explanationStatus === 'unavailable' && !value.explanationError)
       context.addIssue({ code: 'custom', message: 'Missing explanation error' })

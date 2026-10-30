@@ -14,8 +14,12 @@ export default defineConfig(({ mode }) => {
       port: Number(env.DEV_PORT || 5173),
       strictPort: true,
       proxy: {
-        '/api': { target: env.API_UPSTREAM || 'http://127.0.0.1:8000', changeOrigin: true,
-          timeout: Number(env.DEV_PROXY_TIMEOUT_MS || 1265000), proxyTimeout: Number(env.DEV_PROXY_TIMEOUT_MS || 1265000) },
+        '/api': {
+          target: env.API_UPSTREAM || 'http://127.0.0.1:8000',
+          changeOrigin: true,
+          timeout: Number(env.DEV_PROXY_TIMEOUT_MS || 1265000),
+          proxyTimeout: Number(env.DEV_PROXY_TIMEOUT_MS || 1265000),
+        },
       },
     },
     build: { sourcemap: false },

@@ -3,9 +3,16 @@ import { reactive } from 'vue'
 
 export const apiStatus = reactive({ catalogWarning: '' })
 class ApiRequestError extends Error {
-  constructor(message: string, readonly status: number) { super(message) }
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message)
+  }
 }
-function unavailable(error: unknown) { return error instanceof ApiRequestError && error.status >= 500 }
+function unavailable(error: unknown) {
+  return error instanceof ApiRequestError && error.status >= 500
+}
 import { estimateSchema, productSchema, recommendationSchema } from '../domain/types'
 import type { Product, ProductInput, Project, Room } from '../domain/types'
 import { apiErrorSchema, materialEstimateSchema, materialRequestSchema } from '../domain/materials'
@@ -21,12 +28,22 @@ const configuredMode = import.meta.env.PROD ? 'api' : import.meta.env.VITE_DATA_
 if (!['demo', 'api'].includes(configuredMode)) throw new Error('VITE_DATA_MODE must be demo or api')
 export const dataMode = configuredMode as 'demo' | 'api'
 const base = (import.meta.env.VITE_API_BASE_URL || '/api/v1').replace(/\/$/, '')
+function timeoutSetting(value: string | undefined, fallback: number) {
+  const result = value ? Number(value) : fallback
+  if (!Number.isInteger(result) || result < 1 || result > 3_600_000)
+    throw new Error('API timeout must be an integer in 1..3600000 milliseconds')
+  return result
+}
+const apiTimeout = timeoutSetting(import.meta.env.VITE_API_TIMEOUT_MS, 15000)
+const llmTimeout = timeoutSetting(import.meta.env.VITE_LLM_TIMEOUT_MS, 1260000)
+const planTimeout = timeoutSetting(import.meta.env.VITE_PLAN_TIMEOUT_MS, 660000)
+const imageTimeout = timeoutSetting(import.meta.env.VITE_INSPIRATION_TIMEOUT_MS, 120000)
 
 async function request<T>(
   path: string,
   schema: z.ZodType<T>,
   body?: unknown,
-  timeoutMs = 15000,
+  timeoutMs = apiTimeout,
   signal?: AbortSignal,
 ): Promise<T> {
   const controller = new AbortController()
@@ -65,14 +82,17 @@ async function request<T>(
             'Не удалось распознать план. Проверьте подключение сервиса и повторите попытку.',
         )
       }
-      throw new Error(
+      throw new ApiRequestError(
         error.success
           ? `API вернул HTTP ${response.status}: ${error.data.message}`
           : `API вернул HTTP ${response.status}. Проверьте подключение или повторите запрос.`,
         response.status,
       )
     }
-    if (path === '/products') apiStatus.catalogWarning = response.headers.get('X-RepairCalc-Degraded') ? 'Каталог временно недоступен. Повторите загрузку позже.' : ''
+    if (path === '/products')
+      apiStatus.catalogWarning = response.headers.get('X-RepairCalc-Degraded')
+        ? 'Каталог временно недоступен. Повторите загрузку позже.'
+        : ''
     const parsed = schema.safeParse(await response.json())
     if (!parsed.success)
       throw new Error('Ответ API не соответствует контракту. Проверьте версию backend.')
@@ -81,7 +101,7 @@ async function request<T>(
     if (error instanceof SyntaxError)
       throw new Error('API вернул невалидный JSON. Проверьте адрес и маршрут API.')
     if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError')
-      throw new Error(
+      throw new ApiRequestError(
         signal?.aborted
           ? 'Запрос отменён.'
           : path.startsWith('/room-inspirations/')
@@ -112,7 +132,7 @@ export const service = {
       `/room-inspirations${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`,
       roomInspirationFeedSchema,
       undefined,
-      15000,
+      apiTimeout,
       signal,
     )
   },
@@ -125,7 +145,7 @@ export const service = {
             `/room-inspirations/${encodeURIComponent(imageId)}/analyze`,
             roomInspirationResultSchema,
             body,
-            120000,
+            imageTimeout,
             signal,
           ),
     )
@@ -146,12 +166,17 @@ export const service = {
   },
   async extractPlan(imageBase64: string) {
     // Recognition always calls the connected model, including when the catalog uses demo data.
-    return request('/plans/extract', planResultSchema, { imageBase64 }, 660_000)
+    return request('/plans/extract', planResultSchema, { imageBase64 }, planTimeout)
   },
   async catalog(): Promise<Product[]> {
     if (import.meta.env.DEV && dataMode === 'demo') return (await import('./demo')).demoCatalog()
-    try { return await request('/products', z.array(productSchema)) }
-    catch (error) { if (!unavailable(error)) throw error; apiStatus.catalogWarning = 'Каталог временно недоступен. Повторите загрузку позже.'; return [] }
+    try {
+      return await request('/products', z.array(productSchema))
+    } catch (error) {
+      if (!unavailable(error)) throw error
+      apiStatus.catalogWarning = 'Каталог временно недоступен. Повторите загрузку позже.'
+      return []
+    }
   },
   async estimate(project: Project, selections: Record<string, string> = {}) {
     if (import.meta.env.DEV && dataMode === 'demo')
@@ -161,8 +186,12 @@ export const service = {
   async recommendations(room: Room) {
     if (import.meta.env.DEV && dataMode === 'demo')
       return (await import('./demo')).recommendDemo(room)
-    try { return await request('/recommendations', recommendationSchema, { room }) }
-    catch (error) { if (!unavailable(error)) throw error; return { products: [], warnings: ['Подбор временно недоступен. Повторите позже.'] } }
+    try {
+      return await request('/recommendations', recommendationSchema, { room })
+    } catch (error) {
+      if (!unavailable(error)) throw error
+      return { products: [], warnings: ['Подбор временно недоступен. Повторите позже.'] }
+    }
   },
   async product(product: Product, input: ProductInput) {
     if (import.meta.env.DEV && dataMode === 'demo')
@@ -177,10 +206,10 @@ export const service = {
       prompt: 'Объясни расход, стоимость, округление упаковок и остаток для заданных параметров.',
       useCorrection: false,
     })
-    // Two Ollama calls (600 s each) and the Java calculator (30 s), plus transport overhead.
-    const result = await request('/materials/estimate', materialEstimateSchema, body, 1_260_000)
+    // Explanation may require two bounded model calls after Java calculates the baseline.
+    const result = await request('/materials/estimate', materialEstimateSchema, body, llmTimeout)
     if (
-      result.model === 'not-used' ||
+      (result.explanationStatus === 'unverified_model_text' && result.model === 'not-used') ||
       result.estimate.lines[0]?.product.id !== product.id ||
       result.baseline.lines[0]?.product.id !== product.id
     )

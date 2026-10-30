@@ -41,14 +41,14 @@
         path: "{{ release_path }}/{{ item }}"
         state: directory
         mode: "0700"
-      loop: [docker, env]
+      loop: [docker, docker/mongo, env]
 
     - name: Copy tracked Compose manifests (no source tree or local overrides)
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../docker/{{ item }}"
+        src: "{{ playbook_dir }}/../{{ item }}"
         dest: "{{ release_path }}/docker/{{ item }}"
         mode: "0600"
-      loop: [docker-compose.yml, docker-compose.release.yml]
+      loop: [docker-compose.yml, docker-compose.release.yml, mongo/start.sh, mongo/init.js, mongo/health.js]
 
     - name: Install non-secret environment settings for this release
       ansible.builtin.copy:
@@ -77,9 +77,9 @@
         DOCKER_CONFIG: "{{ registry_config.path }}"
         IMAGE_PREFIX: "{{ release_image_prefix }}"
         IMAGE_TAG: "{{ release_image_tag }}"
-        FRONTEND_HOST: "{{ release_frontend_host }}"
-        FRONTEND_PORT: "{{ release_frontend_port | string }}"
-        COMPOSE_PROFILES: ""
+        FRONTEND_BIND_ADDRESS: "{{ release_frontend_host }}"
+        FRONTEND_PUBLIC_PORT: "{{ release_frontend_port | string }}"
+        COMPOSE_PROFILES: "{{ 'llm' if release_llm_enabled | default(false) | bool else '' }}"
         COMPOSE_IGNORE_ORPHANS: "true"
       block:
         - name: Authenticate to GHCR without storing credentials permanently
@@ -98,7 +98,7 @@
 
         - name: Pull all required images before changing running services
           ansible.builtin.command:
-            argv: "{{ release_compose + ['pull', 'postgres', 'init-data', 'backend', 'estimator', 'frontend'] }}"
+            argv: "{{ release_compose + ['pull'] + release_pull_services }}"
           changed_when: true
           no_log: true
 
@@ -110,7 +110,7 @@
 
         - name: Start base services and wait for their healthchecks (no build or model download)
           ansible.builtin.command:
-            argv: "{{ release_compose + ['up', '--detach', '--no-build', '--pull', 'never', '--wait', '--wait-timeout', release_wait_timeout | string, 'frontend'] }}"
+            argv: "{{ release_compose + ['up', '--detach', '--no-build', '--pull', 'never', '--wait', '--wait-timeout', release_wait_timeout | string] + release_services }}"
           changed_when: true
           no_log: true
 
@@ -128,8 +128,10 @@
           ansible.builtin.uri:
             url: "http://{{ release_frontend_health_address }}:{{ release_frontend_port }}/api/v1/products"
             status_code: 200
-            return_content: false
+            return_content: true
             use_proxy: false
+          register: catalog_check
+          failed_when: catalog_check.status != 200 or catalog_check.x_repaircalc_degraded is defined or (catalog_check.json | default([]) | length) == 0
           no_log: true
 
         - name: Mark the release successful only after health and API checks

@@ -1761,6 +1761,9 @@
                 "label"
               ]
             }
+          },
+          "materialFamily": {
+            "$ref": "#/components/schemas/AdminMaterialFamilyValue"
           }
         },
         "required": [
@@ -2578,6 +2581,70 @@
           "taxonomyVersion",
           "mappingVersion",
           "profiles"
+        ]
+      },
+      "AdminMaterialFamilyValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "unset",
+                  "unknown"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "value": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "confirmed"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "enum": [
+                  "tile",
+                  "laminate",
+                  "vinyl"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "confirmedBy": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "state",
+              "value",
+              "source"
+            ]
+          }
         ]
       }
     },

@@ -7,6 +7,8 @@ release_frontend_port: 8080
 release_frontend_health_host: "{{ {'0.0.0.0': '127.0.0.1', '::': '::1'}.get(release_frontend_host, release_frontend_host) }}"
 release_frontend_health_address: "{{ '[' ~ release_frontend_health_host ~ ']' if ':' in release_frontend_health_host else release_frontend_health_host }}"
 release_wait_timeout: 240
+release_services: "{{ ['backend', 'frontend'] + (['llm'] if release_llm_enabled | default(false) | bool else []) + (['ollama'] if (release_llm_enabled | default(false) | bool) and (release_local_ollama | default(true) | bool) else []) }}"
+release_pull_services: "{{ ['mongo', 'mongo-init', 'init-data'] + release_services }}"
 release_registry_username: "{{ lookup('ansible.builtin.env', 'REGISTRY_USERNAME') }}"
 release_registry_password: "{{ lookup('ansible.builtin.env', 'REGISTRY_PASSWORD') }}"
 release_compose:

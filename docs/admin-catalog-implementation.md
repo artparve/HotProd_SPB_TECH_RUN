@@ -1,3 +1,5 @@
+> Историческая детализация frontend/экспериментов. Текущие маршруты, Mongo-архитектура и запуск описаны в [AI_CONTEXT.md](AI_CONTEXT.md), [deploy.md](deploy.md) и [OpenAPI](openapi.yaml).
+
 # Административный каталог: CRUD и продолжение
 
 30.10.2026. Реализована часть этапа 2 [спецификации](admin-catalog-spec.md): серверный доступ, ручные черновики, список и история. Продолжение: [классификация, проверка и публикация](admin-workflow.md). Ниже описана первоначальная поставка CRUD.
@@ -20,7 +22,7 @@
 Из корня репозитория выполните:
 
 ```bash
-python3 backend/scripts/admin-password-hash.py
+python3 scripts/admin-password-hash.py
 ```
 
 Скрипт читает пароль дважды без эха и выдаёт строку `ADMIN_PASSWORD_HASH='...'`. Используется PBKDF2-HMAC-SHA256, 600000 итераций и случайная соль 24 байта. Пароль не передаётся аргументом процесса и не записывается в файл. Поместите выданную строку с одинарными кавычками в локальный `env/secret.env`; кавычки сохраняют буквальные `$` в Compose. Задайте `ADMIN_USERNAME` в `env/.env`. В `VITE_*` пароль или хеш помещать нельзя.
@@ -31,7 +33,7 @@ Cookie имеет `HttpOnly`, `SameSite=Strict`, путь `/api/v1/admin`, им�
 
 Существующие proxy Vite/nginx маршрутизируют `/api/` в Java; новый отдельный upstream не требуется. Compose передаёт admin-настройки только backend/init-data. Пересоберите backend и frontend обычной командой проекта и откройте `/admin`. `make backend` загружает общие `env/.env` и `env/secret.env`; Spring при прямом `java -jar` dotenv-файлы сам не загружает. См. [CONFIG.md](CONFIG.md).
 
-Пример тела создания: [admin-product-draft.example.json](../backend/data/admin-product-draft.example.json). Это одиночный административный снимок, не файл для CLI `import-catalog` и не будущий пакетный импорт.
+Пример тела создания: [admin-product-draft.example.json](../data/admin-product-draft.example.json). Это одиночный административный снимок, не файл для CLI `import-catalog` и не будущий пакетный импорт.
 
 ## Проверки и оставшиеся этапы
 

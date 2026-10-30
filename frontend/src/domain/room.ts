@@ -21,9 +21,6 @@ export function compatible(product: Product, room: Room): boolean {
   return (
     (room.humidity !== 'high' || product.wet === true) &&
     (room.load !== 'high' || product.highLoad === true) &&
-    (room.heated || product.unheated === true) &&
-    product.wet !== null &&
-    product.highLoad !== null &&
-    product.unheated !== null
+    (room.heated || product.unheated === true)
   )
 }

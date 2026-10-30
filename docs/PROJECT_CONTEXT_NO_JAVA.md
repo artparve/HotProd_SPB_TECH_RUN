@@ -1,3 +1,5 @@
+> Исторический срез до реализации Java + MongoDB + Python. Для текущих путей, решений и проверок используйте [AI_CONTEXT.md](AI_CONTEXT.md) и [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md). Ниже сохранён исходный аудит.
+
 # RepairCalc: контекст проекта без учёта Java-реализации
 
 Срез: **30 октября 2026**, ветка `main`, HEAD `27586a4` (`hotfix(ci): main branch`).

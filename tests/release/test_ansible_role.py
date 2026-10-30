@@ -17,8 +17,9 @@ ANSIBLE = shutil.which("ansible-playbook")
 
 class HealthHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        content = b"[]" if self.path == "/api/v1/products" else b"ok"
+        content = b'[ {"id":"synthetic"} ]' if self.path == "/api/v1/products" else b"ok"
         self.send_response(200)
+        self.send_header("Content-Type", "application/json" if self.path == "/api/v1/products" else "text/plain")
         self.send_header("Content-Length", str(len(content)))
         self.end_headers()
         self.wfile.write(content)
@@ -46,7 +47,7 @@ import json, os, pathlib, sys
 args = sys.argv[1:]
 record = {"args": args, "config": os.environ.get("DOCKER_CONFIG"),
           "tag": os.environ.get("IMAGE_TAG"), "profiles": os.environ.get("COMPOSE_PROFILES"),
-          "frontend_host": os.environ.get("FRONTEND_HOST")}
+          "frontend_host": os.environ.get("FRONTEND_BIND_ADDRESS")}
 with open(os.environ["FAKE_DOCKER_LOG"], "a") as log:
     log.write(json.dumps(record) + "\\n")
 if args[0] == "info":
@@ -61,11 +62,11 @@ elif "up" in args and os.environ.get("FAKE_DOCKER_FAIL") == "1":
     sys.exit(23)
 ''', encoding="utf-8")
         fake.chmod(0o700)
-        (self.directory / "stand.env").write_text("DB_NAME=repaircalc\n", encoding="utf-8")
-        (self.directory / "secret.env").write_text("DB_PASSWORD=synthetic-check-only\n", encoding="utf-8")
+        (self.directory / "stand.env").write_text("MONGO_DATABASE=repaircalc\n", encoding="utf-8")
+        (self.directory / "secret.env").write_text("MONGO_PASSWORD=synthetic-check-only\n", encoding="utf-8")
         self.environ = dict(os.environ, PATH=str(bin_dir) + os.pathsep + os.environ["PATH"],
                             FAKE_DOCKER_LOG=str(self.directory / "docker.jsonl"),
-                            ANSIBLE_CONFIG=str(ROOT / "ansible/ansible.cfg"),
+                            ANSIBLE_CONFIG=str(ROOT / "docker/ansible/ansible.cfg"),
                             REGISTRY_USERNAME="test-user", REGISTRY_PASSWORD="private-test-registry-password")
         self.variables = {
             "release_become": False, "release_environment": "staging",
@@ -84,7 +85,7 @@ elif "up" in args and os.environ.get("FAKE_DOCKER_FAIL") == "1":
 
     def deploy(self):
         return subprocess.run([ANSIBLE, "-i", str(self.directory / "inventory.json"),
-                               str(ROOT / "ansible/deploy.yml"), "--extra-vars",
+                               str(ROOT / "docker/ansible/deploy.yml"), "--extra-vars",
                                "@" + str(self.directory / "vars.json")],
                               env=self.environ, capture_output=True, text=True, timeout=120)
 
@@ -108,10 +109,10 @@ elif "up" in args and os.environ.get("FAKE_DOCKER_FAIL") == "1":
         self.assertTrue((self.directory / "stand/current").is_symlink())
         env_file = self.directory / "stand/current/env/.env"
         self.assertEqual(env_file.stat().st_mode & 0o777, 0o600)
-        self.assertNotIn("DB_PASSWORD=", env_file.read_text())
+        self.assertNotIn("MONGO_PASSWORD=", env_file.read_text())
         secret_file = self.directory / "stand/current/env/secret.env"
         self.assertEqual(secret_file.stat().st_mode & 0o777, 0o600)
-        self.assertIn("DB_PASSWORD=synthetic-check-only", secret_file.read_text())
+        self.assertIn("MONGO_PASSWORD=synthetic-check-only", secret_file.read_text())
         self.assertEqual(up["args"].count("--env-file"), 2)
         self.assertNotIn("private-test-registry-password", result.stdout + result.stderr)
 

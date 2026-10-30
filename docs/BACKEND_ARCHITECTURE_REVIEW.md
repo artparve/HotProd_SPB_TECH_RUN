@@ -1,3 +1,5 @@
+> Исторический срез до реализации Java + MongoDB + Python. Для текущих путей, решений и проверок используйте [AI_CONTEXT.md](AI_CONTEXT.md) и [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md). Ниже сохранён исходный аудит.
+
 # RepairCalc — исследование проекта и проектирование серверной части
 
 Дата: 24 октября 2026 года. Проверенный commit: `45d9a4ca4a30dcf62d018e548a7d65de80aad1b1`.

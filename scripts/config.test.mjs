@@ -93,7 +93,10 @@ test("secret file cannot introduce client-exposed VITE variables or arbitrary co
 
 test("local services receive credentials through child env, never command arguments", (t) => {
   const root = fixture(t);
-  writeFileSync(resolve(root, "env/secret.env"), "MONGO_PASSWORD=private-value\n");
+  writeFileSync(
+    resolve(root, "env/secret.env"),
+    "MONGO_PASSWORD=private-value\n",
+  );
   const env = localEnvironment(root, {});
   const java = localCommand("backend", env, root);
   const python = localCommand("estimator", env, root);
@@ -116,4 +119,39 @@ test("local services receive credentials through child env, never command argume
 test("Vite configuration never opens the secret file", () => {
   const vite = readFileSync(resolve(ROOT, "frontend/vite.config.ts"), "utf8");
   assert.ok(!vite.includes("secret.env"));
+});
+
+test("local services honor per-file paths and use DATA_DIR for empty overrides", () => {
+  const root = resolve("path-fixture");
+  const env = {
+    MONGO_PASSWORD: "test-password",
+    DATA_DIR: "assets",
+    CLASSIFICATION_TAXONOMY: "custom/taxonomy.json",
+    CLASSIFICATION_PROMPT: "custom/prompt.txt",
+    PLAN_DATA_DIR: "custom/plans",
+    INSPIRATIONS_MANIFEST: "custom/manifest.json",
+    INSPIRATIONS_DIR: "",
+    CATALOG_FILE: "custom/catalog.json",
+  };
+  const java = localCommand("backend", env, root);
+  const python = localCommand("llm", env, root);
+  assert.equal(
+    java.env.CLASSIFICATION_TAXONOMY,
+    resolve(root, "custom/taxonomy.json"),
+  );
+  assert.equal(java.env.INSPIRATIONS_DIR, resolve(root, "assets/inspirations"));
+  assert.equal(
+    java.env.INSPIRATIONS_MANIFEST,
+    resolve(root, "custom/manifest.json"),
+  );
+  assert.equal(
+    python.env.CLASSIFICATION_PROMPT,
+    resolve(root, "custom/prompt.txt"),
+  );
+  assert.equal(python.env.PLAN_DATA_DIR, resolve(root, "custom/plans"));
+  assert.ok(
+    localCommand("backend-import-catalog", env, root).args.includes(
+      "--repaircalc.catalog.file=" + resolve(root, "custom/catalog.json"),
+    ),
+  );
 });
