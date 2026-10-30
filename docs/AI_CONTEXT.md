@@ -38,3 +38,5 @@ Frontend: `make check`. Java: `cd backend && ./mvnw verify` (Docker для Mongo
 Артефакт обученной корректирующей модели не задан. Публичный `useCorrection=true` возвращает 422; обычный расчёт и пояснение доступны без него. Offline-команды обучения сохранены отдельно от production HTTP-сервиса.
 
 Исторические аудиты сохранены в PROJECT_CONTEXT_NO_JAVA.md и BACKEND_TECH_DEBT_CONTEXT.md. Актуальные проверки: IMPLEMENTATION_STATUS.md. При поиске соблюдайте AGENTS.md и `.ignore`; реальные env-файлы, логи и большие данные не загружайте целиком.
+
+Актуальный список оставшегося функционала, визуальных заглушек и внешних входов после слияния `main`: [REMAINING_WORK.md](REMAINING_WORK.md).
