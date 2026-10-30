@@ -33,7 +33,7 @@ class GitHubActionsTests(unittest.TestCase):
         }
 
     def run_record(self, **overrides):
-        record = {"head_sha": "a" * 40, "conclusion": "success", "head_branch": "master", "event": "push"}
+        record = {"head_sha": "a" * 40, "conclusion": "success", "head_branch": "main", "event": "push"}
         return dict(record, **overrides)
 
     def test_checks_successful_ci_for_exact_sha_before_deploy(self):
@@ -43,12 +43,13 @@ class GitHubActionsTests(unittest.TestCase):
             self.assertEqual(github_actions.main(["check-release"], self.environ), 0)
         request = fetch.call_args.args[0]
         self.assertIn("head_sha=" + "a" * 40, request.full_url)
-        self.assertIn("branch=master", request.full_url)
+        self.assertIn("branch=main", request.full_url)
         self.assertEqual(request.get_header("Authorization"), "Bearer private-api-token")
         self.assertNotIn("private-api-token", output.getvalue())
 
     def test_rejects_failed_wrong_branch_event_or_sha_runs(self):
         runs = [self.run_record(conclusion="failure"), self.run_record(head_branch="feature"),
+                self.run_record(head_branch="master"),
                 self.run_record(event="pull_request"), self.run_record(head_sha="b" * 40)]
         response = io.BytesIO(json.dumps({"workflow_runs": runs}).encode())
         with patch.object(github_actions, "urlopen", return_value=response), redirect_stderr(io.StringIO()):
@@ -152,6 +153,8 @@ class WorkflowTests(unittest.TestCase):
     def test_deployment_settings_are_bound_to_selected_environment_and_exported_to_process_env(self):
         path = github_actions.ROOT / ".github/workflows/deploy.yml"
         job = yaml.safe_load(path.read_text())["jobs"]["deploy"]
+        self.assertEqual(job["if"], "github.ref == 'refs/heads/main'")
+        self.assertEqual(job["steps"][0]["with"]["ref"], "main")
         self.assertEqual(job["environment"]["name"], "${{ inputs.environment }}")
         self.assertEqual(job["env"]["DEPLOY_HOST"], "${{ vars.DEPLOY_HOST }}")
         self.assertEqual(job["env"]["DEPLOY_FRONTEND_HOST"], "${{ vars.DEPLOY_FRONTEND_HOST || '0.0.0.0' }}")
