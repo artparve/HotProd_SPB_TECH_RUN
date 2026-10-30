@@ -48,7 +48,7 @@
         src: "{{ playbook_dir }}/../docker/{{ item }}"
         dest: "{{ release_path }}/docker/{{ item }}"
         mode: "0600"
-      loop: [docker-compose.yml, docker-compose.release.yml]
+      loop: [docker-compose.yml, docker-compose.release.yml, docker-compose.preserve-data.yml]
 
     - name: Install non-secret environment settings for this release
       ansible.builtin.copy:
@@ -82,6 +82,44 @@
         COMPOSE_PROFILES: ""
         COMPOSE_IGNORE_ORPHANS: "true"
       block:
+        - name: Inspect frontend ownership and verify the existing database before any restart
+          ansible.builtin.script:
+            cmd: "{{ (playbook_dir ~ '/../scripts/deploy_target.py') | quote }} plan --path {{ release_path | quote }} --base {{ release_base | quote }} --project {{ release_project | quote }} --environment {{ release_environment | quote }} --host {{ release_frontend_host | quote }} --port {{ release_frontend_port }}"
+            executable: "{{ ansible_python_interpreter | default('/usr/bin/python3') }}"
+          register: deployment_target_check
+          changed_when: false
+          failed_when: false
+          no_log: true
+
+        - name: Require a verified deployment target (no automatic port eviction or database switch)
+          ansible.builtin.assert:
+            that: deployment_target_check.rc | default(1) == 0
+            fail_msg: "{{ (deployment_target_check.stdout | from_json).get('error', 'Deployment target inspection failed') if deployment_target_check.stdout | default('') is match('^[{]') else 'Deployment target inspection failed; no services were restarted' }}"
+          no_log: false
+
+        - name: Select the verified Compose project and database
+          ansible.builtin.set_fact:
+            release_target: "{{ deployment_target_check.stdout | from_json }}"
+            release_project: "{{ (deployment_target_check.stdout | from_json).project }}"
+          no_log: true
+
+        - name: Show selected project and data preservation strategy
+          ansible.builtin.debug:
+            msg: "project={{ release_target.project }}; volume={{ release_target.volume }}; adopted_legacy={{ release_target.adopted_legacy }}; preserve_catalog={{ release_target.preserve_catalog }}"
+          no_log: false
+
+        - name: Preserve published catalog and admin data in an initialized database
+          ansible.builtin.set_fact:
+            release_compose: "{{ release_compose + ['-f', release_path ~ '/docker/docker-compose.preserve-data.yml'] }}"
+          when: release_target.preserve_catalog | bool
+
+        - name: Record the verified target for private backup and troubleshooting
+          ansible.builtin.copy:
+            dest: "{{ release_path }}/deployment-target.json"
+            content: "{{ release_target | to_nice_json }}"
+            mode: "0600"
+          diff: false
+
         - name: Authenticate to GHCR without storing credentials permanently
           ansible.builtin.command:
             argv: [docker, login, ghcr.io, --username, "{{ release_registry_username }}", --password-stdin]
@@ -102,7 +140,33 @@
           changed_when: true
           no_log: true
 
-        - name: Re-run the idempotent bootstrap for the selected backend image
+        - name: Back up the existing database and check the archive before changing services
+          ansible.builtin.script:
+            cmd: "{{ (playbook_dir ~ '/../scripts/deploy_target.py') | quote }} backup --path {{ release_path | quote }}"
+            executable: "{{ ansible_python_interpreter | default('/usr/bin/python3') }}"
+          when: release_target.existing_database | bool
+          register: deployment_backup
+          failed_when: false
+          no_log: true
+
+        - name: Require a completed database backup
+          ansible.builtin.assert:
+            that: deployment_backup.rc | default(1) == 0
+            fail_msg: "Database backup/archive check failed; running services were not changed"
+          when: release_target.existing_database | bool
+          no_log: false
+
+        # Persist before the first restart, including failed deployments, so retries cannot
+        # silently select the other database when a frontend is temporarily stopped.
+        - name: Pin the existing project and database volume before restarting
+          ansible.builtin.copy:
+            dest: "{{ release_base }}/compose-project.json"
+            content: "{{ {'project': release_target.project, 'volume': release_target.volume} | to_nice_json }}"
+            mode: "0600"
+          diff: false
+          when: release_target.existing_database | bool
+
+        - name: Recreate the bootstrap gate (seed only an uninitialized database)
           ansible.builtin.command:
             argv: "{{ release_compose + ['rm', '--force', 'init-data'] }}"
           changed_when: true
@@ -132,12 +196,53 @@
             use_proxy: false
           no_log: true
 
+        - name: Pin a newly initialized database only after successful health and API checks
+          ansible.builtin.copy:
+            dest: "{{ release_base }}/compose-project.json"
+            content: "{{ {'project': release_target.project, 'volume': release_target.volume} | to_nice_json }}"
+            mode: "0600"
+          diff: false
+          when: not release_target.existing_database | bool
+
         - name: Mark the release successful only after health and API checks
           ansible.builtin.file:
             src: "{{ release_path }}"
             dest: "{{ release_base }}/current"
             state: link
             force: true
+      rescue:
+        - name: Save bounded failure details privately on the stand
+          ansible.builtin.copy:
+            dest: "{{ release_path }}/deployment-failure.json"
+            content: "{{ {'rc': ansible_failed_result.rc | default(-1), 'stdout': (ansible_failed_result.stdout | default(''))[-16384:], 'stderr': (ansible_failed_result.stderr | default(''))[-16384:]} | to_json }}"
+            mode: "0600"
+          no_log: true
+          diff: false
+          failed_when: false
+
+        - name: Collect private container logs and safe deployment status
+          ansible.builtin.script:
+            cmd: "{{ (playbook_dir ~ '/../scripts/deploy_diagnostics.py') | quote }} --release-path {{ release_path | quote }} --project {{ release_project | quote }}"
+            executable: "{{ ansible_python_interpreter | default('/usr/bin/python3') }}"
+          register: deployment_diagnostics
+          failed_when: false
+          changed_when: false
+          no_log: true
+
+        - name: Prepare safe diagnostic summary
+          ansible.builtin.set_fact:
+            release_diagnostic_summary: "{{ (deployment_diagnostics.stdout | from_json) if deployment_diagnostics.rc | default(1) == 0 else {'status': 'diagnostics_collection_failed', 'private_failure_file': release_path ~ '/deployment-failure.json'} }}"
+          no_log: true
+
+        - name: Show safe deployment diagnostic summary (no raw logs or secrets)
+          ansible.builtin.debug:
+            var: release_diagnostic_summary
+          no_log: false
+
+        - name: Fail deployment without hiding the diagnostic location
+          ansible.builtin.fail:
+            msg: "Deployment failed. See the safe status summary above and private diagnostics under {{ release_path }}. Raw logs may contain secrets; do not publish them unreviewed. No automatic rollback was performed."
+          no_log: false
       always:
         - name: Remove temporary registry credentials
           ansible.builtin.file:

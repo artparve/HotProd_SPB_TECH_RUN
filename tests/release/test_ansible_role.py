@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -49,6 +50,13 @@ record = {"args": args, "config": os.environ.get("DOCKER_CONFIG"),
           "frontend_host": os.environ.get("FRONTEND_HOST")}
 with open(os.environ["FAKE_DOCKER_LOG"], "a") as log:
     log.write(json.dumps(record) + "\\n")
+def legacy(service):
+    return {"Id": {"frontend": "a", "backend": "b", "postgres": "c"}[service] * 64,
+            "Config": {"Labels": {"com.docker.compose.project": "repaircalc", "com.docker.compose.service": service},
+                       "Env": ["POSTGRES_USER=repaircalc", "POSTGRES_DB=repaircalc"]},
+            "State": {"Status": "running", "Health": {"Status": "healthy"}},
+            "HostConfig": {"PortBindings": {"8080/tcp": [{"HostIp": "127.0.0.1", "HostPort": os.environ.get("FAKE_LEGACY_PORT", "8080")}]} if service == "frontend" else {}},
+            "Mounts": [{"Type": "volume", "Name": "repaircalc_pgdata", "Destination": "/var/lib/postgresql/data"}] if service == "postgres" else []}
 if args[0] == "info":
     print("28.0.0")
 elif args[:2] == ["compose", "version"]:
@@ -56,6 +64,32 @@ elif args[:2] == ["compose", "version"]:
 elif args[0] == "login":
     secret = sys.stdin.read().strip()
     pathlib.Path(os.environ["DOCKER_CONFIG"], "config.json").write_text(secret)
+elif args[:2] == ["ps", "-aq"]:
+    if os.environ.get("FAKE_LEGACY") == "1":
+        print("a" * 64 + "\\n" + "b" * 64 + "\\n" + "c" * 64)
+elif args[0] == "inspect" and "--format" not in args:
+    print(json.dumps([legacy(s) for s in ("frontend", "backend", "postgres") if legacy(s)["Id"] in args]))
+elif "config" in args and "--format" in args:
+    print(json.dumps({"services": {"postgres": {"image": "postgres:17.11", "environment": {"POSTGRES_USER": "repaircalc", "POSTGRES_DB": "repaircalc", "POSTGRES_PASSWORD": "private-test-db-password"}}, "backend": {"environment": {}}}}))
+elif args[0] == "exec":
+    if "pg_restore" in args:
+        sys.exit(0 if sys.stdin.buffer.read().startswith(b"PGDMP") else 1)
+    elif "pg_dump" in " ".join(args):
+        if os.environ.get("FAKE_BACKUP_FAIL") == "1":
+            sys.exit(1)
+        sys.stdout.buffer.write(b"PGDMP-test-archive")
+    elif "SHOW server_version_num" in args:
+        sys.stdin.read()
+        print("170011")
+    else:
+        sys.stdin.read()
+        print("t")
+elif "ps" in args:
+    print(json.dumps([{"ID": "b" * 64, "Service": "init-data", "State": "exited", "ExitCode": 1}]))
+elif args[0] == "inspect":
+    print(json.dumps({"Status": "exited", "ExitCode": 1, "OOMKilled": False, "Health": None}))
+elif "logs" in args:
+    print("FlywayMigrateException private-test-db-password private-test-registry-password")
 elif "up" in args and os.environ.get("FAKE_DOCKER_FAIL") == "1":
     print("private-test-registry-password", file=sys.stderr)
     sys.exit(23)
@@ -65,7 +99,8 @@ elif "up" in args and os.environ.get("FAKE_DOCKER_FAIL") == "1":
         (self.directory / "secret.env").write_text("DB_PASSWORD=synthetic-check-only\n", encoding="utf-8")
         self.environ = dict(os.environ, PATH=str(bin_dir) + os.pathsep + os.environ["PATH"],
                             FAKE_DOCKER_LOG=str(self.directory / "docker.jsonl"),
-                            ANSIBLE_CONFIG=str(ROOT / "ansible/ansible.cfg"),
+                             ANSIBLE_CONFIG=str(ROOT / "ansible/ansible.cfg"),
+                             ANSIBLE_NO_LOG="True",
                             REGISTRY_USERNAME="test-user", REGISTRY_PASSWORD="private-test-registry-password")
         self.variables = {
             "release_become": False, "release_environment": "staging",
@@ -83,10 +118,18 @@ elif "up" in args and os.environ.get("FAKE_DOCKER_FAIL") == "1":
         (self.directory / "vars.json").write_text(json.dumps(self.variables), encoding="utf-8")
 
     def deploy(self):
-        return subprocess.run([ANSIBLE, "-i", str(self.directory / "inventory.json"),
-                               str(ROOT / "ansible/deploy.yml"), "--extra-vars",
-                               "@" + str(self.directory / "vars.json")],
-                              env=self.environ, capture_output=True, text=True, timeout=120)
+        argv = [ANSIBLE, "-i", str(self.directory / "inventory.json"), str(ROOT / "ansible/deploy.yml"),
+                "--extra-vars", "@" + str(self.directory / "vars.json")]
+        process = subprocess.Popen(argv, env=self.environ, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   text=True, start_new_session=True)
+        try:
+            stdout, stderr = process.communicate(timeout=240)
+        except subprocess.TimeoutExpired:
+            # Kill only this test's process group; do not leave Ansible writing into a cleaned fixture.
+            os.killpg(process.pid, signal.SIGKILL)
+            stdout, stderr = process.communicate()
+            self.fail("Ansible test timed out:\n" + (stdout + stderr)[-6000:])
+        return subprocess.CompletedProcess(argv, process.returncode, stdout, stderr)
 
     def assert_cleaned(self):
         self.assertFalse((self.directory / "stand/.deploy-lock").exists())
@@ -124,9 +167,53 @@ elif "up" in args and os.environ.get("FAKE_DOCKER_FAIL") == "1":
         self.environ["FAKE_DOCKER_FAIL"] = "1"
         result = self.deploy()
         self.assertNotEqual(result.returncode, 0)
-        self.assert_cleaned()
+        commands = self.assert_cleaned()
         self.assertEqual(current.resolve(), previous)
         self.assertNotIn("private-test-registry-password", result.stdout + result.stderr)
+        self.assertNotIn("private-test-db-password", result.stdout + result.stderr)
+        self.assertIn("bootstrap_failed", result.stdout)
+        self.assertIn("migration_error", result.stdout)
+        self.assertIn("failure_rc", result.stdout)
+        self.assertIn("No automatic rollback", result.stdout)
+        report = self.directory / "stand/releases" / self.variables["release_id"] / "deployment-diagnostics.json"
+        self.assertEqual(report.stat().st_mode & 0o777, 0o600)
+        details = json.loads(report.read_text())
+        self.assertEqual(details["failure"]["rc"], 23)
+        self.assertIn("private-test-db-password", details["logs"]["init-data"]["stdout"])
+        self.assertTrue(all("--tail" in item["args"] and "80" in item["args"] and "--no-color" in item["args"]
+                            for item in commands
+                             if "logs" in item["args"]))
+
+    def test_prod_adopts_live_legacy_project_backs_up_database_and_skips_sample_import(self):
+        self.variables.update(release_environment="prod", release_frontend_host="127.0.0.1")
+        (self.directory / "vars.json").write_text(json.dumps(self.variables))
+        self.environ.update(FAKE_LEGACY="1", FAKE_LEGACY_PORT=str(self.server.server_port))
+        result = self.deploy()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        commands = self.assert_cleaned()
+        up = next(item["args"] for item in commands if "up" in item["args"])
+        self.assertEqual(up[up.index("--project-name") + 1], "repaircalc")
+        self.assertIn(str(self.directory / "stand/releases" / self.variables["release_id"] / "docker/docker-compose.preserve-data.yml"), up)
+        pin = json.loads((self.directory / "stand/compose-project.json").read_text())
+        self.assertEqual(pin, {"project": "repaircalc", "volume": "repaircalc_pgdata"})
+        backup = self.directory / "stand/current/database-before.dump"
+        self.assertEqual(backup.read_bytes(), b"PGDMP-test-archive")
+        self.assertEqual(backup.stat().st_mode & 0o777, 0o600)
+        self.assertFalse(any("stop" in item["args"] or "down" in item["args"] for item in commands))
+        # The pin survives a retry and continues to select the real DB, not repaircalc_prod_pgdata.
+        result = self.deploy()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_failed_database_backup_does_not_restart_services_or_pin_project(self):
+        self.variables.update(release_environment="prod", release_frontend_host="127.0.0.1")
+        (self.directory / "vars.json").write_text(json.dumps(self.variables))
+        self.environ.update(FAKE_LEGACY="1", FAKE_LEGACY_PORT=str(self.server.server_port), FAKE_BACKUP_FAIL="1")
+        result = self.deploy()
+        self.assertNotEqual(result.returncode, 0)
+        commands = self.assert_cleaned()
+        self.assertFalse(any("up" in item["args"] or "rm" in item["args"] for item in commands))
+        self.assertFalse((self.directory / "stand/compose-project.json").exists())
+        self.assertIn("Database backup/archive check failed", result.stdout)
 
 
 if __name__ == "__main__":

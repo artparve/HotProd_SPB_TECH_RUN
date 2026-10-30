@@ -1,0 +1,4 @@
+# Existing databases keep their published catalog/rules. Backend startup still runs Flyway.
+services:
+  init-data:
+    entrypoint: [sh, -c, "exit 0"]
