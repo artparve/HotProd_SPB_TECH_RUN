@@ -20,6 +20,7 @@ def container(project, name, running=True):
                        "Env": ["POSTGRES_USER=repaircalc", "POSTGRES_DB=repaircalc"]},
             "State": {"Status": "running" if running else "created", "Health": {"Status": "healthy"}},
             "HostConfig": {"PortBindings": {"8080/tcp": [{"HostIp": "127.0.0.1", "HostPort": "8080"}]} if name == "frontend" else {}},
+            "NetworkSettings": {"Networks": {project + "_default": {"IPAddress": "172.18.0.2"}}},
             "Mounts": [{"Type": "volume", "Name": project + "_pgdata", "Destination": "/var/lib/postgresql/data"}] if name == "postgres" else []}
 
 
@@ -134,11 +135,44 @@ class DeploymentTargetTests(unittest.TestCase):
             self.assertEqual(deploy_target.query(postgres, settings, "SELECT 1"), "1")
         self.assertNotIn("private-password", " ".join(run.call_args.args[0]))
         self.assertEqual(run.call_args.args[1], "private-password\n")
+        self.assertIn("172.18.0.2", run.call_args.args[0])
+        self.assertNotIn("127.0.0.1", " ".join(run.call_args.args[0]))
+        self.assertIn('PGCONNECT_TIMEOUT=5', " ".join(run.call_args.args[0]))
         result = subprocess.CompletedProcess([], 1, "", "private-password")
         with patch.object(deploy_target.subprocess, "run", return_value=result):
             with self.assertRaises(deploy_target.PreflightError) as caught:
                 deploy_target.query(postgres, settings, "SELECT 1")
         self.assertNotIn("private-password", str(caught.exception))
+
+    def test_network_password_failure_is_not_masked_by_localhost_trust(self):
+        postgres = self.containers[2]
+        settings = self.config["services"]["postgres"]["environment"]
+
+        def run(argv, data=None):
+            # Simulate the official image: localhost would accept even the wrong password.
+            if "127.0.0.1" in " ".join(argv):
+                return "170011\n"
+            raise deploy_target.PreflightError("password authentication failed: private-password")
+
+        with patch.object(deploy_target, "command", side_effect=run):
+            with self.assertRaisesRegex(deploy_target.PreflightError, "Docker network") as caught:
+                deploy_target.query(postgres, settings, "SHOW server_version_num")
+        self.assertNotIn("private-password", str(caught.exception))
+
+    def test_missing_bridge_address_never_falls_back_to_localhost(self):
+        for network in ({}, {"IPAddress": "127.0.0.1"}, {"IPAddress": "0.0.0.0"}, {"IPAddress": "invalid"}):
+            with self.subTest(network=network):
+                postgres = deepcopy(self.containers[2])
+                postgres["NetworkSettings"]["Networks"]["repaircalc_default"] = network
+                with patch.object(deploy_target, "command") as run:
+                    with self.assertRaises(deploy_target.PreflightError):
+                        deploy_target.query(postgres, self.config["services"]["postgres"]["environment"], "SELECT 1")
+                run.assert_not_called()
+
+    def test_ipv6_bridge_address_is_supported(self):
+        postgres = deepcopy(self.containers[2])
+        postgres["NetworkSettings"]["Networks"]["repaircalc_default"] = {"IPAddress": "", "GlobalIPv6Address": "fd00::2"}
+        self.assertEqual(deploy_target.database_address(postgres), "fd00::2")
 
     def test_invalid_remote_output_fails_without_leaking_it(self):
         output = io.StringIO()

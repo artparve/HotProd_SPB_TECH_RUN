@@ -67,6 +67,7 @@ def legacy(service):
                        "Env": ["POSTGRES_USER=repaircalc", "POSTGRES_DB=repaircalc"]},
             "State": {"Status": "running", "Health": {"Status": "healthy"}},
             "HostConfig": {"PortBindings": {"8080/tcp": [{"HostIp": "127.0.0.1", "HostPort": os.environ.get("FAKE_LEGACY_PORT", "8080")}]} if service == "frontend" else {}},
+            "NetworkSettings": {"Networks": {"repaircalc_default": {"IPAddress": "172.18.0.2"}}},
             "Mounts": [{"Type": "volume", "Name": "repaircalc_pgdata", "Destination": "/var/lib/postgresql/data"}] if service == "postgres" else []}
 if args[0] == "info":
     print("28.0.0")
@@ -91,6 +92,9 @@ elif args[0] == "exec":
         sys.stdout.buffer.write(b"PGDMP-test-archive")
     elif "SHOW server_version_num" in args:
         sys.stdin.read()
+        if os.environ.get("FAKE_NETWORK_AUTH_FAIL") == "1" and "172.18.0.2" in args:
+            print("password authentication failed: private-test-db-password", file=sys.stderr)
+            sys.exit(2)
         print("170011")
     else:
         sys.stdin.read()
@@ -295,6 +299,20 @@ elif "up" in args:
         commands = self.assert_cleaned(expect_login=False)
         self.assertIn("Frontend address/port is unavailable", result.stdout)
         self.assertFalse(any("up" in item["args"] or "rm" in item["args"] or "pull" in item["args"] for item in commands))
+        self.assertFalse((self.directory / "stand/current").exists())
+
+    def test_network_authentication_failure_does_not_restart_or_pin_legacy_stack(self):
+        self.variables.update(release_environment="prod", release_frontend_host="127.0.0.1")
+        (self.directory / "vars.json").write_text(json.dumps(self.variables))
+        self.environ.update(FAKE_LEGACY="1", FAKE_LEGACY_PORT=str(self.frontend_port), FAKE_NETWORK_AUTH_FAIL="1")
+        self.start_existing_frontend()
+        result = self.deploy()
+        self.assertNotEqual(result.returncode, 0)
+        commands = self.assert_cleaned(expect_login=False)
+        self.assertIn("Docker network", result.stdout)
+        self.assertNotIn("private-test-db-password", result.stdout + result.stderr)
+        self.assertFalse(any("up" in item["args"] or "rm" in item["args"] or "pull" in item["args"] for item in commands))
+        self.assertFalse((self.directory / "stand/compose-project.json").exists())
         self.assertFalse((self.directory / "stand/current").exists())
 
 

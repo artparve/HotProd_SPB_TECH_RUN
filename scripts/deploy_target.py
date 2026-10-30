@@ -101,15 +101,32 @@ def compose(path, project):
             "-f", str(path / "docker/docker-compose.yml"), "-f", str(path / "docker/docker-compose.release.yml")]
 
 
+def database_address(postgres):
+    project = labels(postgres).get("com.docker.compose.project")
+    network = postgres.get("NetworkSettings", {}).get("Networks", {}).get(str(project) + "_default") or {}
+    for field in ("IPAddress", "GlobalIPv6Address"):
+        try:
+            address = ipaddress.ip_address(network.get(field, ""))
+        except ValueError:
+            continue
+        if not address.is_loopback and not address.is_unspecified and not address.is_link_local:
+            return str(address)
+    raise PreflightError("Existing PostgreSQL has no verified Docker network address; refusing a localhost authentication check")
+
+
 def query(postgres, settings, sql):
-    # Password goes through stdin, not argv. TCP verifies the configured password, not socket trust.
-    shell = ('IFS= read -r PGPASSWORD; export PGPASSWORD; export PGOPTIONS="-c default_transaction_read_only=on"; '
-             'exec psql -X -A -t -v ON_ERROR_STOP=1 -h 127.0.0.1 -U "$1" -d "$2" -c "$3"')
+    # PostgreSQL images commonly trust BOTH Unix sockets and localhost TCP. Use the
+    # container's bridge address so the same network auth rules as the backend apply.
+    # Password goes through stdin, never argv or diagnostic output.
+    address = database_address(postgres)
+    shell = ('IFS= read -r PGPASSWORD; export PGPASSWORD; export PGCONNECT_TIMEOUT=5; '
+             'export PGOPTIONS="-c default_transaction_read_only=on"; '
+             'exec psql -X -A -t -v ON_ERROR_STOP=1 -h "$1" -U "$2" -d "$3" -c "$4"')
     try:
         return command(["docker", "exec", "-i", postgres["Id"], "sh", "-c", shell, "sh",
-                        settings["POSTGRES_USER"], settings["POSTGRES_DB"], sql], settings["POSTGRES_PASSWORD"] + "\n").strip()
+                        address, settings["POSTGRES_USER"], settings["POSTGRES_DB"], sql], settings["POSTGRES_PASSWORD"] + "\n").strip()
     except PreflightError:
-        raise PreflightError("Cannot query existing PostgreSQL with deployment credentials; verify DB_PASSWORD, DB_USER and DB_NAME") from None
+        raise PreflightError("Cannot query existing PostgreSQL over the Docker network with deployment credentials; verify DB_PASSWORD, DB_USER and DB_NAME. No services were restarted") from None
 
 
 def plan(args):
