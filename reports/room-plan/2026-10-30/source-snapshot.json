@@ -1,0 +1,20 @@
+{
+  "head": "4a2b0844bedb060dff8c3c6850011b356b583897",
+  "branch": "main",
+  "workingTree": "Uncommitted implementation, preserve existing untracked inputs and admin reports",
+  "files": {
+    "backend/estimation/repaircalc_estimator/plans/__init__.py": "32f9f1bab9819e613eb666ecf16e1732c1e029ee552fd85504e6feb6b0039a55",
+    "backend/estimation/repaircalc_estimator/plans/prompt.txt": "d906bdea459138363658cfd432141f55f29000c57eb6418dd49da6a745c32abc",
+    "backend/estimation/repaircalc_estimator/plans/schema.json": "0146fb1d3f00552980755a98164dd7f8916891a211992f439924c6b7d91426b1",
+    "backend/estimation/repaircalc_estimator/__main__.py": "64dd3ec3fff4c073fd09c6557ed09284e710affe8871b2acf9c2c75bce03e2f1",
+    "backend/estimation/requirements.txt": "1754cfce3bac32f7ba90a7d9239d964742fe52734ccff93dcd81d0faae8c044f",
+    "backend/estimation/Dockerfile": "af5d6143e5f5b42eaf18c330ee805188a06253a71b19f77b15a89a4d1e5fbf3d",
+    "backend/estimation/.dockerignore": "3cee8d32c38af6f9698f31e86c7b40cad284506acb93b082b01ac43784ef5dcb",
+    "backend/estimation/tests/test_plans.py": "3bc4fdf5514845e3f4012fb276b2180e13a9f0561d62562e73880b284b7f5c67",
+    "backend/scripts/room_plan_experiment.py": "830f3f56728e5130167469f5d055235531b4b0fa69f0cdee3cf4a457e10a634e",
+    "docs/room-plan-api.json": "8a8eb3ea0683ed33cd83ce7fad387d3025787515c3e7a7b963a8f88f2b30fcc6",
+    "docs/openapi.yaml": "77c3dba8cc61b174a9c846842eebf960b67e5c24bc9bcd17aff885ac7c68ff00",
+    "frontend/nginx/default.conf.template": "2d812396edc13d136abfc6cd6d59513fe6817d996ccd2aa79c17a2c0a3913c49",
+    "frontend/vite.config.ts": "9718a9482f060ae48e5c060262cf063bce27113f5e7ba5523f5a70a1354ff874"
+  }
+}

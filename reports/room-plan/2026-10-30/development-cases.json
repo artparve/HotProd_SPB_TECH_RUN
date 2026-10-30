@@ -1,0 +1,92 @@
+{
+  "purpose": "Development set, not held-out acceptance. Manual image review before evaluation; no accuracy claim.",
+  "cases": [
+    {
+      "source": "Кухня · 18,3 м².png",
+      "sha256": "4f7230de8d6d3f184bd575b4c728b355bf6674626639c4fb903124047dc7ee1e",
+      "expected": {
+        "shape": "rectangle",
+        "dimensionsMetres": {
+          "length": 5.32,
+          "width": 3.32,
+          "height": null
+        }
+      },
+      "notes": "Внутренние размеры; внешние 5.62 и 3.62 не принимать. Оси можно переставить."
+    },
+    {
+      "source": "635164-plan-komnaty-chertezh-5.jpg",
+      "sha256": "71ffd7b35af1020c51b3c7ca51daa93601cd3f61006b60bffc20752fdf5c87df",
+      "expected": {
+        "dimensionsMetres": {
+          "length": null,
+          "width": null,
+          "height": null
+        }
+      },
+      "notes": "Нет явных единиц; 2850 относится к части ширины, остальные подписи включают мебель. Не восстанавливать общий размер."
+    },
+    {
+      "source": "feature1-ru.jpg",
+      "sha256": "cd28971899b65f48d6e1fc64adb3dd2fffe1b375a4a524cc4d3e80ee489bebd4",
+      "expected": {
+        "dimensionsMetres": {
+          "length": null,
+          "width": null,
+          "height": null
+        }
+      },
+      "notes": "Футы/дюймы пока не поддерживаются; не трактовать 12 и 8 как метры."
+    },
+    {
+      "source": "feature4.jpg",
+      "sha256": "b5638bba558cebbd71ece6af157132ed4f1c38f597c3e28414d2d97a2b92c7ab",
+      "expected": {
+        "dimensionsMetres": {
+          "length": null,
+          "width": null,
+          "height": null
+        }
+      },
+      "notes": "Футы/дюймы пока не поддерживаются; нужен явный отказ."
+    },
+    {
+      "source": "feature3-ru.jpg",
+      "sha256": "0040eb7edc5389342b4cb028352bd202029d91acc6cf9ea66c4afb34809188f3",
+      "expected": {
+        "shape": "multiple",
+        "dimensionsMetres": {
+          "length": null,
+          "width": null,
+          "height": null
+        }
+      },
+      "notes": "Две комнаты: не выбирать одну произвольно."
+    },
+    {
+      "source": "feature5-ru.jpg",
+      "sha256": "47b4e13849b68a0c5be03a7bfb93e20b1100ebb1bd42ac74148737f6f39b0756",
+      "expected": {
+        "shape": "non_rectangular",
+        "dimensionsMetres": {
+          "length": null,
+          "width": null,
+          "height": null
+        }
+      },
+      "notes": "Внизу слева уступ стены. Не сводить к прямоугольнику 5.40 x 4.20."
+    },
+    {
+      "source": "i.jpg",
+      "sha256": "8aa05c903c8271d1b03544b222acc2f34ea8989792f0d927a83ccc25deb0755c",
+      "expected": {
+        "dimensionsMetres": {
+          "length": null,
+          "width": null,
+          "height": null
+        }
+      },
+      "notes": "Мелкие подписи без явных единиц; нижний левый уступ."
+    }
+  ]
+}

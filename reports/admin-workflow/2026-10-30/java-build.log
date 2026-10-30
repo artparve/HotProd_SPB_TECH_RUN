@@ -1,0 +1,45 @@
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< ru.repaircalc:repaircalc-backend >------------------
+[INFO] Building RepairCalc Backend 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (require-java-21) @ repaircalc-backend ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ repaircalc-backend ---
+[INFO] Copying 3 resources from src/main/resources to target/classes
+[INFO] Copying 8 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ repaircalc-backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 71 source files with javac [debug parameters release 21] to target/classes
+[INFO] /build/src/main/java/ru/repaircalc/admin/AdminAuth.java: Some input files use or override a deprecated API.
+[INFO] /build/src/main/java/ru/repaircalc/admin/AdminAuth.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ repaircalc-backend ---
+[INFO] Copying 2 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ repaircalc-backend ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 29 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] /build/src/test/java/ru/repaircalc/admin/AdminProductApiIT.java: Some input files use or override a deprecated API.
+[INFO] /build/src/test/java/ru/repaircalc/admin/AdminProductApiIT.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ repaircalc-backend ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ repaircalc-backend ---
+[INFO] Building jar: /build/target/repaircalc-backend-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot:4.1.2:repackage (repackage) @ repaircalc-backend ---
+[INFO] Replacing main artifact /build/target/repaircalc-backend-0.1.0-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /build/target/repaircalc-backend-0.1.0-SNAPSHOT.jar.original
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.465 s
+[INFO] Finished at: 2026-10-29T22:16:01Z
+[INFO] ------------------------------------------------------------------------

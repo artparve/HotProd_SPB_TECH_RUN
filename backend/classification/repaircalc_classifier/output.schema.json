@@ -1,0 +1,288 @@
+{
+  "$defs": {
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "description": "Точный путь из evidence_fields входа, например attributes[0].value",
+          "title": "Field",
+          "type": "string"
+        },
+        "quote": {
+          "description": "Дословная непустая подстрока значения указанного поля",
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "field",
+        "quote"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "Properties": {
+      "additionalProperties": false,
+      "properties": {
+        "moisture_resistant": {
+          "$ref": "#/$defs/PropertyJudgment",
+          "description": "Подтверждённая стойкость к влаге; не означает гидроизоляцию или разрешение постоянного погружения."
+        },
+        "washable": {
+          "$ref": "#/$defs/PropertyJudgment",
+          "description": "Не равна пригодности к влажным помещениям."
+        },
+        "wet_room_suitable": {
+          "$ref": "#/$defs/PropertyJudgment",
+          "description": "Только явное указание производителя/карточки; не выводить из влагостойкости или IP."
+        },
+        "interior_suitable": {
+          "$ref": "#/$defs/PropertyJudgment",
+          "description": "Подтверждённое внутреннее применение."
+        },
+        "exterior_suitable": {
+          "$ref": "#/$defs/PropertyJudgment",
+          "description": "Подтверждённое наружное применение."
+        },
+        "frost_resistant": {
+          "$ref": "#/$defs/PropertyJudgment",
+          "description": "Не равна разрешению нанесения при отрицательной температуре."
+        },
+        "high_load_suitable": {
+          "$ref": "#/$defs/PropertyJudgment",
+          "description": "Только явное указание; не выводить из номера класса без отдельного правила."
+        }
+      },
+      "required": [
+        "moisture_resistant",
+        "washable",
+        "wet_room_suitable",
+        "interior_suitable",
+        "exterior_suitable",
+        "frost_resistant",
+        "high_load_suitable"
+      ],
+      "title": "Properties",
+      "type": "object"
+    },
+    "PropertyJudgment": {
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "enum": [
+            "yes",
+            "no",
+            "unknown",
+            "conflict"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "state",
+        "evidence"
+      ],
+      "title": "PropertyJudgment",
+      "type": "object"
+    },
+    "SubstrateLabel": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/SubstrateLabelId"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "evidence"
+      ],
+      "title": "SubstrateLabel",
+      "type": "object"
+    },
+    "SubstrateLabelId": {
+      "enum": [
+        "mineral",
+        "concrete",
+        "cement",
+        "brick",
+        "plaster",
+        "putty",
+        "gypsum",
+        "drywall",
+        "wood",
+        "wood_board",
+        "metal",
+        "plastic",
+        "glass",
+        "ceramic",
+        "stone",
+        "wallpaper",
+        "existing_coating"
+      ],
+      "title": "SubstrateLabelId",
+      "type": "string"
+    },
+    "SurfaceLabel": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/SurfaceLabelId"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "evidence"
+      ],
+      "title": "SurfaceLabel",
+      "type": "object"
+    },
+    "SurfaceLabelId": {
+      "enum": [
+        "floor",
+        "wall",
+        "ceiling",
+        "facade",
+        "roof",
+        "foundation",
+        "door_window",
+        "joint"
+      ],
+      "title": "SurfaceLabelId",
+      "type": "string"
+    },
+    "WorkLabel": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/WorkLabelId"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "evidence"
+      ],
+      "title": "WorkLabel",
+      "type": "object"
+    },
+    "WorkLabelId": {
+      "enum": [
+        "floor",
+        "paint",
+        "wallpaper",
+        "electrical",
+        "tile",
+        "priming",
+        "plastering",
+        "puttying",
+        "screed",
+        "waterproofing",
+        "sealing",
+        "drywall",
+        "insulation",
+        "masonry",
+        "plumbing",
+        "heating",
+        "ventilation",
+        "lighting",
+        "doors_windows",
+        "roofing",
+        "facade",
+        "fastening",
+        "ceiling"
+      ],
+      "title": "WorkLabelId",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "scope": {
+      "enum": [
+        "in_scope",
+        "out_of_scope",
+        "uncertain"
+      ],
+      "title": "Scope",
+      "type": "string"
+    },
+    "work_types": {
+      "items": {
+        "$ref": "#/$defs/WorkLabel"
+      },
+      "title": "Work Types",
+      "type": "array"
+    },
+    "surface_locations": {
+      "items": {
+        "$ref": "#/$defs/SurfaceLabel"
+      },
+      "title": "Surface Locations",
+      "type": "array"
+    },
+    "substrates": {
+      "items": {
+        "$ref": "#/$defs/SubstrateLabel"
+      },
+      "title": "Substrates",
+      "type": "array"
+    },
+    "properties": {
+      "$ref": "#/$defs/Properties"
+    },
+    "needs_review": {
+      "title": "Needs Review",
+      "type": "boolean"
+    },
+    "review_reasons": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Review Reasons",
+      "type": "array"
+    }
+  },
+  "required": [
+    "scope",
+    "work_types",
+    "surface_locations",
+    "substrates",
+    "properties",
+    "needs_review",
+    "review_reasons"
+  ],
+  "title": "Classification",
+  "type": "object"
+}

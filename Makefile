@@ -4,7 +4,8 @@ NODE ?= node
 NPM ?= npm
 DOCKER ?= docker
 
-COMPOSE = $(DOCKER) compose --project-directory docker --env-file env/.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml
+COMPOSE_CLI ?= $(DOCKER) compose
+COMPOSE = $(COMPOSE_CLI) --project-directory docker --env-file env/.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml
 COPY_CONFIG = $(NODE) -e "const fs = require('node:fs'); try { fs.copyFileSync(process.argv[1], process.argv[2], fs.constants.COPYFILE_EXCL); console.log('Created: ' + process.argv[2]); } catch (error) { if (error.code === 'EEXIST' && fs.statSync(process.argv[2]).isFile()) process.exit(0); throw error; }"
 
 .PHONY: help init init-config install dev build preview format typecheck test check e2e e2e-install up down logs ps config image release release-image
@@ -19,10 +20,10 @@ help:
 	@echo "check / test  - all checks or unit/component/contract tests"
 	@echo "e2e-install   - download Playwright Chromium once"
 	@echo "e2e           - desktop and mobile browser tests"
-	@echo "up / down     - start or stop Docker Compose"
+	@echo "up / down     - start or stop full Docker stack"
 	@echo "logs / ps     - container logs or status"
 	@echo "config        - validate Compose without starting containers"
-	@echo "image         - build Docker image using env/.env (including IMAGE_TAG)"
+	@echo "image         - build application Docker images using env/.env"
 	@echo "release       - clean dependency install, checks and production build"
 	@echo "release-image - release plus Docker image; no archive or deployment"
 
@@ -85,7 +86,7 @@ config:
 	$(COMPOSE) config --quiet
 
 image:
-	$(COMPOSE) build frontend
+	$(COMPOSE) build
 
 # Recursive makes are intentionally sequential, including under make -j:
 # npm ci must finish before any check reads node_modules.

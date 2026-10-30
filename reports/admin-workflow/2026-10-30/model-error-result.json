@@ -1,0 +1,26 @@
+{
+  "productId": "534fb1ee-bd24-4e6b-ba24-c64fa3e89746",
+  "failedJob": {
+    "id": "6f37e2b4-f2ec-457b-85cd-3e396561dad5",
+    "versionId": "2ffaf9a8-839b-44e9-af23-c0c1518a039b",
+    "status": "failed",
+    "attempts": 3,
+    "input": {
+      "name": "Ошибка недоступного Ollama — тест",
+      "source": "model-error-check",
+      "source_id": "2026-10-30",
+      "attributes": [],
+      "categories": [],
+      "description": "",
+      "marketing_description": "\n"
+    },
+    "result": null,
+    "errorCode": "classification_failed",
+    "createdAt": "2026-10-29T22:30:16.474558Z",
+    "finishedAt": "2026-10-29T22:30:16.585924Z"
+  },
+  "retryJobId": "e1bd7d5f-0fb4-4667-8168-619aea398cd1",
+  "cardPreserved": true,
+  "retryCreatesNewJob": true,
+  "testEndpoint": "http://127.0.0.1:9"
+}

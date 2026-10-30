@@ -1,0 +1,210 @@
+Browser tab: 2, Title: "Карточка каталога · RepairCalc", URL: "http://127.0.0.1:15173/admin/products/a5cc205d-44b5-48d7-a741-e6c1cc25bc68".
+1 AXWebArea Карточка каталога · RepairCalc, URL: 127.0.0.1:15173/admin/products/a5cc205d-44b5-48d7-a741-e6c1cc25bc68
+	2 container app
+		3 link Description: Перейти к содержимому, Value: 127.0.0.1:15173/admin/products/a5cc205d-44b5-48d7-a741-e6c1cc25bc68#main
+		4 container
+			5 link Description: RepairCalc — главная, Value: 127.0.0.1:15173/
+			6 text ВАШ ПРОЕКТ
+			7 container Основная навигация
+				8 link Description: Общий расчёт, Value: 127.0.0.1:15173/
+				9 link Description: Подбор для комнаты, Value: 127.0.0.1:15173/room
+				10 link Description: Расчёт товара, Value: 127.0.0.1:15173/product
+				11 link Description: Мои сметы, Value: 127.0.0.1:15173/saved
+			12 link Description: Администрирование, Value: 127.0.0.1:15173/admin
+			13 heading Меньше лишнего. Больше уверенности., Value: 3
+				14 text Меньше лишнего.
+				15 text Больше уверенности.
+			16 text Рассчитайте материалы с запасом, а не на глаз.
+			17 button Как это работает
+			18 text ПРОЕКТ ДЛЯ КЕЙСА МАКСИДОМ всё для дома SPB TECH RUN · 2026
+		19 container
+			20 text Мой проект Карточка каталога Административный API
+			21 button Помощь
+			22 link Description: Корзина 0, Value: 127.0.0.1:15173/cart
+		23 container Каталог · администрирование
+			24 heading Каталог · администрирование, Value: 1, ID: admin-title
+				25 text Каталог · администрирование
+			26 text Рабочие карточки и история изменений.
+			27 button Выйти · catalog-admin
+			28 container Разделы каталога
+				29 link Description: Все карточки, Value: 127.0.0.1:15173/admin
+				30 link Description: Новая карточка, Value: 127.0.0.1:15173/admin/products/new
+			31 heading Карточка · версия 2, Value: 2
+				32 text Карточка · версия 2
+			33 container
+				34 text Черновик · a5cc205d-44b5-48d7-a741-e6c1cc25bc68
+				35 text Версия создана: 30.10.2026, 00:55:53 · catalog-admin
+			36 text Сохранение создаёт рабочий черновик. Публикация в пользовательский каталог будет доступна на следующем этапе.
+			37 container
+				38 heading Основные сведения, Value: 2
+					39 text Основные сведения
+				40 text Источник идентификатора
+				41 text field (disabled) Источник идентификатора, Value: browser-admin-check
+				42 text Внешний идентификатор
+				43 text field (disabled) Внешний идентификатор, Value: manual-2026-10-30
+				44 text Название
+				45 text field (settable) Название, Value: Краска — проверка административного черновика
+				46 text Артикул
+				47 text field (settable) Артикул
+				48 text Описание
+				49 text entry area (settable) Описание
+				50 text Область применения
+				51 text entry area (settable) Область применения
+				52 text Ограничения
+				53 text entry area (settable) Ограничения
+				54 heading Проверяемые значения, Value: 2
+					55 text Проверяемые значения
+				56 text «Не заполнено» и «Явно неизвестно» сохраняются отдельно. Для подтверждённого значения укажите источник. Сохранение фиксирует вас как автора подтверждения полей. Категория — состояние
+				57 pop up button (collapsed, settable) Категория — состояние, Value: Не заполнено, ID: state-category, Secondary Actions: Expand
+					58 menu
+						59 (selected) Не заполнено
+						60 Явно неизвестно
+						61 Подтверждено
+				62 text Источник для поля «Категория»
+				63 text field (settable) Источник для поля «Категория», ID: source-category
+				64 text Вид товара — состояние
+				65 pop up button (collapsed, settable) Вид товара — состояние, Value: Не заполнено, ID: state-kind, Secondary Actions: Expand
+					66 menu
+						67 (selected) Не заполнено
+						68 Явно неизвестно
+						69 Подтверждено
+				70 text Источник для поля «Вид товара»
+				71 text field (settable) Источник для поля «Вид товара», ID: source-kind
+				72 text Цена — состояние
+				73 pop up button (collapsed, settable) Цена — состояние, Value: Подтверждено, ID: state-price, Secondary Actions: Expand
+					74 menu
+						75 Не заполнено
+						76 Явно неизвестно
+						77 (selected) Подтверждено
+				78 text Цена — значение
+				79 text field (settable) Цена — значение, Value: 1234.50, ID: value-price
+				80 text Источник для поля «Цена»
+				81 text field (settable) Источник для поля «Цена», Value: Тестовая этикетка от 30.10.2026, ID: source-price
+				82 text Последнее подтверждение: catalog-admin Валюта — состояние
+				83 pop up button (collapsed, settable) Валюта — состояние, Value: Не заполнено, ID: state-currency, Secondary Actions: Expand
+					84 menu
+						85 (selected) Не заполнено
+						86 Явно неизвестно
+						87 Подтверждено
+				88 text Источник для поля «Валюта»
+				89 text field (settable) Источник для поля «Валюта», ID: source-currency
+				90 text Дата актуальности цены — состояние
+				91 pop up button (collapsed, settable) Дата актуальности цены — состояние, Value: Не заполнено, ID: state-priceDate, Secondary Actions: Expand
+					92 menu
+						93 (selected) Не заполнено
+						94 Явно неизвестно
+						95 Подтверждено
+				96 text Источник для поля «Дата актуальности цены»
+				97 text field (settable) Источник для поля «Дата актуальности цены», ID: source-priceDate
+				98 text Единица расчёта — состояние
+				99 pop up button (collapsed, settable) Единица расчёта — состояние, Value: Не заполнено, ID: state-unit, Secondary Actions: Expand
+					100 menu
+						101 (selected) Не заполнено
+						102 Явно неизвестно
+						103 Подтверждено
+				104 text Источник для поля «Единица расчёта»
+				105 text field (settable) Источник для поля «Единица расчёта», ID: source-unit
+				106 text Единица продажи — состояние
+				107 pop up button (collapsed, settable) Единица продажи — состояние, Value: Не заполнено, ID: state-saleUnit, Secondary Actions: Expand
+					108 menu
+						109 (selected) Не заполнено
+						110 Явно неизвестно
+						111 Подтверждено
+				112 text Источник для поля «Единица продажи»
+				113 text field (settable) Источник для поля «Единица продажи», ID: source-saleUnit
+				114 text Размер упаковки — состояние
+				115 pop up button (collapsed, settable) Размер упаковки — состояние, Value: Не заполнено, ID: state-packageSize, Secondary Actions: Expand
+					116 menu
+						117 (selected) Не заполнено
+						118 Явно неизвестно
+						119 Подтверждено
+				120 text Источник для поля «Размер упаковки»
+				121 text field (settable) Источник для поля «Размер упаковки», ID: source-packageSize
+				122 text Расход — состояние
+				123 pop up button (collapsed, settable) Расход — состояние, Value: Не заполнено, ID: state-consumption, Secondary Actions: Expand
+					124 menu
+						125 (selected) Не заполнено
+						126 Явно неизвестно
+						127 Подтверждено
+				128 text Источник для поля «Расход»
+				129 text field (settable) Источник для поля «Расход», ID: source-consumption
+				130 text Единица расхода — состояние
+				131 pop up button (collapsed, settable) Единица расхода — состояние, Value: Не заполнено, ID: state-consumptionUnit, Secondary Actions: Expand
+					132 menu
+						133 (selected) Не заполнено
+						134 Явно неизвестно
+						135 Подтверждено
+				136 text Источник для поля «Единица расхода»
+				137 text field (settable) Источник для поля «Единица расхода», ID: source-consumptionUnit
+				138 text Для влажных помещений — состояние
+				139 pop up button (collapsed, settable) Для влажных помещений — состояние, Value: Явно неизвестно, ID: state-wet, Secondary Actions: Expand
+					140 menu
+						141 Не заполнено
+						142 (selected) Явно неизвестно
+						143 Подтверждено
+				144 text Источник для поля «Для влажных помещений»
+				145 text field (settable) Источник для поля «Для влажных помещений», ID: source-wet
+				146 text Для высокой нагрузки — состояние
+				147 pop up button (collapsed, settable) Для высокой нагрузки — состояние, Value: Не заполнено, ID: state-highLoad, Secondary Actions: Expand
+					148 menu
+						149 (selected) Не заполнено
+						150 Явно неизвестно
+						151 Подтверждено
+				152 text Источник для поля «Для высокой нагрузки»
+				153 text field (settable) Источник для поля «Для высокой нагрузки», ID: source-highLoad
+				154 text Для неотапливаемых помещений — состояние
+				155 pop up button (collapsed, settable) Для неотапливаемых помещений — состояние, Value: Не заполнено, ID: state-unheated, Secondary Actions: Expand
+					156 menu
+						157 (selected) Не заполнено
+						158 Явно неизвестно
+						159 Подтверждено
+				160 text Источник для поля «Для неотапливаемых помещений»
+				161 text field (settable) Источник для поля «Для неотапливаемых помещений», ID: source-unheated
+				162 text Ширина рулона, м — состояние
+				163 pop up button (collapsed, settable) Ширина рулона, м — состояние, Value: Не заполнено, ID: state-rollWidth, Secondary Actions: Expand
+					164 menu
+						165 (selected) Не заполнено
+						166 Явно неизвестно
+						167 Подтверждено
+				168 text Источник для поля «Ширина рулона, м»
+				169 text field (settable) Источник для поля «Ширина рулона, м», ID: source-rollWidth
+				170 text Длина рулона, м — состояние
+				171 pop up button (collapsed, settable) Длина рулона, м — состояние, Value: Не заполнено, ID: state-rollLength, Secondary Actions: Expand
+					172 menu
+						173 (selected) Не заполнено
+						174 Явно неизвестно
+						175 Подтверждено
+				176 text Источник для поля «Длина рулона, м»
+				177 text field (settable) Источник для поля «Длина рулона, м», ID: source-rollLength
+				178 text Раппорт, м — состояние
+				179 pop up button (collapsed, settable) Раппорт, м — состояние, Value: Не заполнено, ID: state-rapport, Secondary Actions: Expand
+					180 menu
+						181 (selected) Не заполнено
+						182 Явно неизвестно
+						183 Подтверждено
+				184 text Источник для поля «Раппорт, м»
+				185 text field (settable) Источник для поля «Раппорт, м», ID: source-rapport
+				186 heading Характеристики, Value: 2
+					187 text Характеристики
+				188 button Добавить характеристику
+				189 heading Источники, Value: 2
+					190 text Источники
+				191 button Добавить источник
+				192 text Служебный комментарий
+				193 text entry area (settable) Служебный комментарий
+				194 button Сохранить новую версию
+			195 container История карточки
+				196 heading История версий и аудита, Value: 2
+					197 text История версий и аудита
+				198 button Загрузить историю
+				199 button (collapsed) Версия 2 · catalog-admin · 30.10.2026, 00:55:53, Secondary Actions: Expand
+					200 text Версия 2 · catalog-admin · 30.10.2026, 00:55:53
+				201 button (collapsed) Версия 1 · catalog-admin · 30.10.2026, 00:55:35, Secondary Actions: Expand
+					202 text Версия 1 · catalog-admin · 30.10.2026, 00:55:35
+				203 button (disabled) Более новые версии
+				204 text Страница 1
+				205 button (disabled) Более старые версии
+		206 container
+			207 text RepairCalc · Умный подход к ремонту Расчёты через подключённый API
+
+The focused UI element is 1 AXWebArea Карточка каталога · RepairCalc, URL: 127.0.0.1:15173/admin/products/a5cc205d-44b5-48d7-a741-e6c1cc25bc68

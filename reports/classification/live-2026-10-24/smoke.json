@@ -1,0 +1,13 @@
+{
+  "command": "python3 backend/scripts/ollama_smoke.py --prompt \"Перечисли три этапа подготовки стены к покраске.\"",
+  "exit_code": 0,
+  "model": "gemma4:12b",
+  "elapsed_seconds": 68.68,
+  "generated_tokens": 297,
+  "observed_steps": [
+    "Очистка и демонтаж",
+    "Выравнивание и ремонт поверхности",
+    "Грунтование"
+  ],
+  "note": "Время из stderr smoke-скрипта; шаги сокращены из реального ответа, не полный ответ API."
+}

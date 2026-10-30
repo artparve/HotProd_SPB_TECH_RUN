@@ -24,6 +24,15 @@ spring:
 
 server:
   port: ${SERVER_PORT:8000}
+  servlet:
+    session:
+      tracking-modes: cookie
+      cookie:
+        name: REPAIRCALC_ADMIN
+        path: /api/v1/admin
+        http-only: true
+        secure: ${ADMIN_COOKIE_SECURE:true}
+        same-site: strict
   error:
     include-message: never
     include-binding-errors: never
@@ -33,6 +42,12 @@ server:
 logging:
   pattern:
     level: '%5p [requestId=%X{requestId}]'
+
+repaircalc:
+  admin:
+    username: ${ADMIN_USERNAME:}
+    password-hash: ${ADMIN_PASSWORD_HASH:}
+    session-seconds: ${ADMIN_SESSION_SECONDS:1800}
 
 management:
   endpoints:

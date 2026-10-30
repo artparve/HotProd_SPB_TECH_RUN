@@ -1,0 +1,62 @@
+
+Running 4 tests using 1 worker
+
+(node:217785) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:36:5 › admin UI creates, searches, versions, handles concurrent editing and logs out (8.8s)
+(node:218014) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:69:5 › admin panel performs real classification, human review, publication and Java calculation (4.6m)
+
+
+  1) [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:36:5 › admin UI creates, searches, versions, handles concurrent editing and logs out 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Карточка · версия 1', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Карточка · версия 1', exact: true }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: 'Карточка · версия 1', exact: true })
+
+
+      30 |   await page.getByLabel('Название источника', { exact: true }).fill('Учебная карточка приёмки')
+      31 |   await page.getByRole('button', { name: 'Создать черновик', exact: true }).click()
+    > 32 |   await expect(page.getByRole('heading', { name: 'Карточка · версия 1', exact: true })).toBeVisible()
+         |                                                                                         ^
+      33 |   return page.url().split('/').pop()
+      34 | }
+      35 |
+        at createPaint (/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:32:89)
+        at /home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:40:14
+
+    Error Context: reports/admin-workflow/2026-10-30-recheck/remote-results/remote-admin-admin-UI-crea-406a5-urrent-editing-and-logs-out-desktop/error-context.md
+
+  2) [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:69:5 › admin panel performs real classification, human review, publication and Java calculation 
+
+    Test was interrupted.
+
+    Error: locator.selectOption: Test ended.
+    Call log:
+      - waiting for locator('.workflow form fieldset').first().getByLabel('Решение', { exact: true })
+
+
+      86 |     if (legend.startsWith('properties')) {
+      87 |       await row.getByLabel('Решение', { exact: true }).selectOption('correct')
+    > 88 |       await row.getByLabel('Значение', { exact: true }).selectOption(legend.includes('interior_suitable') ? 'yes' : 'unknown')
+         |                                                        ^
+      89 |     } else {
+      90 |       await row.getByLabel('Решение', { exact: true }).selectOption('accept')
+      91 |     }
+        at /home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:88:56
+
+    Error Context: reports/admin-workflow/2026-10-30-recheck/remote-results/remote-admin-admin-panel-p-1fa3c-cation-and-Java-calculation-desktop/error-context.md
+
+  1 failed
+    [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:36:5 › admin UI creates, searches, versions, handles concurrent editing and logs out 
+  1 interrupted
+    [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:69:5 › admin panel performs real classification, human review, publication and Java calculation 
+  2 did not run

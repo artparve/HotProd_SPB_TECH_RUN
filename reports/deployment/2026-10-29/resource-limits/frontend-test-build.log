@@ -1,0 +1,60 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 983B done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#2 DONE 0.9s
+
+#3 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#3 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.1s done
+#3 CACHED
+
+#4 [internal] load metadata for docker.io/library/node:22-alpine
+#4 DONE 0.7s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 138B done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 DONE 0.0s
+
+#7 [build 1/6] FROM docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
+#7 resolve docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914 0.0s done
+#7 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 2.01kB done
+#6 DONE 0.0s
+
+#8 [build 5/6] COPY . .
+#8 CACHED
+
+#9 [build 3/6] COPY package.json package-lock.json ./
+#9 CACHED
+
+#10 [build 4/6] RUN npm ci --no-fund
+#10 CACHED
+
+#11 [build 2/6] WORKDIR /app
+#11 CACHED
+
+#12 [build 6/6] RUN npm run build
+#12 CACHED
+
+#13 exporting to image
+#13 exporting layers
+#13 exporting layers 23.6s done
+#13 exporting manifest sha256:ee04d99cea2e5c63beca033bfcecf496698e9cb232ac3ad7dd3ddbb2332441d9 0.0s done
+#13 exporting config sha256:e3a182f3a6511f590d902965f599bf79911ab31247ffbce892e41e710f7d2435 0.0s done
+#13 exporting attestation manifest sha256:7ae9000c7132853668a19ca22b92863d2eeaaa54c26d94007a04ce388eda21e1 0.0s done
+#13 exporting manifest list sha256:32e3b938edeedf4b67893405307109920ac1b50a2859e644e65929622a65fcde
+#13 exporting manifest list sha256:32e3b938edeedf4b67893405307109920ac1b50a2859e644e65929622a65fcde 0.0s done
+#13 naming to docker.io/library/repaircalc-frontend-tests:local done
+#13 unpacking to docker.io/library/repaircalc-frontend-tests:local
+#13 unpacking to docker.io/library/repaircalc-frontend-tests:local 9.2s done
+#13 DONE 32.9s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/lvxl8qij0u053s3hlifmmy4g7

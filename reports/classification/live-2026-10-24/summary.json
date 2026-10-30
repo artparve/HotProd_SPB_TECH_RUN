@@ -1,0 +1,18 @@
+{
+  "cases": 7,
+  "passed_cases": 7,
+  "checks": 35,
+  "passed_checks": 35,
+  "errors": 0,
+  "total_classification_seconds": 1027.0,
+  "median_seconds": 109.96,
+  "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+  "notes": "Small diagnostic cases with selected expectations; not independent ground truth or micro/macro-F1.",
+  "manual_review_findings": [
+    {
+      "case_id": "real-paint-135",
+      "issue": "plaster grounded by зашпатлеванных: source quote exists but meaning does not match taxonomy",
+      "action": "Added putty substrate in taxonomy v2, clarified prompt v2, strengthened exact substrate-list assertion for targeted rerun"
+    }
+  ]
+}

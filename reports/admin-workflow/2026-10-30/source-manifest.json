@@ -1,0 +1,152 @@
+{
+  "baseline": "240dd9a",
+  "branch": "main",
+  "runtimeJarSha256": "362bc1704cbf9b20cc9e7d04f87b12f700394db350020f8798a36a0d1d78e775",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 42585,
+      "sha256": "0940434e63969694faf87770ab3d2ce8402df572ef8cfd10500afb1a9338232a"
+    },
+    {
+      "path": "backend/README.md",
+      "bytes": 28024,
+      "sha256": "26c2b5302feac95492882959bbc30688c97944e6a6f60aebc4c96665f7bfa836"
+    },
+    {
+      "path": "backend/classification/README.md",
+      "bytes": 21044,
+      "sha256": "8dede63ce541c2c5cdc0acdb1114e68286ba824c10c3f5102c1e26687b9e2e6b"
+    },
+    {
+      "path": "backend/classification/repaircalc_classifier/worker.py",
+      "bytes": 4418,
+      "sha256": "befa73ca22e5360239876341905d18b88b610062f7e9bf8a27b193c17a567251"
+    },
+    {
+      "path": "backend/classification/requirements.txt",
+      "bytes": 88,
+      "sha256": "cdc8afeb9c7248e6686d0ccbcff9b027f3b320e01711b89f2064754e6d4228f1"
+    },
+    {
+      "path": "backend/classification/tests/test_worker.py",
+      "bytes": 4354,
+      "sha256": "034a6a48cdc5ad44e091b3676059451f8d814539ce577e18872e1c964a11d90a"
+    },
+    {
+      "path": "backend/src/main/java/ru/repaircalc/admin/AdminClassificationController.java",
+      "bytes": 1105,
+      "sha256": "83025aef6f3725a163d1e020133c93819b4d4cc4abb1ee576239ec503a84af92"
+    },
+    {
+      "path": "backend/src/main/java/ru/repaircalc/admin/AdminClassificationService.java",
+      "bytes": 4786,
+      "sha256": "5d8acd4231be372dae96ab401809604a173c34f3fa68453e31eb06f789abb32c"
+    },
+    {
+      "path": "backend/src/main/java/ru/repaircalc/admin/AdminErrorHandler.java",
+      "bytes": 2940,
+      "sha256": "51c3378c02d762eb3f80d3411d0e5e8cd8c885523e8e31807a335260528d56e1"
+    },
+    {
+      "path": "backend/src/main/java/ru/repaircalc/admin/AdminPublicationService.java",
+      "bytes": 15427,
+      "sha256": "a264100fb703856d215259f37af398451a7d64e1d9a4815b0c9d270ae7e0af55"
+    },
+    {
+      "path": "backend/src/main/java/ru/repaircalc/admin/AdminReviewService.java",
+      "bytes": 9580,
+      "sha256": "dcc175633ade46bc78da56cefffca6335149b1218bfd865b744ae5718feeb4d4"
+    },
+    {
+      "path": "backend/src/main/java/ru/repaircalc/admin/AdminWorkflowController.java",
+      "bytes": 1723,
+      "sha256": "8f8280bc13132833e9f9017eeab89c5343c1e61408b83b1016eeaa7ca96cd845"
+    },
+    {
+      "path": "backend/src/main/resources/classification-taxonomy.json",
+      "bytes": 16761,
+      "sha256": "a38990a01ee60df47fb17e9e54f418214bdcbf17860fb9cd9a0ed42db7ff86a1"
+    },
+    {
+      "path": "backend/src/main/resources/db/migration/V6__admin_classification.sql",
+      "bytes": 2160,
+      "sha256": "3346b1516f27b96d0b2453ab5ec8dc164ac3b3a938c6ee66643d443998929746"
+    },
+    {
+      "path": "backend/src/main/resources/db/migration/V7__admin_review_publication.sql",
+      "bytes": 1536,
+      "sha256": "bf8e1935eb25c1e66ea99e4f368b543ac06cb976f11111bae27b279a6056a8d3"
+    },
+    {
+      "path": "backend/src/test/java/ru/repaircalc/admin/AdminProductApiIT.java",
+      "bytes": 13456,
+      "sha256": "bd78040d23cd8da37e93ecf663f1c5a0761fa9e366d64fad0590bcb2d1e13164"
+    },
+    {
+      "path": "backend/src/test/java/ru/repaircalc/admin/AdminReviewServiceTest.java",
+      "bytes": 1837,
+      "sha256": "fc4f25b943b3f8d11d2c768a190551936f2c0fae69bbf49ee354698a96287094"
+    },
+    {
+      "path": "backend/src/test/java/ru/repaircalc/admin/AdminWorkflowIT.java",
+      "bytes": 11044,
+      "sha256": "06fb28691ddc67d2a211307dd1e7f0f0da3664f24e29b6e55bbb499742298e65"
+    },
+    {
+      "path": "docker/docker-compose.yml",
+      "bytes": 5653,
+      "sha256": "458c58075a3a72aa7d5ad767ae935f1923c6d0296f7f2b688d728dd137561faa"
+    },
+    {
+      "path": "docs/admin-catalog-api.json",
+      "bytes": 72320,
+      "sha256": "63e50bb52999d92b1210bea8a4497f4a19c817301cda0c8e03facdf92723f8ef"
+    },
+    {
+      "path": "docs/admin-catalog-implementation.md",
+      "bytes": 9627,
+      "sha256": "8b722da90a3b91039190a0c6ab1f1e2bc4242a45efed9dcb670b1558ebbe1681"
+    },
+    {
+      "path": "docs/admin-workflow.md",
+      "bytes": 10917,
+      "sha256": "beadc595644ecf3401fad3ca52403d156d8f6f446edc687f0acf06a13ae1b925"
+    },
+    {
+      "path": "docs/openapi.yaml",
+      "bytes": 29154,
+      "sha256": "96cf39a2ac5f56b3b9bc5b48b65577c3cb2c4618bd85a79e7dce7078528799d7"
+    },
+    {
+      "path": "frontend/src/components/AdminProductWorkflow.test.ts",
+      "bytes": 3383,
+      "sha256": "ec6883507c7bb80ee170f309a989f5f16b575068c3d722c418fce514fed2a4a9"
+    },
+    {
+      "path": "frontend/src/components/AdminProductWorkflow.vue",
+      "bytes": 10728,
+      "sha256": "87b465d5d3b05912f064f040ba0d174abf16b059a9b9fc307c03a544f8521dae"
+    },
+    {
+      "path": "frontend/src/domain/admin.ts",
+      "bytes": 6310,
+      "sha256": "810e22d99f28474c8cf518786e7a3bb4610efc2d41c0a2f547124a72dd001f4e"
+    },
+    {
+      "path": "frontend/src/domain/contract.test.ts",
+      "bytes": 3628,
+      "sha256": "6eb48f9b4f068716a6263cfb57ecb865d3663dd4e196875f52571d8acffe8675"
+    },
+    {
+      "path": "frontend/src/services/admin.ts",
+      "bytes": 5609,
+      "sha256": "4cb9fb787c4867ad9e78fe99506b338bdc9de69ffa359fc5a6361a1ce5fc1ec2"
+    },
+    {
+      "path": "frontend/src/views/AdminView.vue",
+      "bytes": 15426,
+      "sha256": "e78a79d5b22b66580e29f5fb329f6f43cd88c00f3ebe20b1ea4a31a704439f5a"
+    }
+  ]
+}

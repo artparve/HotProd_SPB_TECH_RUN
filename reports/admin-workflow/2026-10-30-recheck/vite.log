@@ -1,0 +1,8 @@
+
+> repaircalc-frontend@0.1.0 dev
+> vite --host 127.0.0.1 --port 15175
+
+
+  VITE v8.3.5  ready in 252 ms
+
+  ➜  Local:   http://127.0.0.1:15175/

@@ -1,0 +1,42 @@
+{
+  "shape": "rectangle",
+  "name": {
+    "state": "unknown",
+    "value": null,
+    "label": null,
+    "bbox": null
+  },
+  "length": {
+    "state": "conflict",
+    "value": null,
+    "unit": null,
+    "label": "4200 / 4500 мм",
+    "bbox": null
+  },
+  "width": {
+    "state": "found",
+    "value": "3500",
+    "unit": "mm",
+    "label": "3500 мм",
+    "bbox": {
+      "x": 0.1,
+      "y": 0.1,
+      "width": 0.2,
+      "height": 0.1
+    }
+  },
+  "height": {
+    "state": "found",
+    "value": "2700",
+    "unit": "mm",
+    "label": "2700 мм",
+    "bbox": {
+      "x": 0.1,
+      "y": 0.1,
+      "width": 0.2,
+      "height": 0.1
+    }
+  },
+  "openings": [],
+  "warnings": []
+}

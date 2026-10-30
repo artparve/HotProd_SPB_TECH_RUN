@@ -1,0 +1,3 @@
+Browser tab: 1, Title: "Расчёт товара · RepairCalc", URL: "http://127.0.0.1:8080/product?id=ac1f222a-f5e9-3b5d-a91e-c943b053e92e".
+There has been no change in the accessibility tree.
+The focused UI element is 110 button (expanded) Как рассчитано, Secondary Actions: Collapse

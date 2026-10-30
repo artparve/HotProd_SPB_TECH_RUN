@@ -1,0 +1,89 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 983B done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#2 DONE 1.5s
+
+#3 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#3 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s done
+#3 CACHED
+
+#4 [internal] load metadata for docker.io/library/node:22-alpine
+#4 ...
+
+#5 [internal] load metadata for docker.io/library/nginx:1.28-alpine
+#5 DONE 1.2s
+
+#4 [internal] load metadata for docker.io/library/node:22-alpine
+#4 DONE 1.2s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 380B done
+#6 DONE 0.0s
+
+#7 [build 1/6] FROM docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
+#7 resolve docker.io/library/node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914 0.0s done
+#7 DONE 0.0s
+
+#8 [production 1/4] FROM docker.io/library/nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236
+#8 resolve docker.io/library/nginx:1.28-alpine@sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236 0.0s done
+#8 DONE 0.0s
+
+#9 [internal] load build context
+#9 transferring context: 73.45kB done
+#9 DONE 0.0s
+
+#10 [build 3/6] COPY package.json package-lock.json ./
+#10 CACHED
+
+#11 [build 2/6] WORKDIR /app
+#11 CACHED
+
+#12 [build 4/6] RUN npm ci --no-fund
+#12 CACHED
+
+#13 [build 5/6] COPY . .
+#13 DONE 0.0s
+
+#14 [build 6/6] RUN npm run build
+#14 0.441 
+#14 0.441 > repaircalc-frontend@0.1.0 build
+#14 0.441 > vue-tsc --noEmit && vite build
+#14 0.441 
+#14 4.991 vite v8.3.5 building client environment for production...
+#14 5.004 transforming...
+#14 5.910 ✓ 1986 modules transformed.
+#14 5.979 rendering chunks...
+#14 6.030 computing gzip size...
+#14 6.035 dist/index.html                       0.73 kB │ gzip:  0.46 kB
+#14 6.035 dist/assets/AdminView-wi8o1Hei.css    3.00 kB │ gzip:  0.90 kB
+#14 6.035 dist/assets/index-vdbLYpbB.css       35.96 kB │ gzip:  8.62 kB
+#14 6.035 dist/assets/AdminView-Dgqlp_tv.js    34.39 kB │ gzip: 10.36 kB
+#14 6.035 dist/assets/index-BJ9gqkKs.js       259.89 kB │ gzip: 88.01 kB
+#14 6.035 
+#14 6.035 ✓ built in 1.04s
+#14 DONE 6.1s
+
+#15 [production 2/4] COPY nginx/nginx.conf /etc/nginx/nginx.conf
+#15 CACHED
+
+#16 [production 3/4] COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
+#16 CACHED
+
+#17 [production 4/4] COPY --from=build /app/dist /usr/share/nginx/html
+#17 DONE 0.0s
+
+#18 exporting to image
+#18 exporting layers 0.1s done
+#18 exporting manifest sha256:339d39a09b0d04b7ebc475f683f03ce2435ea8028ff3810e18029c3b4947fbeb 0.0s done
+#18 exporting config sha256:4470702533d047c49c02eb3175edcef0d967453fde4673546de07d71d15ef841 0.0s done
+#18 exporting attestation manifest sha256:a1ffdd9c7994f46358166089911a52fcb1a07e2ee1eb3375539a10687e89a146 0.0s done
+#18 exporting manifest list sha256:6170ea52906f59baeb800c3ea950f03cddf50e07c401a4e9a8bf260567f0f915 0.0s done
+#18 naming to docker.io/library/repaircalc-frontend:recheck done
+#18 unpacking to docker.io/library/repaircalc-frontend:recheck 0.0s done
+#18 DONE 0.1s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/jxfhxgmg6uxb0nltd1j3eugcc

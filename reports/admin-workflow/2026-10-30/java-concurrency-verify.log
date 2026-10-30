@@ -1,0 +1,183 @@
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< ru.repaircalc:repaircalc-backend >------------------
+[INFO] Building RepairCalc Backend 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (require-java-21) @ repaircalc-backend ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ repaircalc-backend ---
+[INFO] Copying 3 resources from src/main/resources to target/classes
+[INFO] Copying 8 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ repaircalc-backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 71 source files with javac [debug parameters release 21] to target/classes
+[INFO] /build/src/main/java/ru/repaircalc/admin/AdminAuth.java: Some input files use or override a deprecated API.
+[INFO] /build/src/main/java/ru/repaircalc/admin/AdminAuth.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ repaircalc-backend ---
+[INFO] Copying 2 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ repaircalc-backend ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 31 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] /build/src/test/java/ru/repaircalc/admin/AdminProductApiIT.java: Some input files use or override a deprecated API.
+[INFO] /build/src/test/java/ru/repaircalc/admin/AdminProductApiIT.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ repaircalc-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.6/surefire-junit-platform-3.5.6.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.6/surefire-junit-platform-3.5.6.pom (5.2 kB at 5.1 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-providers/3.5.6/surefire-providers-3.5.6.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-providers/3.5.6/surefire-providers-3.5.6.pom (2.5 kB at 29 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.6/common-java5-3.5.6.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.6/common-java5-3.5.6.pom (3.1 kB at 36 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.pom (3.2 kB at 37 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.pom (2.8 kB at 33 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.pom (3.0 kB at 34 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.6/surefire-junit-platform-3.5.6.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.6/surefire-junit-platform-3.5.6.jar (35 kB at 210 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.6/common-java5-3.5.6.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.6/common-java5-3.5.6.jar (18 kB at 69 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.jar (208 kB at 531 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.jar (152 kB at 352 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.jar (256 kB at 552 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.pom (3.2 kB at 36 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.pom (1.5 kB at 13 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.jar (246 kB at 1.1 MB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar (3.8 kB at 45 kB/s)
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+[INFO] Running ru.repaircalc.admin.AdminReviewServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.227 s -- in ru.repaircalc.admin.AdminReviewServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ repaircalc-backend ---
+[INFO] Building jar: /build/target/repaircalc-backend-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot:4.1.2:repackage (repackage) @ repaircalc-backend ---
+[INFO] Replacing main artifact /build/target/repaircalc-backend-0.1.0-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /build/target/repaircalc-backend-0.1.0-SNAPSHOT.jar.original
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ repaircalc-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+[INFO] Running ru.repaircalc.admin.AdminWorkflowIT
+22:32:39.680 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.admin.AdminWorkflowIT
+22:32:39.741 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.admin.AdminWorkflowIT
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T22:32:40.069Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] ru.repaircalc.admin.AdminWorkflowIT      : Starting AdminWorkflowIT using Java 21.0.12.1 with PID 98 (started by root in /build)
+2026-10-29T22:32:40.071Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] ru.repaircalc.admin.AdminWorkflowIT      : The following 2 profiles are active: "test", "postgres-test"
+2026-10-29T22:32:40.614Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-29T22:32:40.659Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 40 ms. Found 7 JPA repository interfaces.
+2026-10-29T22:32:40.989Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] org.testcontainers.images.PullPolicy     : Image pull policy will be performed by: DefaultPullPolicy()
+2026-10-29T22:32:40.991Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.t.utility.ImageNameSubstitutor         : Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+2026-10-29T22:32:41.003Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] org.testcontainers.DockerClientFactory   : Testcontainers version: 2.0.5
+2026-10-29T22:32:41.368Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.t.d.DockerClientProviderStrategy       : Found Docker environment with Environment variables, system properties and defaults. Resolved dockerHost=unix:///var/run/docker.sock
+2026-10-29T22:32:41.369Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] org.testcontainers.DockerClientFactory   : Docker host IP address is host.docker.internal
+2026-10-29T22:32:41.383Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] org.testcontainers.DockerClientFactory   : Connected to docker: 
+  Server Version: 29.9.2
+  API Version: 1.56
+  Operating System: Docker Desktop
+  Total Memory: 15987 MB
+  Labels: 
+    com.docker.desktop.address=unix:///home/artparve/.docker/desktop/docker-cli.sock
+2026-10-29T22:32:41.437Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] tc.testcontainers/ryuk:0.14.0            : Creating container for image: testcontainers/ryuk:0.14.0
+2026-10-29T22:32:41.441Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.t.utility.RegistryAuthLocator          : Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: testcontainers/ryuk:0.14.0, configFile: /root/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /root/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+2026-10-29T22:32:41.631Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] tc.testcontainers/ryuk:0.14.0            : Container testcontainers/ryuk:0.14.0 is starting: c9ebc72571b95c85732886e5bb83d4f62f324f36029600c22a3dbb62ea7a0df5
+2026-10-29T22:32:41.877Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] tc.testcontainers/ryuk:0.14.0            : Container testcontainers/ryuk:0.14.0 started in PT0.439656871S
+2026-10-29T22:32:41.883Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.t.utility.RyukResourceReaper           : Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+2026-10-29T22:32:41.883Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] org.testcontainers.DockerClientFactory   : Checking the system...
+2026-10-29T22:32:41.883Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] org.testcontainers.DockerClientFactory   : ✔︎ Docker server version should be at least 1.6.0
+2026-10-29T22:32:41.884Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Creating container for image: postgres:17.11
+2026-10-29T22:32:41.945Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container postgres:17.11 is starting: cb1bc936bebda824525fb1909907887e38b617e479bf25ea55c83267b784195f
+2026-10-29T22:32:42.970Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container postgres:17.11 started in PT1.085990406S
+2026-10-29T22:32:42.971Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container is started (JDBC URL: jdbc:postgresql://host.docker.internal:45319/test?loggerLevel=OFF)
+2026-10-29T22:32:43.266Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://host.docker.internal:45319/test?loggerLevel=OFF (PostgreSQL 17.11)
+2026-10-29T22:32:43.310Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-29T22:32:43.313Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 7 migrations (execution time 00:00.013s)
+2026-10-29T22:32:43.325Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-29T22:32:43.385Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-29T22:32:43.391Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - create repaircalc schema"
+2026-10-29T22:32:43.414Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - create catalog"
+2026-10-29T22:32:43.438Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - create product work mappings"
+2026-10-29T22:32:43.454Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "4 - create rule set"
+2026-10-29T22:32:43.470Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "5 - admin product versions"
+2026-10-29T22:32:43.491Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "6 - admin classification"
+2026-10-29T22:32:43.507Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "7 - admin review publication"
+2026-10-29T22:32:43.522Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 7 migrations to schema "public", now at version v7 (execution time 00:00.065s)
+2026-10-29T22:32:43.594Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-29T22:32:43.636Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.13.Final
+2026-10-29T22:32:43.916Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-29T22:32:43.945Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-29T22:32:43.970Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-29T22:32:44.030Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://host.docker.internal:45319/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.11
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-29T22:32:44.643Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-29T22:32:44.686Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:32:44.807Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-29T22:32:45.313Z  INFO [requestId=] 98 --- [repaircalc-backend] [           main] ru.repaircalc.admin.AdminWorkflowIT      : Started AdminWorkflowIT in 5.52 seconds (process running for 6.321)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.077 s -- in ru.repaircalc.admin.AdminWorkflowIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ repaircalc-backend ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  16.019 s
+[INFO] Finished at: 2026-10-29T22:32:46Z
+[INFO] ------------------------------------------------------------------------

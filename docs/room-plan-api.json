@@ -1,0 +1,628 @@
+{
+  "components": {
+    "schemas": {
+      "PlanDraft": {
+        "type": "object",
+        "properties": {
+          "shape": {
+            "type": "string",
+            "enum": [
+              "rectangle",
+              "non_rectangular",
+              "multiple",
+              "unknown"
+            ]
+          },
+          "name": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "found",
+                  "unknown",
+                  "conflict"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "maxLength": 100,
+                "nullable": true
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 200,
+                "nullable": true
+              },
+              "bbox": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "width": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "height": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              }
+            },
+            "required": [
+              "state",
+              "value",
+              "label",
+              "bbox"
+            ],
+            "additionalProperties": false
+          },
+          "length": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "found",
+                  "unknown",
+                  "conflict"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "pattern": "^\\d+(?:[.,]\\d+)?$",
+                "nullable": true
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "mm",
+                  "cm",
+                  "m",
+                  null
+                ],
+                "nullable": true
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 200,
+                "nullable": true
+              },
+              "bbox": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "width": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "height": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              }
+            },
+            "required": [
+              "state",
+              "value",
+              "unit",
+              "label",
+              "bbox"
+            ],
+            "additionalProperties": false
+          },
+          "width": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "found",
+                  "unknown",
+                  "conflict"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "pattern": "^\\d+(?:[.,]\\d+)?$",
+                "nullable": true
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "mm",
+                  "cm",
+                  "m",
+                  null
+                ],
+                "nullable": true
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 200,
+                "nullable": true
+              },
+              "bbox": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "width": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "height": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              }
+            },
+            "required": [
+              "state",
+              "value",
+              "unit",
+              "label",
+              "bbox"
+            ],
+            "additionalProperties": false
+          },
+          "height": {
+            "type": "object",
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "found",
+                  "unknown",
+                  "conflict"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "pattern": "^\\d+(?:[.,]\\d+)?$",
+                "nullable": true
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "mm",
+                  "cm",
+                  "m",
+                  null
+                ],
+                "nullable": true
+              },
+              "label": {
+                "type": "string",
+                "maxLength": 200,
+                "nullable": true
+              },
+              "bbox": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "y": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "width": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "height": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "width",
+                  "height"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              }
+            },
+            "required": [
+              "state",
+              "value",
+              "unit",
+              "label",
+              "bbox"
+            ],
+            "additionalProperties": false
+          },
+          "openings": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "window",
+                    "door",
+                    "unknown"
+                  ]
+                },
+                "width": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "found",
+                        "unknown",
+                        "conflict"
+                      ]
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^\\d+(?:[.,]\\d+)?$",
+                      "nullable": true
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "mm",
+                        "cm",
+                        "m",
+                        null
+                      ],
+                      "nullable": true
+                    },
+                    "label": {
+                      "type": "string",
+                      "maxLength": 200,
+                      "nullable": true
+                    },
+                    "bbox": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "y": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "width": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "height": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "width",
+                        "height"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "value",
+                    "unit",
+                    "label",
+                    "bbox"
+                  ],
+                  "additionalProperties": false
+                },
+                "height": {
+                  "type": "object",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "found",
+                        "unknown",
+                        "conflict"
+                      ]
+                    },
+                    "value": {
+                      "type": "string",
+                      "pattern": "^\\d+(?:[.,]\\d+)?$",
+                      "nullable": true
+                    },
+                    "unit": {
+                      "type": "string",
+                      "enum": [
+                        "mm",
+                        "cm",
+                        "m",
+                        null
+                      ],
+                      "nullable": true
+                    },
+                    "label": {
+                      "type": "string",
+                      "maxLength": 200,
+                      "nullable": true
+                    },
+                    "bbox": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "y": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "width": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "height": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "width",
+                        "height"
+                      ],
+                      "additionalProperties": false,
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "state",
+                    "value",
+                    "unit",
+                    "label",
+                    "bbox"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "kind",
+                "width",
+                "height"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "type": "string",
+              "maxLength": 300
+            }
+          }
+        },
+        "required": [
+          "shape",
+          "name",
+          "length",
+          "width",
+          "height",
+          "openings",
+          "warnings"
+        ],
+        "additionalProperties": false
+      },
+      "PlanExtractRequest": {
+        "type": "object",
+        "required": [
+          "imageBase64"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "imageBase64": {
+            "type": "string",
+            "format": "byte",
+            "maxLength": 11184812,
+            "description": "PNG/JPEG/WebP, до 8 MiB и 12 млн пикселей. Без data URL."
+          }
+        }
+      },
+      "PlanExtractResult": {
+        "type": "object",
+        "required": [
+          "schemaVersion",
+          "promptVersion",
+          "model",
+          "promptSha256",
+          "schemaSha256",
+          "draft",
+          "dimensionsMetres",
+          "missingFields",
+          "requiresConfirmation",
+          "warnings",
+          "image",
+          "elapsedSeconds"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "schemaVersion": {
+            "type": "string",
+            "enum": [
+              "room-plan-draft-v1"
+            ]
+          },
+          "promptVersion": {
+            "type": "string",
+            "enum": [
+              "room-plan-extraction-v1"
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "promptSha256": {
+            "type": "string"
+          },
+          "schemaSha256": {
+            "type": "string"
+          },
+          "draft": {
+            "$ref": "#/components/schemas/PlanDraft"
+          },
+          "dimensionsMetres": {
+            "type": "object",
+            "required": [
+              "length",
+              "width",
+              "height"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "length": {
+                "type": "number",
+                "nullable": true
+              },
+              "width": {
+                "type": "number",
+                "nullable": true
+              },
+              "height": {
+                "type": "number",
+                "nullable": true
+              }
+            }
+          },
+          "missingFields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requiresConfirmation": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "image": {
+            "type": "object",
+            "required": [
+              "width",
+              "height",
+              "sha256",
+              "preparedSha256",
+              "coordinates"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "width": {
+                "type": "integer"
+              },
+              "height": {
+                "type": "integer"
+              },
+              "sha256": {
+                "type": "string"
+              },
+              "preparedSha256": {
+                "type": "string"
+              },
+              "coordinates": {
+                "type": "string",
+                "enum": [
+                  "normalized-oriented-image"
+                ]
+              }
+            }
+          },
+          "elapsedSeconds": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}

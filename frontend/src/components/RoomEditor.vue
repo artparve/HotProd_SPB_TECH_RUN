@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import AppIcon from './AppIcon.vue'
+import RoomPlanImport from './RoomPlanImport.vue'
 import { roomLabels, roomSchema, roomTypes, workLabels } from '../domain/types'
 import type { Room, RoomType, Work } from '../domain/types'
 import { geometry } from '../domain/room'
@@ -52,6 +53,7 @@ function setWall(work: Work) {
       </div>
     </fieldset>
 
+    <RoomPlanImport :room="room" />
     <div class="section-heading small">
       <h3>Размеры помещения</h3>
       <span class="muted">В метрах, по внутренним стенам</span>

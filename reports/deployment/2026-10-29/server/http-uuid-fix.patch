@@ -1,0 +1,73 @@
+diff --git a/frontend/src/domain/types.ts b/frontend/src/domain/types.ts
+index 1e6c855..3513fb7 100644
+--- a/frontend/src/domain/types.ts
++++ b/frontend/src/domain/types.ts
+@@ -1,4 +1,5 @@
+ import { z } from 'zod'
++import { newId } from './id'
+ 
+ export const roomTypes = ['living', 'bathroom', 'kitchen', 'children', 'balcony'] as const
+ export const workTypes = ['floor', 'paint', 'wallpaper', 'electrical'] as const
+@@ -123,7 +124,7 @@ export type ProductInput = z.infer<typeof productInputSchema>
+ 
+ export function newRoom(index = 1): Room {
+   return {
+-    id: crypto.randomUUID(),
++    id: newId(),
+     name: `Комната ${index}`,
+     type: 'living',
+     length: 5,
+diff --git a/frontend/src/services/demo.ts b/frontend/src/services/demo.ts
+index f267270..73db39e 100644
+--- a/frontend/src/services/demo.ts
++++ b/frontend/src/services/demo.ts
+@@ -1,4 +1,5 @@
+ import Decimal from 'decimal.js'
++import { newId } from '../domain/id'
+ import { catalog } from '../data/catalog'
+ import { compatible, geometry } from '../domain/room'
+ import { productInputSchema, projectSchema, roomSchema, roomLabels } from '../domain/types'
+@@ -111,7 +112,7 @@ export function calculateLine(
+ function assemble(lines: EstimateLine[], labor = '0.00', warnings: string[] = []): Estimate {
+   const materials = lines.reduce((sum, line) => sum.plus(line.total), D(0))
+   return {
+-    id: crypto.randomUUID(),
++    id: newId(),
+     createdAt: new Date().toISOString(),
+     mode: 'demo',
+     lines,
+diff --git a/frontend/src/views/RoomView.vue b/frontend/src/views/RoomView.vue
+index 37bd351..b65e3f6 100644
+--- a/frontend/src/views/RoomView.vue
++++ b/frontend/src/views/RoomView.vue
+@@ -1,5 +1,6 @@
+ <script setup lang="ts">
+ import { ref, watch } from 'vue'
++import { newId } from '../domain/id'
+ import AppIcon from '../components/AppIcon.vue'
+ import RoomEditor from '../components/RoomEditor.vue'
+ import ProductSwatch from '../components/ProductSwatch.vue'
+@@ -46,7 +47,7 @@ function addToProject() {
+     notify('В проекте может быть не более 20 комнат')
+     return
+   }
+-  workspace.project.rooms.push({ ...roomSchema.parse(room.value), id: crypto.randomUUID() })
++  workspace.project.rooms.push({ ...roomSchema.parse(room.value), id: newId() })
+   notify('Комната добавлена в общий расчёт')
+ }
+ </script>
+diff --git a/frontend/src/domain/id.ts b/frontend/src/domain/id.ts
+new file mode 100644
+index 0000000..2ea8d70
+--- /dev/null
++++ b/frontend/src/domain/id.ts
+@@ -0,0 +1,9 @@
++// getRandomValues is also available when a demo is served over HTTP by IP.
++export function newId(): string {
++  if (typeof globalThis.crypto.randomUUID === 'function') return globalThis.crypto.randomUUID()
++  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(16))
++  bytes[6] = (bytes[6]! & 0x0f) | 0x40
++  bytes[8] = (bytes[8]! & 0x3f) | 0x80
++  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
++  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
++}

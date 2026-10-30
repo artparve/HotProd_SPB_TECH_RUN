@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-30",
+  "timezone": "Europe/Moscow",
+  "frontend": {
+    "typecheck": "PASS",
+    "tests": 41
+  },
+  "estimator": {
+    "tests": 18,
+    "httpTestsRunOutsideSandbox": true
+  },
+  "classifier": {
+    "tests": 24,
+    "network": "none",
+    "inference": false
+  },
+  "composeConfig": "PASS",
+  "knownCredentialsScan": "PASS",
+  "sourceDiffCheck": "PASS",
+  "rawReportWhitespacePreserved": true
+}

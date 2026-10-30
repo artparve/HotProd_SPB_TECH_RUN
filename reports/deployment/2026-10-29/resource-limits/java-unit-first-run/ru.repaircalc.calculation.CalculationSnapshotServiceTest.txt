@@ -1,0 +1,69 @@
+-------------------------------------------------------------------------------
+Test set: ru.repaircalc.calculation.CalculationSnapshotServiceTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 5, Skipped: 0, Time elapsed: 0.010 s <<< FAILURE! -- in ru.repaircalc.calculation.CalculationSnapshotServiceTest
+ru.repaircalc.calculation.CalculationSnapshotServiceTest.transactionBoundaryFailuresCannotLeakDatabaseDetails -- Time elapsed: 0.002 s <<< ERROR!
+java.nio.file.NoSuchFileException: data/rules-v1.json
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at java.base/java.nio.file.Files.readString(Files.java:3359)
+	at java.base/java.nio.file.Files.readString(Files.java:3318)
+	at ru.repaircalc.calculation.CalculationSnapshotServiceTest.preparePair(CalculationSnapshotServiceTest.java:32)
+
+ru.repaircalc.calculation.CalculationSnapshotServiceTest.storedRuleReferenceMustMatchTheActualCatalogFingerprint -- Time elapsed: 0.002 s <<< ERROR!
+java.nio.file.NoSuchFileException: data/rules-v1.json
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at java.base/java.nio.file.Files.readString(Files.java:3359)
+	at java.base/java.nio.file.Files.readString(Files.java:3318)
+	at ru.repaircalc.calculation.CalculationSnapshotServiceTest.preparePair(CalculationSnapshotServiceTest.java:32)
+
+ru.repaircalc.calculation.CalculationSnapshotServiceTest.programmingErrorsAreNotDisguisedAsDependencyFailures -- Time elapsed: 0.001 s <<< ERROR!
+java.nio.file.NoSuchFileException: data/rules-v1.json
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at java.base/java.nio.file.Files.readString(Files.java:3359)
+	at java.base/java.nio.file.Files.readString(Files.java:3318)
+	at ru.repaircalc.calculation.CalculationSnapshotServiceTest.preparePair(CalculationSnapshotServiceTest.java:32)
+
+ru.repaircalc.calculation.CalculationSnapshotServiceTest.selectsEachVersionExactlyOnceAndRetainsDetachedSnapshots -- Time elapsed: 0.001 s <<< ERROR!
+java.nio.file.NoSuchFileException: data/rules-v1.json
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at java.base/java.nio.file.Files.readString(Files.java:3359)
+	at java.base/java.nio.file.Files.readString(Files.java:3318)
+	at ru.repaircalc.calculation.CalculationSnapshotServiceTest.preparePair(CalculationSnapshotServiceTest.java:32)
+
+ru.repaircalc.calculation.CalculationSnapshotServiceTest.catalogWithoutRulesIsUnavailable -- Time elapsed: 0.001 s <<< ERROR!
+java.nio.file.NoSuchFileException: data/rules-v1.json
+	at java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:92)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:106)
+	at java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:111)
+	at java.base/sun.nio.fs.UnixFileSystemProvider.newByteChannel(UnixFileSystemProvider.java:261)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380)
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432)
+	at java.base/java.nio.file.Files.readAllBytes(Files.java:3281)
+	at java.base/java.nio.file.Files.readString(Files.java:3359)
+	at java.base/java.nio.file.Files.readString(Files.java:3318)
+	at ru.repaircalc.calculation.CalculationSnapshotServiceTest.preparePair(CalculationSnapshotServiceTest.java:32)
+

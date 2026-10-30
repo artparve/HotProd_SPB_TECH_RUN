@@ -1,0 +1,14 @@
+*
+!repaircalc_estimator/
+!repaircalc_estimator/*.py
+!repaircalc_estimator/plans/
+!repaircalc_estimator/plans/*.py
+!repaircalc_estimator/plans/*.json
+!repaircalc_estimator/plans/*.txt
+!requirements.txt
+
+**/__pycache__
+**/*.pyc
+**/*.log
+**/.env
+**/.env.*

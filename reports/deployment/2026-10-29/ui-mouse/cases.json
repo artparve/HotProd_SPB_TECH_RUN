@@ -1,0 +1,53 @@
+[
+  {
+    "id": "paint",
+    "status": "PASS",
+    "input": "45 м², 2 слоя, 10%, ИИ выключен",
+    "expected": "11.88 л; 3 банки; 15 л; остаток 3.12 л; 7470 ₽",
+    "evidence": "01-paint.png"
+  },
+  {
+    "id": "cart",
+    "status": "PASS",
+    "expected": "3 банки × 2490 ₽ = 7470 ₽",
+    "evidence": "02-cart.png"
+  },
+  {
+    "id": "saved-reload",
+    "status": "PASS",
+    "expected": "После перезагрузки смета открывается: 7470 ₽, 3 банки",
+    "evidence": "03-saved.png"
+  },
+  {
+    "id": "area-zero",
+    "status": "PASS",
+    "expected": "Нативная валидация >= 0.1, смета не создана",
+    "evidence": "04-validation.png"
+  },
+  {
+    "id": "missing-norm",
+    "status": "PASS",
+    "expected": "HTTP 422 с объяснением отсутствующих данных, без выдуманной сметы",
+    "evidence": "05-incomplete.png"
+  },
+  {
+    "id": "tile-recovery",
+    "status": "PASS",
+    "input": "20 м², 10%, ИИ выключен; после HTTP 422",
+    "expected": "22 м²; 16 упаковок; 23.04 м²; остаток 1.04 м²; 34560 ₽",
+    "evidence": "06-tile.png"
+  },
+  {
+    "id": "ai-ui",
+    "status": "PASS_WITH_UX_ISSUES",
+    "input": "30 м², 2 слоя, запас 10%, gemma4:12b",
+    "expected": "7.92 л; 2 банки; 10 л; остаток 2.08 л; 4980 ₽; пояснение отображено",
+    "completionObservationSeconds": 335,
+    "previousPendingObservationSeconds": 280,
+    "evidence": "08-ai-result.txt",
+    "issues": [
+      "JSON и Markdown показаны обычным текстом в пояснении",
+      "Долгое ожидание на CPU: завершение наблюдалось между 280 и 335 секундами"
+    ]
+  }
+]

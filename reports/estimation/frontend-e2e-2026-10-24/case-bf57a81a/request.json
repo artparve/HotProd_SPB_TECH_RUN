@@ -1,0 +1,13 @@
+{
+  "productId": "8539fe9d-e2dc-3994-a5fc-85773eb533b5",
+  "input": {
+    "area": 20,
+    "perimeter": 18,
+    "height": 2.7,
+    "reserve": 10,
+    "layers": 2,
+    "quantity": 9
+  },
+  "prompt": "Объясни расход, стоимость, округление упаковок и остаток для заданных параметров.",
+  "useCorrection": false
+}

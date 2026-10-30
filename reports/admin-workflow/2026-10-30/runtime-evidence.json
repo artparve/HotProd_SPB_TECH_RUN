@@ -1,0 +1,404 @@
+{
+  "job": {
+    "id": "5a273fa7-0494-4ed8-914c-88ee2b871211",
+    "input": {
+      "name": "ТЕСТОВАЯ краска для стен · приёмка админки",
+      "source": "browser-workflow",
+      "source_id": "paint-2026-10-30",
+      "attributes": [],
+      "categories": [
+        {
+          "id": "Краски",
+          "name": "Краски"
+        }
+      ],
+      "description": "ТЕСТОВЫЙ товар. Водно-дисперсионная краска для окраски внутренних стен по бетонным и оштукатуренным основаниям. Учебная норма расхода 0,12 л/м² на один слой. Фасовка 2,5 л. Пригодность для влажных помещений не заявлена.",
+      "marketing_description": "\n"
+    },
+    "result": {
+      "model": "gemma4:12b",
+      "source": "browser-workflow",
+      "base_url": "http://repaircalc-ollama-1:11434",
+      "cod_good": null,
+      "source_id": "paint-2026-10-30",
+      "input_sha256": "77969d42a3a2889b235e383ff290ac2e32c37474cb09f7c8f3f0c65d7eee74aa",
+      "prompt_sha256": "530267173245d24a76dc74f8dea54299a940be18b59943ef5a2459a5e5e4e1bf",
+      "classification": {
+        "scope": "in_scope",
+        "properties": {
+          "washable": {
+            "state": "unknown",
+            "evidence": []
+          },
+          "frost_resistant": {
+            "state": "unknown",
+            "evidence": []
+          },
+          "exterior_suitable": {
+            "state": "no",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "для окраски внутренних стен"
+              }
+            ]
+          },
+          "interior_suitable": {
+            "state": "yes",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "для окраски внутренних стен"
+              }
+            ]
+          },
+          "wet_room_suitable": {
+            "state": "no",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Пригодность для влажных помещений не заявлена."
+              }
+            ]
+          },
+          "high_load_suitable": {
+            "state": "unknown",
+            "evidence": []
+          },
+          "moisture_resistant": {
+            "state": "unknown",
+            "evidence": []
+          }
+        },
+        "substrates": [
+          {
+            "label": "concrete",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "по бетонным и оштукатуренным основаниям"
+              }
+            ]
+          },
+          {
+            "label": "plaster",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "по бетонным и оштукатуренным основаниям"
+              }
+            ]
+          }
+        ],
+        "work_types": [
+          {
+            "label": "paint",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "Водно-дисперсионная краска для окраски внутренних стен"
+              }
+            ]
+          }
+        ],
+        "needs_review": false,
+        "review_reasons": [],
+        "surface_locations": [
+          {
+            "label": "wall",
+            "evidence": [
+              {
+                "field": "description",
+                "quote": "для окраски внутренних стен"
+              }
+            ]
+          }
+        ]
+      },
+      "prompt_version": "repair-classifier-prompt-v2",
+      "taxonomy_sha256": "e0b80da03ad58905203ff519a0cf86b174a0e8edc6dd988c438a10fadad6563d",
+      "taxonomy_version": "repair-product-taxonomy-v2",
+      "response_metadata": {
+        "done": true,
+        "model": "gemma4:12b",
+        "logprobs": null,
+        "created_at": "2026-10-29T22:26:47.159295637Z",
+        "eval_count": 569,
+        "model_name": "gemma4:12b",
+        "done_reason": "stop",
+        "eval_duration": 66095196000,
+        "load_duration": 43033963344,
+        "model_provider": "ollama",
+        "total_duration": 186421066168,
+        "prompt_eval_count": 3608,
+        "prompt_eval_duration": 77255489000
+      }
+    },
+    "status": "succeeded",
+    "attempts": 1,
+    "created_at": "2026-10-29T22:23:39.100022+00:00",
+    "created_by": "catalog-admin",
+    "error_code": null,
+    "product_id": "d423fa38-ae71-41d5-b895-fc937bab1761",
+    "version_id": "4bbbe8a2-ae69-435e-b8d1-fee4f3aa96f6",
+    "finished_at": "2026-10-29T22:26:47.169447+00:00",
+    "lease_token": null,
+    "lease_until": null,
+    "available_at": "2026-10-29T22:27:02.169447+00:00"
+  },
+  "review": {
+    "id": "d702c99f-d8cc-473d-b832-e7d259352787",
+    "job_id": "5a273fa7-0494-4ed8-914c-88ee2b871211",
+    "approved": {
+      "properties": [
+        {
+          "label": "washable",
+          "state": "unknown"
+        },
+        {
+          "label": "exterior_suitable",
+          "state": "unknown"
+        },
+        {
+          "label": "interior_suitable",
+          "state": "yes"
+        },
+        {
+          "label": "wet_room_suitable",
+          "state": "unknown"
+        },
+        {
+          "label": "high_load_suitable",
+          "state": "unknown"
+        },
+        {
+          "label": "moisture_resistant",
+          "state": "unknown"
+        }
+      ],
+      "substrates": [
+        "concrete",
+        "plaster"
+      ],
+      "work_types": [
+        "paint"
+      ],
+      "surface_locations": [
+        "wall"
+      ]
+    },
+    "decisions": [
+      {
+        "group": "work_types",
+        "label": "paint",
+        "value": "paint",
+        "action": "accept",
+        "reason": "Сверено с приведённой цитатой учебной этикетки."
+      },
+      {
+        "group": "surface_locations",
+        "label": "wall",
+        "value": "wall",
+        "action": "accept",
+        "reason": "Сверено с приведённой цитатой учебной этикетки."
+      },
+      {
+        "group": "substrates",
+        "label": "concrete",
+        "value": "concrete",
+        "action": "accept",
+        "reason": "Сверено с приведённой цитатой учебной этикетки."
+      },
+      {
+        "group": "substrates",
+        "label": "plaster",
+        "value": "plaster",
+        "action": "accept",
+        "reason": "Сверено с приведённой цитатой учебной этикетки."
+      },
+      {
+        "group": "properties",
+        "label": "washable",
+        "value": "unknown",
+        "action": "accept",
+        "reason": "В этикетке нет подтверждения; сохраняем явную неизвестность."
+      },
+      {
+        "group": "properties",
+        "label": "frost_resistant",
+        "value": "unknown",
+        "action": "reject",
+        "reason": "Этикетка не содержит сведений о морозостойкости; свойство не утверждается."
+      },
+      {
+        "group": "properties",
+        "label": "exterior_suitable",
+        "value": "unknown",
+        "action": "correct",
+        "reason": "Отсутствие заявления не доказывает непригодность; оставлено неизвестным."
+      },
+      {
+        "group": "properties",
+        "label": "interior_suitable",
+        "value": "yes",
+        "action": "accept",
+        "reason": "Сверено с приведённой цитатой учебной этикетки."
+      },
+      {
+        "group": "properties",
+        "label": "wet_room_suitable",
+        "value": "unknown",
+        "action": "correct",
+        "reason": "Отсутствие заявления не доказывает непригодность; оставлено неизвестным."
+      },
+      {
+        "group": "properties",
+        "label": "high_load_suitable",
+        "value": "unknown",
+        "action": "accept",
+        "reason": "В этикетке нет подтверждения; сохраняем явную неизвестность."
+      },
+      {
+        "group": "properties",
+        "label": "moisture_resistant",
+        "value": "unknown",
+        "action": "accept",
+        "reason": "В этикетке нет подтверждения; сохраняем явную неизвестность."
+      }
+    ],
+    "created_at": "2026-10-29T22:28:51.607225+00:00",
+    "created_by": "catalog-admin",
+    "java_works": [
+      "paint"
+    ],
+    "product_id": "d423fa38-ae71-41d5-b895-fc937bab1761",
+    "profile_id": "paint-012-v1",
+    "version_id": "4bbbe8a2-ae69-435e-b8d1-fee4f3aa96f6",
+    "mapping_version": "classifier-java-reviewed-v1"
+  },
+  "product": {
+    "id": "d423fa38-ae71-41d5-b895-fc937bab1761",
+    "status": "published",
+    "created_at": "2026-10-29T22:23:30.495169+00:00",
+    "created_by": "catalog-admin",
+    "updated_at": "2026-10-29T22:29:01.662501+00:00",
+    "updated_by": "catalog-admin",
+    "external_id": "paint-2026-10-30",
+    "source_namespace": "browser-workflow",
+    "current_version_id": "4bbbe8a2-ae69-435e-b8d1-fee4f3aa96f6"
+  },
+  "version": {
+    "id": "4bbbe8a2-ae69-435e-b8d1-fee4f3aa96f6",
+    "version": 1,
+    "snapshot": {
+      "sku": "",
+      "wet": {
+        "state": "unset"
+      },
+      "kind": {
+        "state": "confirmed",
+        "value": "paint",
+        "source": "Учебная этикетка для приёмки 30.10.2026; не коммерческие данные",
+        "confirmedBy": "catalog-admin"
+      },
+      "name": "ТЕСТОВАЯ краска для стен · приёмка админки",
+      "unit": {
+        "state": "confirmed",
+        "value": "л",
+        "source": "Учебная этикетка для приёмки 30.10.2026; не коммерческие данные",
+        "confirmedBy": "catalog-admin"
+      },
+      "price": {
+        "state": "confirmed",
+        "value": "1234.50",
+        "source": "Учебная этикетка для приёмки 30.10.2026; не коммерческие данные",
+        "confirmedBy": "catalog-admin"
+      },
+      "comment": "",
+      "rapport": {
+        "state": "unset"
+      },
+      "sources": [
+        {
+          "url": "",
+          "label": "Учебная этикетка для приёмки 30.10.2026"
+        }
+      ],
+      "category": {
+        "state": "confirmed",
+        "value": "Краски",
+        "source": "Учебная этикетка для приёмки 30.10.2026; не коммерческие данные",
+        "confirmedBy": "catalog-admin"
+      },
+      "currency": {
+        "state": "confirmed",
+        "value": "RUB",
+        "source": "Учебная этикетка для приёмки 30.10.2026; не коммерческие данные",
+        "confirmedBy": "catalog-admin"
+      },
+      "highLoad": {
+        "state": "unset"
+      },
+      "saleUnit": {
+        "state": "confirmed",
+        "value": "бан.",
+        "source": "Учебная этикетка для приёмки 30.10.2026; не коммерческие данные",
+        "confirmedBy": "catalog-admin"
+      },
+      "unheated": {
+        "state": "unset"
+      },
+      "priceDate": {
+        "state": "confirmed",
+        "value": "2026-10-30",
+        "source": "Учебная этикетка для приёмки 30.10.2026; не коммерческие данные",
+        "confirmedBy": "catalog-admin"
+      },
+      "rollWidth": {
+        "state": "unset"
+      },
+      "attributes": [],
+      "externalId": "paint-2026-10-30",
+      "rollLength": {
+        "state": "unset"
+      },
+      "application": "",
+      "consumption": {
+        "state": "confirmed",
+        "value": 0.12,
+        "source": "Учебная этикетка для приёмки 30.10.2026; не коммерческие данные",
+        "confirmedBy": "catalog-admin"
+      },
+      "description": "ТЕСТОВЫЙ товар. Водно-дисперсионная краска для окраски внутренних стен по бетонным и оштукатуренным основаниям. Учебная норма расхода 0,12 л/м² на один слой. Фасовка 2,5 л. Пригодность для влажных помещений не заявлена.",
+      "limitations": "",
+      "packageSize": {
+        "state": "confirmed",
+        "value": 2.5,
+        "source": "Учебная этикетка для приёмки 30.10.2026; не коммерческие данные",
+        "confirmedBy": "catalog-admin"
+      },
+      "consumptionUnit": {
+        "state": "confirmed",
+        "value": "л",
+        "source": "Учебная этикетка для приёмки 30.10.2026; не коммерческие данные",
+        "confirmedBy": "catalog-admin"
+      },
+      "sourceNamespace": "browser-workflow"
+    },
+    "created_at": "2026-10-29T22:23:30.495169+00:00",
+    "created_by": "catalog-admin",
+    "product_id": "d423fa38-ae71-41d5-b895-fc937bab1761"
+  },
+  "pendingJobs": 0,
+  "publication": {
+    "id": "dca38d3f-08e1-4d4b-8cd3-1707239ac387",
+    "review_id": "d702c99f-d8cc-473d-b832-e7d259352787",
+    "created_at": "2026-10-29T22:29:01.662501+00:00",
+    "created_by": "catalog-admin",
+    "product_id": "d423fa38-ae71-41d5-b895-fc937bab1761",
+    "release_id": "474a7c9c-79ad-48fc-864e-53a9fd9793b1",
+    "version_id": "4bbbe8a2-ae69-435e-b8d1-fee4f3aa96f6",
+    "rule_set_id": "4539d82e-0d1d-4717-ba40-1922a794eba1"
+  },
+  "activeCatalogCount": 13
+}

@@ -1,0 +1,628 @@
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< ru.repaircalc:repaircalc-backend >------------------
+[INFO] Building RepairCalc Backend 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- enforcer:3.6.2:enforce (require-java-21) @ repaircalc-backend ---
+[INFO] Rule 0: org.apache.maven.enforcer.rules.version.RequireJavaVersion passed
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ repaircalc-backend ---
+[INFO] Copying 3 resources from src/main/resources to target/classes
+[INFO] Copying 8 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ repaircalc-backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 71 source files with javac [debug parameters release 21] to target/classes
+[INFO] /build/src/main/java/ru/repaircalc/admin/AdminAuth.java: Some input files use or override a deprecated API.
+[INFO] /build/src/main/java/ru/repaircalc/admin/AdminAuth.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ repaircalc-backend ---
+[INFO] Copying 2 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ repaircalc-backend ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 31 source files with javac [debug parameters release 21] to target/test-classes
+[INFO] /build/src/test/java/ru/repaircalc/admin/AdminProductApiIT.java: Some input files use or override a deprecated API.
+[INFO] /build/src/test/java/ru/repaircalc/admin/AdminProductApiIT.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ repaircalc-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.6/surefire-junit-platform-3.5.6.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.6/surefire-junit-platform-3.5.6.pom (5.2 kB at 5.0 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-providers/3.5.6/surefire-providers-3.5.6.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-providers/3.5.6/surefire-providers-3.5.6.pom (2.5 kB at 30 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.6/common-java5-3.5.6.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.6/common-java5-3.5.6.pom (3.1 kB at 36 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.pom (3.2 kB at 39 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.pom (2.8 kB at 33 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.pom (3.0 kB at 36 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.6/surefire-junit-platform-3.5.6.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/surefire-junit-platform/3.5.6/surefire-junit-platform-3.5.6.jar (35 kB at 325 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.6/common-java5-3.5.6.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.jar
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/surefire/common-java5/3.5.6/common-java5-3.5.6.jar (18 kB at 192 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-commons/1.12.2/junit-platform-commons-1.12.2.jar (152 kB at 387 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-engine/1.12.2/junit-platform-engine-1.12.2.jar (256 kB at 587 kB/s)
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/1.12.2/junit-platform-launcher-1.12.2.jar (208 kB at 286 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.pom (3.2 kB at 35 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.pom
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.pom (1.5 kB at 17 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/junit/platform/junit-platform-launcher/6.0.3/junit-platform-launcher-6.0.3.jar (246 kB at 772 kB/s)
+[INFO] Downloading from central: https://repo.maven.apache.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar
+[INFO] Downloaded from central: https://repo.maven.apache.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar (3.8 kB at 42 kB/s)
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+[INFO] Running ru.repaircalc.operations.HealthEndpointsTest
+22:20:21.352 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [ru.repaircalc.operations.HealthEndpointsTest]: HealthEndpointsTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+22:20:21.441 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.operations.HealthEndpointsTest
+22:20:21.498 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [ru.repaircalc.operations.HealthEndpointsTest]: HealthEndpointsTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+22:20:21.501 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.operations.HealthEndpointsTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T22:20:21.875Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.operations.HealthEndpointsTest       : Starting HealthEndpointsTest using Java 21.0.12.1 with PID 69 (started by root in /build)
+2026-10-29T22:20:21.876Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.operations.HealthEndpointsTest       : The following 1 profile is active: "test"
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-10-29T22:20:23.588Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
+2026-10-29T22:20:23.599Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-29T22:20:23.600Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.27]
+2026-10-29T22:20:23.634Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1745 ms
+2026-10-29T22:20:24.224Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-10-29T22:20:24.273Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 45961 (http) with context path '/'
+2026-10-29T22:20:24.279Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.operations.HealthEndpointsTest       : Started HealthEndpointsTest in 2.638 seconds (process running for 3.582)
+2026-10-29T22:20:24.477Z  INFO [requestId=] 69 --- [repaircalc-backend] [1-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-29T22:20:24.477Z  INFO [requestId=] 69 --- [repaircalc-backend] [1-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-29T22:20:24.478Z  INFO [requestId=] 69 --- [repaircalc-backend] [1-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-10-29T22:20:24.546Z  INFO [requestId=461b1c1d-1ec3-4c84-9336-c02637a8cb96] 69 --- [repaircalc-backend] [1-auto-1-exec-1] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:24.614Z  INFO [requestId=214a58be-e3ac-448f-be6a-c2c03f10e1dc] 69 --- [repaircalc-backend] [1-auto-1-exec-2] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=404
+2026-10-29T22:20:24.619Z  INFO [requestId=293ff3f3-847d-4e66-ace2-9422ba915187] 69 --- [repaircalc-backend] [1-auto-1-exec-3] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=404
+2026-10-29T22:20:24.622Z  INFO [requestId=5e63e841-0946-45ce-b702-032463bf2ca1] 69 --- [repaircalc-backend] [1-auto-1-exec-4] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=404
+2026-10-29T22:20:24.641Z  INFO [requestId=54460f9e-8e81-4499-890a-53517ee95cbf] 69 --- [repaircalc-backend] [1-auto-1-exec-5] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=503
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.444 s -- in ru.repaircalc.operations.HealthEndpointsTest
+[INFO] Running ru.repaircalc.operations.DatabaseConfigurationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.102 s -- in ru.repaircalc.operations.DatabaseConfigurationTest
+[INFO] Running ru.repaircalc.common.web.CommonWebMvcTest
+2026-10-29T22:20:24.787Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ru.repaircalc.common.web.CommonWebMvcTest]: CommonWebMvcTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-29T22:20:24.816Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.common.web.CommonWebMvcTest
+2026-10-29T22:20:24.818Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ru.repaircalc.common.web.CommonWebMvcTest]: CommonWebMvcTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-29T22:20:24.823Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.common.web.CommonWebMvcTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T22:20:24.880Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.common.web.CommonWebMvcTest          : Starting CommonWebMvcTest using Java 21.0.12.1 with PID 69 (started by root in /build)
+2026-10-29T22:20:24.880Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.common.web.CommonWebMvcTest          : No active profile set, falling back to 1 default profile: "local"
+2026-10-29T22:20:25.096Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-29T22:20:25.096Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-29T22:20:25.097Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-29T22:20:25.106Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.common.web.CommonWebMvcTest          : Started CommonWebMvcTest in 0.276 seconds (process running for 4.408)
+2026-10-29T22:20:25.123Z  INFO [requestId=46ff5b2f-1370-4e8a-9fee-aff1d7d2decd] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=404
+2026-10-29T22:20:25.198Z ERROR [requestId=326d3f17-8862-4860-b2f9-b870d2f79b0e] 69 --- [repaircalc-backend] [           main] r.r.common.web.ApiExceptionHandler       : Handler method returned an invalid result
+2026-10-29T22:20:25.199Z  INFO [requestId=326d3f17-8862-4860-b2f9-b870d2f79b0e] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=500
+2026-10-29T22:20:25.227Z  INFO [requestId=1fcba118-7a94-4996-a74f-afd55fd0c71b] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=400
+2026-10-29T22:20:25.238Z  INFO [requestId=d96ed7be-de4d-4d77-b51d-29ffc63432db] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:25.254Z  INFO [requestId=e9e0b3e4-881b-4257-a8bf-7c7dff306af6] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=422
+2026-10-29T22:20:25.275Z ERROR [requestId=e12af98d-b0ca-4a2c-a4fd-ce6acd794cf3] 69 --- [repaircalc-backend] [           main] r.r.common.web.ApiExceptionHandler       : Unhandled request exception of type java.lang.IllegalStateException
+2026-10-29T22:20:25.276Z  INFO [requestId=e12af98d-b0ca-4a2c-a4fd-ce6acd794cf3] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=500
+2026-10-29T22:20:25.281Z  INFO [requestId=f5212ec4-5dee-4749-851d-76e949b0c655] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:25.285Z  INFO [requestId=acb78395-5705-4dc8-b999-da6f90e2be02] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:25.286Z  INFO [requestId=6a1949a7-4640-45ce-b674-884cd5b50e85] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:25.291Z  WARN [requestId=99cd7daf-ae72-490b-8c36-4a1484732884] 69 --- [repaircalc-backend] [           main] o.s.web.servlet.PageNotFound             : Request method 'GET' is not supported
+2026-10-29T22:20:25.292Z  INFO [requestId=99cd7daf-ae72-490b-8c36-4a1484732884] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=405
+2026-10-29T22:20:25.316Z  INFO [requestId=3357d846-0682-43f1-8609-58db198941b9] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=422
+2026-10-29T22:20:25.326Z  INFO [requestId=649a44e5-1651-4761-b401-7f8d7f3abcce] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=, status=500
+2026-10-29T22:20:25.332Z  INFO [requestId=5283efa8-d83d-4e61-8a19-ae2f6589b41d] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=415
+2026-10-29T22:20:25.337Z  INFO [requestId=c82a3063-d7e8-465f-a0a0-b54dcac59ee2] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=422
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.557 s -- in ru.repaircalc.common.web.CommonWebMvcTest
+[INFO] Running ru.repaircalc.RepairCalcApplicationTest
+2026-10-29T22:20:25.342Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ru.repaircalc.RepairCalcApplicationTest]: RepairCalcApplicationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-29T22:20:25.347Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.RepairCalcApplicationTest
+2026-10-29T22:20:25.348Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ru.repaircalc.RepairCalcApplicationTest]: RepairCalcApplicationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-29T22:20:25.372Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.RepairCalcApplicationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T22:20:25.388Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.repaircalc.RepairCalcApplicationTest   : Starting RepairCalcApplicationTest using Java 21.0.12.1 with PID 69 (started by root in /build)
+2026-10-29T22:20:25.388Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.repaircalc.RepairCalcApplicationTest   : The following 1 profile is active: "test"
+2026-10-29T22:20:25.704Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-10-29T22:20:25.712Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.repaircalc.RepairCalcApplicationTest   : Started RepairCalcApplicationTest in 0.337 seconds (process running for 5.014)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.376 s -- in ru.repaircalc.RepairCalcApplicationTest
+[INFO] Running ru.repaircalc.catalog.CatalogReadServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.274 s -- in ru.repaircalc.catalog.CatalogReadServiceTest
+[INFO] Running ru.repaircalc.catalog.web.CatalogControllerTest
+2026-10-29T22:20:25.997Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ru.repaircalc.catalog.web.CatalogControllerTest]: CatalogControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-29T22:20:26.007Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.catalog.web.CatalogControllerTest
+2026-10-29T22:20:26.007Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [ru.repaircalc.catalog.web.CatalogControllerTest]: CatalogControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-10-29T22:20:26.011Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.catalog.web.CatalogControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T22:20:26.027Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.catalog.web.CatalogControllerTest    : Starting CatalogControllerTest using Java 21.0.12.1 with PID 69 (started by root in /build)
+2026-10-29T22:20:26.027Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.catalog.web.CatalogControllerTest    : No active profile set, falling back to 1 default profile: "local"
+2026-10-29T22:20:26.148Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-10-29T22:20:26.148Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-10-29T22:20:26.149Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-10-29T22:20:26.154Z  INFO [requestId=] 69 --- [repaircalc-backend] [           main] r.r.catalog.web.CatalogControllerTest    : Started CatalogControllerTest in 0.14 seconds (process running for 5.456)
+2026-10-29T22:20:26.178Z ERROR [requestId=6ba81716-4be6-4a31-8144-a1019ee51358] 69 --- [repaircalc-backend] [           main] r.r.common.web.ApiExceptionHandler       : Unhandled request exception of type java.lang.IllegalStateException
+2026-10-29T22:20:26.181Z  INFO [requestId=6ba81716-4be6-4a31-8144-a1019ee51358] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=500
+2026-10-29T22:20:26.184Z ERROR [requestId=f8748476-f610-4724-81db-4fef5e8d7ae0] 69 --- [repaircalc-backend] [           main] r.r.common.web.ApiExceptionHandler       : Unhandled request exception of type org.springframework.transaction.TransactionSystemException
+2026-10-29T22:20:26.184Z  INFO [requestId=f8748476-f610-4724-81db-4fef5e8d7ae0] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=500
+2026-10-29T22:20:26.192Z  INFO [requestId=4b3934a0-015b-48cd-b94f-3ae954872eec] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=503
+2026-10-29T22:20:26.193Z  INFO [requestId=c4b6893f-b9e3-4db4-9ac6-c8e426f07557] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=503
+2026-10-29T22:20:26.194Z  INFO [requestId=0e7b8880-f383-4fe2-ab6a-d31aec6fadd3] 69 --- [repaircalc-backend] [           main] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=503
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.201 s -- in ru.repaircalc.catalog.web.CatalogControllerTest
+[INFO] Running ru.repaircalc.calculation.ProductCalculationServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.035 s -- in ru.repaircalc.calculation.ProductCalculationServiceTest
+[INFO] Running ru.repaircalc.calculation.domain.PackagingTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in ru.repaircalc.calculation.domain.PackagingTest
+[INFO] Running ru.repaircalc.calculation.domain.MoneyTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.030 s -- in ru.repaircalc.calculation.domain.MoneyTest
+[INFO] Running ru.repaircalc.calculation.domain.GeometryTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in ru.repaircalc.calculation.domain.GeometryTest
+[INFO] Running ru.repaircalc.calculation.domain.ReserveTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in ru.repaircalc.calculation.domain.ReserveTest
+[INFO] Running ru.repaircalc.calculation.domain.MaterialCalculatorTest
+[INFO] Tests run: 21, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s -- in ru.repaircalc.calculation.domain.MaterialCalculatorTest
+[INFO] Running ru.repaircalc.calculation.domain.CalculationInputTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.079 s -- in ru.repaircalc.calculation.domain.CalculationInputTest
+[INFO] Running ru.repaircalc.calculation.CalculationSnapshotServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.038 s -- in ru.repaircalc.calculation.CalculationSnapshotServiceTest
+[INFO] Running ru.repaircalc.admin.AdminProductValidatorTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in ru.repaircalc.admin.AdminProductValidatorTest
+[INFO] Running ru.repaircalc.admin.AdminAuthTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in ru.repaircalc.admin.AdminAuthTest
+[INFO] Running ru.repaircalc.admin.AdminReviewServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.045 s -- in ru.repaircalc.admin.AdminReviewServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 86, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ repaircalc-backend ---
+[INFO] Building jar: /build/target/repaircalc-backend-0.1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot:4.1.2:repackage (repackage) @ repaircalc-backend ---
+[INFO] Replacing main artifact /build/target/repaircalc-backend-0.1.0-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /build/target/repaircalc-backend-0.1.0-SNAPSHOT.jar.original
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ repaircalc-backend ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+[INFO] Running ru.repaircalc.rules.RuleSetImportIT
+22:20:28.145 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.rules.RuleSetImportIT
+22:20:28.208 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.rules.RuleSetImportIT
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T22:20:28.510Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] ru.repaircalc.rules.RuleSetImportIT      : Starting RuleSetImportIT using Java 21.0.12.1 with PID 145 (started by root in /build)
+2026-10-29T22:20:28.511Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] ru.repaircalc.rules.RuleSetImportIT      : The following 2 profiles are active: "test", "postgres-test"
+2026-10-29T22:20:29.076Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-29T22:20:29.124Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 41 ms. Found 7 JPA repository interfaces.
+2026-10-29T22:20:29.440Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.testcontainers.images.PullPolicy     : Image pull policy will be performed by: DefaultPullPolicy()
+2026-10-29T22:20:29.441Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.t.utility.ImageNameSubstitutor         : Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+2026-10-29T22:20:29.452Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.testcontainers.DockerClientFactory   : Testcontainers version: 2.0.5
+2026-10-29T22:20:29.804Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.t.d.DockerClientProviderStrategy       : Found Docker environment with Environment variables, system properties and defaults. Resolved dockerHost=unix:///var/run/docker.sock
+2026-10-29T22:20:29.804Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.testcontainers.DockerClientFactory   : Docker host IP address is host.docker.internal
+2026-10-29T22:20:29.817Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.testcontainers.DockerClientFactory   : Connected to docker: 
+  Server Version: 29.9.2
+  API Version: 1.56
+  Operating System: Docker Desktop
+  Total Memory: 15987 MB
+  Labels: 
+    com.docker.desktop.address=unix:///home/artparve/.docker/desktop/docker-cli.sock
+2026-10-29T22:20:29.871Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.testcontainers/ryuk:0.14.0            : Creating container for image: testcontainers/ryuk:0.14.0
+2026-10-29T22:20:29.875Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.t.utility.RegistryAuthLocator          : Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: testcontainers/ryuk:0.14.0, configFile: /root/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /root/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+2026-10-29T22:20:29.994Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.testcontainers/ryuk:0.14.0            : Container testcontainers/ryuk:0.14.0 is starting: 9ef2bca60912b1be8b3cd97eea852a5e197fdabf89cc60810e22608ab05b1c4e
+2026-10-29T22:20:30.228Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.testcontainers/ryuk:0.14.0            : Container testcontainers/ryuk:0.14.0 started in PT0.356806939S
+2026-10-29T22:20:30.233Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.t.utility.RyukResourceReaper           : Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+2026-10-29T22:20:30.234Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.testcontainers.DockerClientFactory   : Checking the system...
+2026-10-29T22:20:30.234Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.testcontainers.DockerClientFactory   : ✔︎ Docker server version should be at least 1.6.0
+2026-10-29T22:20:30.234Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Creating container for image: postgres:17.11
+2026-10-29T22:20:30.292Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container postgres:17.11 is starting: 0a5329aeb638155900bd54d594487e927e2e17a2f0c6b2498d99353ff94ae2ff
+2026-10-29T22:20:31.231Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container postgres:17.11 started in PT0.996745064S
+2026-10-29T22:20:31.232Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container is started (JDBC URL: jdbc:postgresql://host.docker.internal:43203/rule_set_import?loggerLevel=OFF)
+2026-10-29T22:20:31.531Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://host.docker.internal:43203/rule_set_import?loggerLevel=OFF (PostgreSQL 17.11)
+2026-10-29T22:20:31.587Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-29T22:20:31.591Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 7 migrations (execution time 00:00.029s)
+2026-10-29T22:20:31.602Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-29T22:20:31.660Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-29T22:20:31.665Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - create repaircalc schema"
+2026-10-29T22:20:31.684Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - create catalog"
+2026-10-29T22:20:31.706Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - create product work mappings"
+2026-10-29T22:20:31.721Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "4 - create rule set"
+2026-10-29T22:20:31.735Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "5 - admin product versions"
+2026-10-29T22:20:31.751Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "6 - admin classification"
+2026-10-29T22:20:31.766Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "7 - admin review publication"
+2026-10-29T22:20:31.783Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 7 migrations to schema "public", now at version v7 (execution time 00:00.055s)
+2026-10-29T22:20:31.850Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-29T22:20:31.887Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.13.Final
+2026-10-29T22:20:32.155Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-29T22:20:32.177Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-29T22:20:32.197Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-29T22:20:32.251Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://host.docker.internal:43203/rule_set_import?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.11
+	Default catalog/schema: rule_set_import/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-29T22:20:32.822Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-29T22:20:32.871Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:20:33.009Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-29T22:20:33.454Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] ru.repaircalc.rules.RuleSetImportIT      : Started RuleSetImportIT in 5.207 seconds (process running for 6.032)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/root/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-10-29T22:20:34.390Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:20:34.391Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-10-29T22:20:34.393Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.659 s -- in ru.repaircalc.rules.RuleSetImportIT
+[INFO] Running ru.repaircalc.ingestion.CatalogImportIT
+2026-10-29T22:20:34.595Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.ingestion.CatalogImportIT
+2026-10-29T22:20:34.600Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.ingestion.CatalogImportIT
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T22:20:34.625Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] r.repaircalc.ingestion.CatalogImportIT   : Starting CatalogImportIT using Java 21.0.12.1 with PID 145 (started by root in /build)
+2026-10-29T22:20:34.625Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] r.repaircalc.ingestion.CatalogImportIT   : The following 2 profiles are active: "test", "postgres-test"
+2026-10-29T22:20:34.847Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-29T22:20:34.859Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 10 ms. Found 7 JPA repository interfaces.
+2026-10-29T22:20:34.901Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Creating container for image: postgres:17.11
+2026-10-29T22:20:34.960Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container postgres:17.11 is starting: 4c0e67eed9b403f60579105e6b52973768b0ecc0bcee217ab7229110d1a84eb8
+2026-10-29T22:20:35.894Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container postgres:17.11 started in PT0.993389424S
+2026-10-29T22:20:35.894Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container is started (JDBC URL: jdbc:postgresql://host.docker.internal:46067/catalog_import?loggerLevel=OFF)
+2026-10-29T22:20:35.964Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://host.docker.internal:46067/catalog_import?loggerLevel=OFF (PostgreSQL 17.11)
+2026-10-29T22:20:35.974Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-29T22:20:35.974Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 7 migrations (execution time 00:00.003s)
+2026-10-29T22:20:35.980Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-29T22:20:36.000Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-29T22:20:36.002Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - create repaircalc schema"
+2026-10-29T22:20:36.011Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - create catalog"
+2026-10-29T22:20:36.030Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - create product work mappings"
+2026-10-29T22:20:36.042Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "4 - create rule set"
+2026-10-29T22:20:36.054Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "5 - admin product versions"
+2026-10-29T22:20:36.072Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "6 - admin classification"
+2026-10-29T22:20:36.083Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "7 - admin review publication"
+2026-10-29T22:20:36.094Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 7 migrations to schema "public", now at version v7 (execution time 00:00.051s)
+2026-10-29T22:20:36.112Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-29T22:20:36.124Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-29T22:20:36.125Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-10-29T22:20:36.135Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-10-29T22:20:36.151Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://host.docker.internal:46067/catalog_import?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.11
+	Default catalog/schema: catalog_import/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-29T22:20:36.194Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-29T22:20:36.211Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:20:36.338Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] r.repaircalc.ingestion.CatalogImportIT   : Started CatalogImportIT in 1.735 seconds (process running for 8.916)
+2026-10-29T22:20:36.900Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:20:36.901Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-10-29T22:20:36.902Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.505 s -- in ru.repaircalc.ingestion.CatalogImportIT
+[INFO] Running ru.repaircalc.persistence.AdminProductPersistenceIT
+2026-10-29T22:20:37.099Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.persistence.AdminProductPersistenceIT
+2026-10-29T22:20:37.104Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.persistence.AdminProductPersistenceIT
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T22:20:37.125Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] r.r.p.AdminProductPersistenceIT          : Starting AdminProductPersistenceIT using Java 21.0.12.1 with PID 145 (started by root in /build)
+2026-10-29T22:20:37.125Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] r.r.p.AdminProductPersistenceIT          : The following 2 profiles are active: "test", "postgres-test"
+2026-10-29T22:20:37.279Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-29T22:20:37.288Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 8 ms. Found 7 JPA repository interfaces.
+2026-10-29T22:20:37.319Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Creating container for image: postgres:17.11
+2026-10-29T22:20:37.369Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container postgres:17.11 is starting: 033934f6e63feb8a4ceacbcfdea971b4e1eb9395c178a082c0ea80097f80657d
+2026-10-29T22:20:38.279Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container postgres:17.11 started in PT0.960376102S
+2026-10-29T22:20:38.280Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container is started (JDBC URL: jdbc:postgresql://host.docker.internal:46757/repaircalc_admin_test?loggerLevel=OFF)
+2026-10-29T22:20:38.344Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://host.docker.internal:46757/repaircalc_admin_test?loggerLevel=OFF (PostgreSQL 17.11)
+2026-10-29T22:20:38.353Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-29T22:20:38.354Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 7 migrations (execution time 00:00.003s)
+2026-10-29T22:20:38.359Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-29T22:20:38.375Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-29T22:20:38.377Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - create repaircalc schema"
+2026-10-29T22:20:38.386Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - create catalog"
+2026-10-29T22:20:38.405Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - create product work mappings"
+2026-10-29T22:20:38.419Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "4 - create rule set"
+2026-10-29T22:20:38.431Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "5 - admin product versions"
+2026-10-29T22:20:38.445Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "6 - admin classification"
+2026-10-29T22:20:38.455Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "7 - admin review publication"
+2026-10-29T22:20:38.466Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 7 migrations to schema "public", now at version v7 (execution time 00:00.047s)
+2026-10-29T22:20:38.486Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-29T22:20:38.497Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-29T22:20:38.498Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-10-29T22:20:38.509Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-10-29T22:20:38.521Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://host.docker.internal:46757/repaircalc_admin_test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.11
+	Default catalog/schema: repaircalc_admin_test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-29T22:20:38.559Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-29T22:20:38.575Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:20:38.681Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] r.r.p.AdminProductPersistenceIT          : Started AdminProductPersistenceIT in 1.574 seconds (process running for 11.258)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.612 s -- in ru.repaircalc.persistence.AdminProductPersistenceIT
+[INFO] Running ru.repaircalc.admin.AdminProductApiIT
+2026-10-29T22:20:38.707Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.admin.AdminProductApiIT
+2026-10-29T22:20:38.712Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.admin.AdminProductApiIT
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T22:20:38.731Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] ru.repaircalc.admin.AdminProductApiIT    : Starting AdminProductApiIT using Java 21.0.12.1 with PID 145 (started by root in /build)
+2026-10-29T22:20:38.731Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] ru.repaircalc.admin.AdminProductApiIT    : The following 2 profiles are active: "test", "postgres-test"
+2026-10-29T22:20:38.891Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-29T22:20:38.900Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 8 ms. Found 7 JPA repository interfaces.
+2026-10-29T22:20:39.090Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
+2026-10-29T22:20:39.102Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-29T22:20:39.102Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.27]
+2026-10-29T22:20:39.124Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 392 ms
+2026-10-29T22:20:39.203Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Creating container for image: postgres:17.11
+2026-10-29T22:20:39.272Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container postgres:17.11 is starting: 98ec4ef594e789c45004559c395032102805811016338771fceceb68f4412b5a
+2026-10-29T22:20:40.211Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container postgres:17.11 started in PT1.007529653S
+2026-10-29T22:20:40.211Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container is started (JDBC URL: jdbc:postgresql://host.docker.internal:35923/repaircalc_admin_api?loggerLevel=OFF)
+2026-10-29T22:20:40.277Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://host.docker.internal:35923/repaircalc_admin_api?loggerLevel=OFF (PostgreSQL 17.11)
+2026-10-29T22:20:40.286Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-29T22:20:40.287Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 7 migrations (execution time 00:00.003s)
+2026-10-29T22:20:40.293Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-29T22:20:40.309Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-29T22:20:40.311Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - create repaircalc schema"
+2026-10-29T22:20:40.320Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - create catalog"
+2026-10-29T22:20:40.338Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - create product work mappings"
+2026-10-29T22:20:40.348Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "4 - create rule set"
+2026-10-29T22:20:40.360Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "5 - admin product versions"
+2026-10-29T22:20:40.375Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "6 - admin classification"
+2026-10-29T22:20:40.387Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "7 - admin review publication"
+2026-10-29T22:20:40.397Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 7 migrations to schema "public", now at version v7 (execution time 00:00.048s)
+2026-10-29T22:20:40.410Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-29T22:20:40.421Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-29T22:20:40.422Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Starting...
+2026-10-29T22:20:40.431Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Start completed.
+2026-10-29T22:20:40.442Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://host.docker.internal:35923/repaircalc_admin_api?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.11
+	Default catalog/schema: repaircalc_admin_api/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-29T22:20:40.484Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-29T22:20:40.498Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:20:40.751Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-10-29T22:20:40.778Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 45521 (http) with context path '/'
+2026-10-29T22:20:40.780Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] ru.repaircalc.admin.AdminProductApiIT    : Started AdminProductApiIT in 2.066 seconds (process running for 13.358)
+2026-10-29T22:20:40.929Z  INFO [requestId=] 145 --- [repaircalc-backend] [1-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-29T22:20:40.929Z  INFO [requestId=] 145 --- [repaircalc-backend] [1-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-29T22:20:40.930Z  INFO [requestId=] 145 --- [repaircalc-backend] [1-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-10-29T22:20:40.945Z  INFO [requestId=702aad2c-1041-4c62-b962-0b50077fbe2c] 145 --- [repaircalc-backend] [1-auto-1-exec-1] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=401
+2026-10-29T22:20:41.001Z  INFO [requestId=8fb44089-1437-409a-82e7-5c0800037114] 145 --- [repaircalc-backend] [1-auto-1-exec-2] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:41.006Z  INFO [requestId=733be3be-2e4c-47fb-aeb0-cf80b2dec3fb] 145 --- [repaircalc-backend] [1-auto-1-exec-3] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=403
+2026-10-29T22:20:41.136Z  INFO [requestId=4a898d00-bcf7-47b2-8a8b-4fa06b23d734] 145 --- [repaircalc-backend] [1-auto-1-exec-4] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=200
+2026-10-29T22:20:41.138Z  INFO [requestId=b9ef4d4d-708b-4ae3-b0f2-2fd944943347] 145 --- [repaircalc-backend] [1-auto-1-exec-5] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=403
+2026-10-29T22:20:41.156Z  INFO [requestId=1486459b-6f62-4ac1-a0ac-9a6009b0a07a] 145 --- [repaircalc-backend] [1-auto-1-exec-6] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=201
+2026-10-29T22:20:41.164Z  INFO [requestId=5ae72d49-b746-4294-8777-0ca3a5407be3] 145 --- [repaircalc-backend] [1-auto-1-exec-7] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=409
+2026-10-29T22:20:41.170Z  INFO [requestId=fd2724a0-6d03-4559-92ee-d0e69f8a2e7b] 145 --- [repaircalc-backend] [1-auto-1-exec-8] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=PUT, status=428
+2026-10-29T22:20:41.178Z  INFO [requestId=59caa64a-1cf3-4ccd-891e-1daa935e49a1] 145 --- [repaircalc-backend] [1-auto-1-exec-9] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=PUT, status=412
+2026-10-29T22:20:41.188Z  INFO [requestId=a7f7cc23-95ad-490c-80a6-50145c330262] 145 --- [repaircalc-backend] [-auto-1-exec-10] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=PUT, status=200
+2026-10-29T22:20:41.190Z  INFO [requestId=5e1fdc3e-a457-400d-a03d-0497ab2d611a] 145 --- [repaircalc-backend] [1-auto-1-exec-1] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=PUT, status=412
+2026-10-29T22:20:41.201Z  INFO [requestId=4ba897f1-8120-4a89-affc-b48f2187aae8] 145 --- [repaircalc-backend] [1-auto-1-exec-2] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:41.210Z  INFO [requestId=866f49b0-b7b5-4208-95c6-51e311127966] 145 --- [repaircalc-backend] [1-auto-1-exec-3] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:41.215Z  INFO [requestId=3bbc225d-baf0-4b04-ba90-77e87326b815] 145 --- [repaircalc-backend] [1-auto-1-exec-4] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:41.219Z  INFO [requestId=c4888422-3b7d-4f7d-8946-88ef36b1ca81] 145 --- [repaircalc-backend] [1-auto-1-exec-5] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=422
+2026-10-29T22:20:41.226Z  INFO [requestId=fdbb07cd-cbd9-42e3-b563-fafab7d6ecdb] 145 --- [repaircalc-backend] [1-auto-1-exec-6] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=400
+2026-10-29T22:20:41.229Z  INFO [requestId=4426aac3-1650-484d-a924-acf366547989] 145 --- [repaircalc-backend] [1-auto-1-exec-7] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=204
+2026-10-29T22:20:41.231Z  INFO [requestId=e78af8ed-4a5d-4420-83e9-999566e11a0c] 145 --- [repaircalc-backend] [1-auto-1-exec-8] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=401
+2026-10-29T22:20:41.240Z  INFO [requestId=29965805-0860-4c2c-bb3b-993fc2e523dd] 145 --- [repaircalc-backend] [-auto-1-exec-10] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:41.364Z  INFO [requestId=8fabe1eb-ed16-4796-bf40-94a9fec31a33] 145 --- [repaircalc-backend] [1-auto-1-exec-1] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=200
+2026-10-29T22:20:41.368Z  INFO [requestId=23774002-29bb-4545-a379-4b56544fa7e2] 145 --- [repaircalc-backend] [1-auto-1-exec-2] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=422
+2026-10-29T22:20:41.369Z  INFO [requestId=cf32b13b-56ac-4d4b-b1b0-e893e597de56] 145 --- [repaircalc-backend] [1-auto-1-exec-3] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=422
+2026-10-29T22:20:41.371Z  INFO [requestId=0d81be29-3abf-41ed-b2c1-807089e36715] 145 --- [repaircalc-backend] [1-auto-1-exec-4] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=422
+2026-10-29T22:20:41.373Z  INFO [requestId=d57d8bff-47e7-4d57-89e0-2dc5efa0e64c] 145 --- [repaircalc-backend] [1-auto-1-exec-5] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=422
+2026-10-29T22:20:41.375Z  INFO [requestId=1da4b927-4f65-4507-9d6b-3453bdee7177] 145 --- [repaircalc-backend] [1-auto-1-exec-6] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=400
+2026-10-29T22:20:41.378Z  INFO [requestId=e2753d7e-bcc3-4928-b52a-973e74596512] 145 --- [repaircalc-backend] [1-auto-1-exec-7] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=413
+2026-10-29T22:20:41.387Z  INFO [requestId=4e377c82-b913-4f61-bf84-e2e78ec89207] 145 --- [repaircalc-backend] [1-auto-1-exec-8] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=201
+2026-10-29T22:20:41.395Z  INFO [requestId=e84871af-73d5-41b3-b8b5-3978b16be04e] 145 --- [repaircalc-backend] [1-auto-1-exec-9] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=PUT, status=503
+2026-10-29T22:20:41.401Z  INFO [requestId=5a566a8c-58cf-4073-93d2-b85c9247c0f6] 145 --- [repaircalc-backend] [-auto-1-exec-10] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:41.676Z  INFO [requestId=4789b27a-0c78-4848-9a35-5b6ed174281a] 145 --- [repaircalc-backend] [1-auto-1-exec-2] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=503
+2026-10-29T22:20:41.680Z  INFO [requestId=2f6252e3-a01e-488b-91db-c03ff0b9a558] 145 --- [repaircalc-backend] [1-auto-1-exec-3] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:41.796Z  INFO [requestId=045ad21b-48af-4c01-9684-b6586c877a6a] 145 --- [repaircalc-backend] [1-auto-1-exec-4] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=401
+2026-10-29T22:20:41.910Z  INFO [requestId=4d98f355-8b42-4d36-a118-96c861d103d2] 145 --- [repaircalc-backend] [1-auto-1-exec-5] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=401
+2026-10-29T22:20:42.022Z  INFO [requestId=31b6fd51-3f9f-4f76-a98d-921ffd3f7805] 145 --- [repaircalc-backend] [1-auto-1-exec-6] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=401
+2026-10-29T22:20:42.137Z  INFO [requestId=0a1977be-adc3-480d-8621-1303c2f2629f] 145 --- [repaircalc-backend] [1-auto-1-exec-7] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=401
+2026-10-29T22:20:42.251Z  INFO [requestId=a772eba8-7d2c-48db-82f4-035e10164c04] 145 --- [repaircalc-backend] [1-auto-1-exec-8] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=401
+2026-10-29T22:20:42.254Z  INFO [requestId=dfa06103-4c53-4d8d-a186-3bfe1cc40822] 145 --- [repaircalc-backend] [1-auto-1-exec-9] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=429
+2026-10-29T22:20:42.260Z  INFO [requestId=05daadf2-d49c-48ca-ab8a-935b4c5ef9c3] 145 --- [repaircalc-backend] [1-auto-1-exec-1] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=GET, status=200
+2026-10-29T22:20:42.262Z  INFO [requestId=84b068d8-e519-4ddf-b286-aa4b95e3b536] 145 --- [repaircalc-backend] [1-auto-1-exec-2] r.repaircalc.common.web.RequestIdFilter  : Request completed: method=POST, status=429
+[ERROR] Tests run: 4, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 3.574 s <<< FAILURE! -- in ru.repaircalc.admin.AdminProductApiIT
+[ERROR] ru.repaircalc.admin.AdminProductApiIT.classificationAndWorkflowRoutesRequireSessionCsrfAndCurrentVersion -- Time elapsed: 0.016 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: 
+
+expected: 200
+ but was: 429
+	at ru.repaircalc.admin.AdminProductApiIT.login(AdminProductApiIT.java:164)
+	at ru.repaircalc.admin.AdminProductApiIT.classificationAndWorkflowRoutesRequireSessionCsrfAndCurrentVersion(AdminProductApiIT.java:90)
+
+[INFO] Running ru.repaircalc.admin.AdminWorkflowIT
+2026-10-29T22:20:42.279Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.admin.AdminWorkflowIT
+2026-10-29T22:20:42.283Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration ru.repaircalc.RepairCalcApplication for test class ru.repaircalc.admin.AdminWorkflowIT
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T22:20:42.298Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] ru.repaircalc.admin.AdminWorkflowIT      : Starting AdminWorkflowIT using Java 21.0.12.1 with PID 145 (started by root in /build)
+2026-10-29T22:20:42.298Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] ru.repaircalc.admin.AdminWorkflowIT      : The following 2 profiles are active: "test", "postgres-test"
+2026-10-29T22:20:42.406Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-29T22:20:42.417Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 8 ms. Found 7 JPA repository interfaces.
+2026-10-29T22:20:42.445Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Creating container for image: postgres:17.11
+2026-10-29T22:20:42.514Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container postgres:17.11 is starting: 84a7c6c9b5f6c8b10f3d314fd176165035f166dbac3aee60e91d1423d1bdbbe9
+2026-10-29T22:20:43.496Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container postgres:17.11 started in PT1.051746848S
+2026-10-29T22:20:43.497Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] tc.postgres:17.11                        : Container is started (JDBC URL: jdbc:postgresql://host.docker.internal:37317/test?loggerLevel=OFF)
+2026-10-29T22:20:43.569Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://host.docker.internal:37317/test?loggerLevel=OFF (PostgreSQL 17.11)
+2026-10-29T22:20:43.581Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-29T22:20:43.582Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 7 migrations (execution time 00:00.004s)
+2026-10-29T22:20:43.587Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-29T22:20:43.604Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-29T22:20:43.606Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - create repaircalc schema"
+2026-10-29T22:20:43.613Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - create catalog"
+2026-10-29T22:20:43.779Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - create product work mappings"
+2026-10-29T22:20:43.792Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "4 - create rule set"
+2026-10-29T22:20:43.803Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "5 - admin product versions"
+2026-10-29T22:20:43.819Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "6 - admin classification"
+2026-10-29T22:20:43.830Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "7 - admin review publication"
+2026-10-29T22:20:43.841Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 7 migrations to schema "public", now at version v7 (execution time 00:00.195s)
+2026-10-29T22:20:43.856Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-29T22:20:43.877Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-29T22:20:43.878Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Starting...
+2026-10-29T22:20:43.886Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Start completed.
+2026-10-29T22:20:43.898Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://host.docker.internal:37317/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.11
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-29T22:20:43.938Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-29T22:20:43.952Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:20:44.041Z  INFO [requestId=] 145 --- [repaircalc-backend] [           main] ru.repaircalc.admin.AdminWorkflowIT      : Started AdminWorkflowIT in 1.755 seconds (process running for 16.618)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.112 s -- in ru.repaircalc.admin.AdminWorkflowIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   AdminProductApiIT.classificationAndWorkflowRoutesRequireSessionCsrfAndCurrentVersion:90->login:164 
+expected: 200
+ but was: 429
+[INFO] 
+[ERROR] Tests run: 28, Failures: 1, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ repaircalc-backend ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  31.549 s
+[INFO] Finished at: 2026-10-29T22:20:45Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-failsafe-plugin:3.5.6:verify (default) on project repaircalc-backend: There are test failures.
+[ERROR] 
+[ERROR] See /build/target/failsafe-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

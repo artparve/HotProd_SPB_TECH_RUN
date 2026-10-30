@@ -1,0 +1,3 @@
+# Image decoding and server-side JSON Schema validation for room plans.
+Pillow==12.1.1
+jsonschema>=4.19.2,<5

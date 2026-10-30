@@ -8,3 +8,20 @@ playwright-report
 .env.*.local
 .git
 tests
+
+# COPY . . must not pull in local caches, logs, dumps or dependencies.
+**/node_modules
+**/vendor
+**/.venv
+**/venv
+**/build
+**/.next
+**/__pycache__
+**/.cache
+**/.pytest_cache
+**/*.pyc
+**/*.tsbuildinfo
+**/*.log
+**/dumps
+.env.*
+!.env.example

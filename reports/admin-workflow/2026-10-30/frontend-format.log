@@ -1,0 +1,5 @@
+frontend/src/components/AdminProductWorkflow.vue 174ms
+frontend/src/components/AdminProductWorkflow.test.ts 21ms
+frontend/src/views/AdminView.vue 125ms
+frontend/src/services/admin.ts 32ms
+frontend/src/domain/admin.ts 33ms

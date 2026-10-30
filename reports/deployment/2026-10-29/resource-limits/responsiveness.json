@@ -1,0 +1,59 @@
+{
+  "time": "2026-10-29T19:23:07.138938+00:00",
+  "scope": "Catalog HTTP requests through nginx while LLM estimate is running",
+  "count": 10,
+  "maxSeconds": 0.0497,
+  "medianSeconds": 0.02135,
+  "samples": [
+    {
+      "request": 1,
+      "seconds": 0.0497,
+      "products": 12
+    },
+    {
+      "request": 2,
+      "seconds": 0.0194,
+      "products": 12
+    },
+    {
+      "request": 3,
+      "seconds": 0.0208,
+      "products": 12
+    },
+    {
+      "request": 4,
+      "seconds": 0.0356,
+      "products": 12
+    },
+    {
+      "request": 5,
+      "seconds": 0.0102,
+      "products": 12
+    },
+    {
+      "request": 6,
+      "seconds": 0.0219,
+      "products": 12
+    },
+    {
+      "request": 7,
+      "seconds": 0.0188,
+      "products": 12
+    },
+    {
+      "request": 8,
+      "seconds": 0.023,
+      "products": 12
+    },
+    {
+      "request": 9,
+      "seconds": 0.024,
+      "products": 12
+    },
+    {
+      "request": 10,
+      "seconds": 0.009,
+      "products": 12
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+
+> repaircalc-frontend@0.1.0 test
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.5 [39m[90m/app[39m
+
+ [32m✓[39m src/domain/calculations.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 41[2mms[22m[39m
+ [32m✓[39m src/services/api.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 77[2mms[22m[39m
+ [32m✓[39m src/views/AdminView.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 131[2mms[22m[39m
+ [32m✓[39m src/domain/contract.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 397[2mms[22m[39m
+ [32m✓[39m src/services/admin.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/components/RoomEditor.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 140[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[32m46 passed[39m[22m[90m (46)[39m
+[2m   Start at [22m 21:58:49
+[2m   Duration [22m 4.87s[2m (environment 49%, tests 19%, transform 17%, import 14%, worker 1%)[22m
+
+[2mEnvironment [22m [33mjsdom was created 6 times[39m[2m · 2.05s total, 49% of tracked time[22m
+[2m            [22m [2mcreate it once per worker with [22m[33mpool: 'vmThreads'[39m[2m (keeps per-file isolation) or [22m[33misolate: false[39m[2m (shares it across files)[22m
+[2m            [22m [2mlearn more: https://vitest.dev/guide/improving-performance#test-environments[22m
+
+
+> repaircalc-frontend@0.1.0 build
+> vue-tsc --noEmit && vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 1983 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                       0.73 kB │ gzip:  0.46 kB
+dist/assets/AdminView-Cl5BWP-i.css    2.46 kB │ gzip:  0.77 kB
+dist/assets/index-vdbLYpbB.css       35.96 kB │ gzip:  8.62 kB
+dist/assets/AdminView-yQv9KMEj.js    24.11 kB │ gzip:  7.63 kB
+dist/assets/index-DU7IHRC4.js       259.86 kB │ gzip: 88.00 kB
+
+✓ built in 1.22s

@@ -121,7 +121,8 @@ public class CatalogImportService {
                 var previousIds = jdbc.queryForList("""
                         select distinct product_id from repaircalc.source_record
                         where source_namespace = ? and external_id = ?
-                        """, UUID.class, source.namespace(), source.externalId());
+                        union select id from repaircalc.admin_product where source_namespace = ? and external_id = ?
+                        """, UUID.class, source.namespace(), source.externalId(), source.namespace(), source.externalId());
                 if (previousIds.stream().anyMatch(id -> !id.equals(product.id()))) {
                     throw new CatalogImportException("An existing source identity cannot be assigned to another product UUID.");
                 }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { newId } from '../domain/id'
 import AppIcon from '../components/AppIcon.vue'
 import RoomEditor from '../components/RoomEditor.vue'
 import ProductSwatch from '../components/ProductSwatch.vue'
@@ -46,7 +47,7 @@ function addToProject() {
     notify('В проекте может быть не более 20 комнат')
     return
   }
-  workspace.project.rooms.push({ ...roomSchema.parse(room.value), id: crypto.randomUUID() })
+  workspace.project.rooms.push({ ...roomSchema.parse(room.value), id: newId() })
   notify('Комната добавлена в общий расчёт')
 }
 </script>

@@ -1,0 +1,136 @@
+- paragraph: "Область: in_scope."
+- paragraph: Подтвердите, отклоните или исправьте каждую метку. Неподдерживаемые Java-метки сохраняются в проверке. Сопоставление classifier-java-reviewed-v1 требует контекста поверхности и вида товара.
+- 'group "work_types · paint: paint"':
+  - text: "work_types · paint: paint"
+  - blockquote: "description: «Краска для стен внутри помещений по бетону и штукатурке.»"
+  - text: Решение
+  - combobox "Решение":
+    - option "Выберите" [disabled] [selected]
+    - option "Подтвердить"
+    - option "Отклонить"
+    - option "Исправить"
+  - text: Основание решения
+  - textbox "Основание решения"
+- 'group "surface_locations · wall: wall"':
+  - text: "surface_locations · wall: wall"
+  - blockquote: "description: «Краска для стен внутри помещений по бетону и штукатурке.»"
+  - text: Решение
+  - combobox "Решение":
+    - option "Выберите" [disabled] [selected]
+    - option "Подтвердить"
+    - option "Отклонить"
+    - option "Исправить"
+  - text: Основание решения
+  - textbox "Основание решения"
+- 'group "substrates · concrete: concrete"':
+  - text: "substrates · concrete: concrete"
+  - blockquote: "description: «Краска для стен внутри помещений по бетону и штукатурке.»"
+  - text: Решение
+  - combobox "Решение":
+    - option "Выберите" [disabled] [selected]
+    - option "Подтвердить"
+    - option "Отклонить"
+    - option "Исправить"
+  - text: Основание решения
+  - textbox "Основание решения"
+- 'group "substrates · plaster: plaster"':
+  - text: "substrates · plaster: plaster"
+  - blockquote: "description: «Краска для стен внутри помещений по бетону и штукатурке.»"
+  - text: Решение
+  - combobox "Решение":
+    - option "Выберите" [disabled] [selected]
+    - option "Подтвердить"
+    - option "Отклонить"
+    - option "Исправить"
+  - text: Основание решения
+  - textbox "Основание решения"
+- 'group "properties · washable: unknown"':
+  - text: "properties · washable: unknown"
+  - paragraph: "Нет цитат: модель указала неизвестность."
+  - text: Решение
+  - combobox "Решение":
+    - option "Выберите" [disabled] [selected]
+    - option "Подтвердить"
+    - option "Отклонить"
+    - option "Исправить"
+  - text: Основание решения
+  - textbox "Основание решения"
+- 'group "properties · frost_resistant: unknown"':
+  - text: "properties · frost_resistant: unknown"
+  - paragraph: "Нет цитат: модель указала неизвестность."
+  - text: Решение
+  - combobox "Решение":
+    - option "Выберите" [disabled] [selected]
+    - option "Подтвердить"
+    - option "Отклонить"
+    - option "Исправить"
+  - text: Основание решения
+  - textbox "Основание решения"
+- 'group "properties · exterior_suitable: unknown"':
+  - text: "properties · exterior_suitable: unknown"
+  - paragraph: "Нет цитат: модель указала неизвестность."
+  - text: Решение
+  - combobox "Решение":
+    - option "Выберите" [disabled] [selected]
+    - option "Подтвердить"
+    - option "Отклонить"
+    - option "Исправить"
+  - text: Основание решения
+  - textbox "Основание решения"
+- 'group "properties · interior_suitable: yes"':
+  - text: "properties · interior_suitable: yes"
+  - blockquote: "description: «Краска для стен внутри помещений по бетону и штукатурке.»"
+  - text: Решение
+  - combobox "Решение":
+    - option "Выберите" [disabled] [selected]
+    - option "Подтвердить"
+    - option "Отклонить"
+    - option "Исправить"
+  - text: Основание решения
+  - textbox "Основание решения"
+- 'group "properties · wet_room_suitable: unknown"':
+  - text: "properties · wet_room_suitable: unknown"
+  - paragraph: "Нет цитат: модель указала неизвестность."
+  - text: Решение
+  - combobox "Решение":
+    - option "Выберите" [disabled] [selected]
+    - option "Подтвердить"
+    - option "Отклонить"
+    - option "Исправить"
+  - text: Основание решения
+  - textbox "Основание решения"
+- 'group "properties · high_load_suitable: unknown"':
+  - text: "properties · high_load_suitable: unknown"
+  - paragraph: "Нет цитат: модель указала неизвестность."
+  - text: Решение
+  - combobox "Решение":
+    - option "Выберите" [disabled] [selected]
+    - option "Подтвердить"
+    - option "Отклонить"
+    - option "Исправить"
+  - text: Основание решения
+  - textbox "Основание решения"
+- 'group "properties · moisture_resistant: no"':
+  - text: "properties · moisture_resistant: no"
+  - blockquote: "description: «Влагостойкость не заявлена.»"
+  - text: Решение
+  - combobox "Решение":
+    - option "Выберите" [disabled] [selected]
+    - option "Подтвердить"
+    - option "Отклонить"
+    - option "Исправить"
+  - text: Основание решения
+  - textbox "Основание решения"
+- text: Проверенный профиль расчёта
+- combobox "Проверенный профиль расчёта":
+  - option "Выберите" [disabled] [selected]
+  - option "covering-v1 — ТЕСТОВЫЙ расчёт площади покрытия с пользовательским запасом и округлением по площади упаковки."
+  - option "paint-012-v1 — ТЕСТОВАЯ норма 0,12 л/м² на один слой; число слоёв задаёт пользователь. Не норма производителя."
+  - option "paint-014-v1 — ТЕСТОВАЯ норма 0,14 л/м² на один слой; число слоёв задаёт пользователь. Не норма производителя."
+  - option "primer-v1 — ТЕСТОВАЯ норма 0,1 л/м² за один цикл грунтования; число слоёв краски повторно не применяется."
+  - option "adhesive-v1 — ТЕСТОВАЯ норма 4 кг/м² для условного ровного основания. Реальные толщина слоя, основание и технология не подтверждены."
+  - option "wallpaper-v1 — ТЕСТОВЫЙ расчёт целых полотен и рулонов по геометрии, раппорту и подрезке 0,10 м на полотно. Проёмы не вычитаются."
+  - option "socket-v1 — ТЕСТОВЫЙ расчёт целого числа заданных электроточек без процентного запаса. Не заменяет проект электрики."
+  - option "cable-v1 — ТЕСТОВЫЙ расчёт заданной длины трассы с пользовательским запасом и округлением до целых бухт. Не определяет сечение и защиту."
+- paragraph: Профили действующего набора содержат учебные нормы. Публикация проверит единицы, фасовку, геометрию и подтверждённую норму товара.
+- button "Сохранить проверку"

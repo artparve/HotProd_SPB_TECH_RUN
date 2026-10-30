@@ -1,0 +1,5 @@
+{
+  "productId": "ac1f222a-f5e9-3b5d-a91e-c943b053e92e",
+  "input": {"area": 20, "perimeter": 18, "height": 2.7, "reserve": 10, "layers": 1, "quantity": 6},
+  "prompt": "Рассчитай плитку с запасом 10 процентов на подрезку."
+}

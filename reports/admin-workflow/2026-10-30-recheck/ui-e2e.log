@@ -1,0 +1,32 @@
+npm --prefix frontend run test:e2e
+
+> repaircalc-frontend@0.1.0 test:e2e
+> playwright test
+
+[WebServer] (node:206794) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:206820) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 14 tests using 2 workers
+
+(node:206869) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:206870) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › tests/scenarios.spec.ts:9:1 › complete estimate, alternatives, saved estimate, cart and export (1.5s)
+  ✓   2 [mobile] › tests/scenarios.spec.ts:9:1 › complete estimate, alternatives, saved estimate, cart and export (1.5s)
+  ✓   3 [desktop] › tests/scenarios.spec.ts:45:1 › bathroom recommendations exclude non-waterproof fixtures (930ms)
+  ✓   4 [mobile] › tests/scenarios.spec.ts:45:1 › bathroom recommendations exclude non-waterproof fixtures (924ms)
+  ✓   5 [desktop] › tests/scenarios.spec.ts:59:1 › product calculator rounds packages and refuses an unknown consumption (839ms)
+  ✓   6 [mobile] › tests/scenarios.spec.ts:59:1 › product calculator rounds packages and refuses an unknown consumption (847ms)
+  ✓   7 [desktop] › tests/scenarios.spec.ts:72:1 › invalid wall geometry does not advance the wizard (587ms)
+  ✓   8 [mobile] › tests/scenarios.spec.ts:72:1 › invalid wall geometry does not advance the wizard (621ms)
+  ✓   9 [desktop] › tests/scenarios.spec.ts:81:1 › layout fits the viewport and help is keyboard dismissible (657ms)
+  ✓  10 [mobile] › tests/scenarios.spec.ts:81:1 › layout fits the viewport and help is keyboard dismissible (976ms)
+  ✓  11 [desktop] › tests/scenarios.spec.ts:93:1 › demo needs no external requests after local startup (934ms)
+  ✓  12 [mobile] › tests/scenarios.spec.ts:93:1 › demo needs no external requests after local startup (915ms)
+  ✓  13 [desktop] › tests/scenarios.spec.ts:109:1 › a corrupted local draft recovers without a blank screen (640ms)
+  ✓  14 [mobile] › tests/scenarios.spec.ts:109:1 › a corrupted local draft recovers without a blank screen (615ms)
+
+  14 passed (8.1s)

@@ -1,0 +1,99 @@
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T22:21:46.567Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] ru.repaircalc.RepairCalcApplication      : Starting RepairCalcApplication v0.1.0-SNAPSHOT using Java 21.0.12.1 with PID 7 (/app/backend.jar started by app in /app)
+2026-10-29T22:21:46.569Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] ru.repaircalc.RepairCalcApplication      : The following 1 profile is active: "deploy"
+2026-10-29T22:21:47.444Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-29T22:21:47.489Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 37 ms. Found 7 JPA repository interfaces.
+2026-10-29T22:21:47.971Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-29T22:21:48.122Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@61608e1a
+2026-10-29T22:21:48.124Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-29T22:21:48.146Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://repaircalc-workflow-db:5432/repaircalc (PostgreSQL 17.11)
+2026-10-29T22:21:48.193Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-29T22:21:48.197Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 7 migrations (execution time 00:00.018s)
+2026-10-29T22:21:48.206Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-29T22:21:48.263Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-29T22:21:48.268Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "1 - create repaircalc schema"
+2026-10-29T22:21:48.285Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "2 - create catalog"
+2026-10-29T22:21:48.309Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "3 - create product work mappings"
+2026-10-29T22:21:48.320Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "4 - create rule set"
+2026-10-29T22:21:48.341Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "5 - admin product versions"
+2026-10-29T22:21:48.356Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "6 - admin classification"
+2026-10-29T22:21:48.366Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "7 - admin review publication"
+2026-10-29T22:21:48.377Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 7 migrations to schema "public", now at version v7 (execution time 00:00.042s)
+2026-10-29T22:21:48.478Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-29T22:21:48.546Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.13.Final
+2026-10-29T22:21:48.900Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-29T22:21:49.011Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://repaircalc-workflow-db:5432/repaircalc]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.11
+	Default catalog/schema: repaircalc/repaircalc
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-29T22:21:49.748Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-29T22:21:49.788Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:21:49.926Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-29T22:21:50.467Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] ru.repaircalc.RepairCalcApplication      : Started RepairCalcApplication in 4.313 seconds (process running for 4.713)
+Catalog published: version=synthetic-catalog-v1 release=976c07fd-5a66-46cb-a85f-79e180a2cc00 products=12 fingerprint=48242b6f19b55b7538abc480018153d88b9c0eae17a73b4efc099f39bdc7b06c
+2026-10-29T22:21:50.602Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:21:50.603Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-10-29T22:21:50.605Z  INFO [requestId=] 7 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-29T22:21:51.421Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] ru.repaircalc.RepairCalcApplication      : Starting RepairCalcApplication v0.1.0-SNAPSHOT using Java 21.0.12.1 with PID 1 (/app/backend.jar started by app in /app)
+2026-10-29T22:21:51.423Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] ru.repaircalc.RepairCalcApplication      : The following 1 profile is active: "deploy"
+2026-10-29T22:21:52.295Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-29T22:21:52.343Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 41 ms. Found 7 JPA repository interfaces.
+2026-10-29T22:21:52.838Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-29T22:21:53.008Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@61608e1a
+2026-10-29T22:21:53.009Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-29T22:21:53.024Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://repaircalc-workflow-db:5432/repaircalc (PostgreSQL 17.11)
+2026-10-29T22:21:53.117Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 7 migrations (execution time 00:00.032s)
+2026-10-29T22:21:53.153Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 7
+2026-10-29T22:21:53.156Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-10-29T22:21:53.247Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-29T22:21:53.299Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.13.Final
+2026-10-29T22:21:53.702Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-29T22:21:53.772Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://repaircalc-workflow-db:5432/repaircalc]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.11
+	Default catalog/schema: repaircalc/repaircalc
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-29T22:21:54.517Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-29T22:21:54.562Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:21:54.686Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-29T22:21:55.197Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] ru.repaircalc.RepairCalcApplication      : Started RepairCalcApplication in 4.188 seconds (process running for 4.569)
+Rules published: version=synthetic-rules-v1 rules=6405ee52-d001-4739-a74f-8a6c58638fef catalog=976c07fd-5a66-46cb-a85f-79e180a2cc00 fingerprint=3dce4c629b847722e1af10053da0b34e6e8af3defad6f14e6d8b2d473d000ee3
+2026-10-29T22:21:55.332Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-10-29T22:21:55.334Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-10-29T22:21:55.337Z  INFO [requestId=] 1 --- [repaircalc-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
