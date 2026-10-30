@@ -52,7 +52,9 @@ const links = [
           :key="link.to"
           :to="link.to"
           class="nav-link"
-          :class="{ active: route.path === link.to }"
+          :class="{
+            active: route.path === link.to || (link.to === '/' && route.path === '/calculator'),
+          }"
         >
           <AppIcon :name="link.icon" /><span>{{ link.title }}</span>
           <span v-if="link.to === '/saved' && workspace.saved.length" class="nav-count">{{

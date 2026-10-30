@@ -30,6 +30,15 @@ server {
         proxy_connect_timeout 3s;
         proxy_read_timeout 1250s;
     }
+    # Photo analysis may take longer than regular catalog requests.
+    location /api/v1/room-inspirations/ {
+        proxy_pass ${API_UPSTREAM};
+        proxy_set_header Host $proxy_host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 3s;
+        proxy_read_timeout 125s;
+    }
     # Preserve /api/v1 path; never serve SPA HTML for a failed API request.
     location /api/ {
         proxy_pass ${API_UPSTREAM};

@@ -3,6 +3,11 @@ import { estimateSchema, productSchema, recommendationSchema } from '../domain/t
 import type { Product, ProductInput, Project, Room } from '../domain/types'
 import { apiErrorSchema, materialEstimateSchema, materialRequestSchema } from '../domain/materials'
 import { planResultSchema } from '../domain/plans'
+import {
+  roomInspirationFeedSchema,
+  roomInspirationRequestSchema,
+  roomInspirationResultSchema,
+} from '../domain/inspirations'
 
 const configuredMode = import.meta.env.VITE_DATA_MODE || 'demo'
 if (!['demo', 'api'].includes(configuredMode)) throw new Error('VITE_DATA_MODE must be demo or api')
@@ -14,8 +19,12 @@ async function request<T>(
   schema: z.ZodType<T>,
   body?: unknown,
   timeoutMs = 15000,
+  signal?: AbortSignal,
 ): Promise<T> {
   const controller = new AbortController()
+  const abort = () => controller.abort()
+  if (signal?.aborted) controller.abort()
+  else signal?.addEventListener('abort', abort, { once: true })
   const timeout = setTimeout(() => controller.abort(), timeoutMs)
   try {
     const response = await fetch(`${base}${path}`, {
@@ -63,21 +72,67 @@ async function request<T>(
       throw new Error('API вернул невалидный JSON. Проверьте адрес и маршрут API.')
     if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError')
       throw new Error(
-        path === '/plans/extract'
-          ? 'Распознавание не завершилось за 11 минут. Попробуйте снова или введите размеры вручную.'
-          : timeoutMs === 15000
-            ? 'API не ответил за 15 секунд. Повторите запрос.'
-            : 'Расчёт с ИИ не завершился за отведённое время. Повторите запрос.',
+        signal?.aborted
+          ? 'Запрос отменён.'
+          : path.startsWith('/room-inspirations/')
+            ? 'Распознавание комнаты не завершилось за 2 минуты. Повторите запрос.'
+            : path === '/plans/extract'
+              ? 'Распознавание не завершилось за 11 минут. Попробуйте снова или введите размеры вручную.'
+              : timeoutMs === 15000
+                ? 'API не ответил за 15 секунд. Повторите запрос.'
+                : 'Расчёт с ИИ не завершился за отведённое время. Повторите запрос.',
       )
     if (error instanceof TypeError)
       throw new Error('Не удалось связаться с API. Проверьте адрес backend и сеть.')
     throw error
   } finally {
     clearTimeout(timeout)
+    signal?.removeEventListener('abort', abort)
   }
 }
 
 export const service = {
+  async roomInspirations(cursor?: string, signal?: AbortSignal) {
+    if (dataMode === 'demo')
+      return roomInspirationFeedSchema.parse(
+        (await import('../data/inspirations')).inspirationFeedMock,
+      )
+    return request(
+      `/room-inspirations${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`,
+      roomInspirationFeedSchema,
+      undefined,
+      15000,
+      signal,
+    )
+  },
+  async analyzeRoomInspiration(imageId: string, project: Project, signal?: AbortSignal) {
+    const body = roomInspirationRequestSchema.parse({ project })
+    const result = roomInspirationResultSchema.parse(
+      dataMode === 'demo'
+        ? (await import('../data/inspirations')).analyzeInspirationMock(imageId, body.project)
+        : await request(
+            `/room-inspirations/${encodeURIComponent(imageId)}/analyze`,
+            roomInspirationResultSchema,
+            body,
+            120000,
+            signal,
+          ),
+    )
+    if (result.imageId !== imageId)
+      throw new Error('Ответ распознавания относится к другому изображению. Повторите запрос.')
+    // A photograph cannot establish dimensions. The server may change works, not geometry.
+    const geometry = (value: Project) =>
+      value.rooms.map((room, index) => (index === 0 ? { ...room, works: undefined } : room))
+    if (
+      result.project.object !== body.project.object ||
+      result.project.renovation !== body.project.renovation ||
+      JSON.stringify(geometry(result.project)) !== JSON.stringify(geometry(body.project))
+    )
+      throw new Error(
+        'Распознавание изменило параметры проекта. Размеры нельзя определять по фото.',
+      )
+    return result
+  },
   async extractPlan(imageBase64: string) {
     // Recognition always calls the connected model, including when the catalog uses demo data.
     return request('/plans/extract', planResultSchema, { imageBase64 }, 660_000)

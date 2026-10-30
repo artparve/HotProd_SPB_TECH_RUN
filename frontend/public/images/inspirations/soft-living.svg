@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">
+  <defs><pattern id="paper" width="46" height="46" patternUnits="userSpaceOnUse"><rect width="46" height="46" fill="#e2c9bf"/><path d="M23 9l7 14-7 14-7-14z" fill="none" stroke="#d4b8aa" stroke-width="2"/></pattern></defs>
+  <path fill="url(#paper)" d="M0 0h1200v520H0z"/><path fill="#c9afa4" d="M955 0h245v553l-245-68z"/><path fill="#e0c7a4" d="M0 500l955-15 245 68v197H0z"/>
+  <g stroke="#c4a788" stroke-width="3"><path d="M0 577h1200M0 664h1200M150 750l250-255m40 255 130-260m140 260 40-265m260 265-100-265"/></g>
+  <rect x="84" y="68" width="252" height="337" fill="#f5ede1"/><path fill="#c7d5ca" d="M98 82h224v309H98z"/><path stroke="#f5ede1" stroke-width="12" d="M210 82v309M98 230h224"/>
+  <ellipse cx="657" cy="632" rx="335" ry="70" fill="#f1e5cd"/>
+  <rect x="402" y="337" width="463" height="216" rx="42" fill="#d8b396"/><rect x="392" y="445" width="486" height="116" rx="30" fill="#e1c4a5"/><rect x="380" y="405" width="62" height="151" rx="28" fill="#cca481"/><rect x="833" y="405" width="62" height="151" rx="28" fill="#cca481"/>
+  <path stroke="#896951" stroke-width="10" d="M426 554v44m421-44v44"/><rect x="470" y="370" width="96" height="91" rx="17" fill="#f3dfcf" transform="rotate(-12 510 400)"/><rect x="728" y="367" width="87" height="90" rx="17" fill="#9ba58a"/>
+  <ellipse cx="650" cy="600" rx="143" ry="40" fill="#967057"/><path stroke="#967057" stroke-width="12" d="M552 612v63m198-63v63"/><ellipse cx="650" cy="591" rx="146" ry="41" fill="#bd9270"/>
+  <path fill="#eee0c6" d="M621 540h43l-7 45h-29z"/><g stroke="#7c8d67" stroke-width="5"><path d="M640 549v-47m1 22-23-22m22 33 24-25"/></g><g fill="#b67d72"><circle cx="640" cy="500" r="9"/><circle cx="617" cy="500" r="9"/><circle cx="666" cy="507" r="9"/></g>
+  <rect x="522" y="85" width="193" height="160" fill="#9e7b5e"/><rect x="532" y="95" width="173" height="140" fill="#f4e8d3"/><circle cx="619" cy="153" r="40" fill="#b87762"/><path fill="#9daa86" d="M532 221l75-61 98 75H532z"/>
+  <path fill="#b78869" d="M1011 541h98l-17 109h-64z"/><g fill="#7b9070"><ellipse cx="1034" cy="448" rx="32" ry="103" transform="rotate(-19 1034 448)"/><ellipse cx="1088" cy="443" rx="29" ry="110" transform="rotate(17 1088 443)"/></g>
+  <text x="36" y="716" font-family="sans-serif" font-size="18" fill="#775d4e">REPAIRCALC · DEMO ILLUSTRATION</text>
+</svg>

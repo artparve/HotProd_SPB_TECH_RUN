@@ -10,6 +10,8 @@ info:
     Денежные значения передаются десятичными строками в RUB.
     Нельзя считать неизвестные фасовку, расход или совместимость подтверждёнными.
     Административный CRUD защищён серверной сессией и CSRF; см. admin-catalog-api.json.
+    RoomInspirations — предлагаемый контракт ленты интерьеров и распознавания материалов;
+    реализован только frontend с демонстрационными фикстурами, backend ещё не реализован.
 servers:
   - url: /api/v1
     description: Same-origin API через Vite или nginx proxy
@@ -18,7 +20,100 @@ tags:
   - name: Catalog
   - name: Estimates
   - name: Recommendations
+  - name: RoomInspirations
 paths:
+  /room-inspirations:
+    get:
+      operationId: listRoomInspirations
+      tags: [RoomInspirations]
+      summary: Получить ленту изображений комнат для главной страницы
+      description: |
+        Предлагаемый endpoint, пока не реализован на backend. Стабильная cursor-пагинация,
+        до 24 элементов за страницу. Пустой items допустим; nextCursor=null означает конец.
+        URL изображений same-origin (например /api/v1/room-inspirations/{id}/image),
+        доступны через существующий proxy и CSP без запросов сторонним хостам.
+        Backend отвечает за происхождение, права и безопасность изображений.
+      parameters:
+        - name: cursor
+          in: query
+          required: false
+          description: Непрозрачный nextCursor предыдущей страницы; не номер страницы
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 512
+      responses:
+        '200':
+          description: Страница ленты
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomInspirationFeed'
+        '400':
+          description: Недействительный или истёкший cursor; тело ApiError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        default:
+          $ref: '#/components/responses/Error'
+  /room-inspirations/{id}/analyze:
+    post:
+      operationId: analyzeRoomInspiration
+      tags: [RoomInspirations]
+      summary: Выделить материалы интерьера и подготовить ввод калькулятора
+      description: |
+        Предлагаемый endpoint, пока не реализован на backend. Backend получает ID изображения
+        из своей ленты (не произвольный URL/base64) и текущий проект. По изображению подбирает
+        поддерживаемые товары из своего нормализованного каталога и задаёт works комнат.
+        Все остальные параметры проекта, порядок и ID комнат, геометрия и условия должны
+        остаться неизменными: размеры по фотографии не определяются. Для нескольких комнат
+        подбор относится к первой комнате; works остальных комнат сохраняются.
+        selections использует тот же формат roomId:productKind -> productId, что /estimate.
+        Выбранные товары должны соответствовать работам и ограничениям комнаты.
+        Frontend проверяет товары через /products, вызывает обычный /estimate с project и
+        selections и открывает /calculator на шаге выбора материалов. Модель не задаёт цены,
+        количество упаковок или суммы. Неподдерживаемые мебель/декор, неоднозначности и
+        добавленные сопутствующие материалы должны быть объяснены в warnings.
+        Синхронный ответ ожидается до 120 секунд; занятый/неготовый сервис возвращает 503.
+        Пустой подбор возвращает 422, а не успешный ответ или скрытую замену товара.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomInspirationRequest'
+      responses:
+        '200':
+          description: Проверяемый подбор для калькулятора; требует просмотра пользователем
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomInspirationResult'
+        '404':
+          description: Изображение удалено или не принадлежит ленте; тело ApiError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/NeedsClarification'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        default:
+          $ref: '#/components/responses/Error'
   /plans/extract:
     post:
       operationId: extractRoomPlan
@@ -292,6 +387,94 @@ components:
     AdminCsrf:
       $ref: './admin-catalog-api.json#/components/securitySchemes/AdminCsrf'
   schemas:
+    RoomInspiration:
+      type: object
+      required: [id, title, description, thumbnailUrl, imageUrl, alt]
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 128
+          example: living-warm-01
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: Тёплая гостиная
+        description:
+          type: string
+          maxLength: 1000
+        thumbnailUrl:
+          $ref: '#/components/schemas/InspirationImageUrl'
+        imageUrl:
+          $ref: '#/components/schemas/InspirationImageUrl'
+        alt:
+          type: string
+          minLength: 1
+          maxLength: 300
+          example: Гостиная с зелёным диваном и деревянным полом
+    InspirationImageUrl:
+      type: string
+      maxLength: 2048
+      pattern: '^/(?!/)[^\s\\#]*$'
+      description: Абсолютный путь на текущем origin; внешние URL и обратные слеши запрещены
+      example: /api/v1/room-inspirations/living-warm-01/image
+    RoomInspirationFeed:
+      type: object
+      required: [items, nextCursor]
+      properties:
+        items:
+          type: array
+          maxItems: 24
+          items:
+            $ref: '#/components/schemas/RoomInspiration'
+        nextCursor:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 512
+    RoomInspirationRequest:
+      type: object
+      required: [project]
+      properties:
+        project:
+          $ref: '#/components/schemas/Project'
+    RoomInspirationResult:
+      type: object
+      required: [imageId, project, selections, warnings]
+      description: |
+        imageId совпадает с запрошенным ID. project сохраняет все входные параметры,
+        кроме works первой комнаты. ID комнат уникальны. Ключи selections относятся
+        к roomId первой комнаты и ProductKind. Эти межполевые условия проверяются отдельно.
+      properties:
+        imageId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        project:
+          $ref: '#/components/schemas/Project'
+        selections:
+          type: object
+          minProperties: 1
+          maxProperties: 7
+          description: Явно выбранные материалы; не могут молча заменяться при расчёте
+          additionalProperties:
+            type: string
+            minLength: 1
+            maxLength: 128
+          example:
+            'room-1:covering': product-laminate-01
+            'room-1:paint': product-paint-01
+        warnings:
+          type: array
+          maxItems: 50
+          items:
+            type: string
+            minLength: 1
+            maxLength: 1000
+          example:
+            - Размеры взяты из проекта; проверьте их перед окончательным расчётом.
+            - Мебель и декор на изображении не входят в подбор материалов.
     MaterialRequest:
       type: object
       required: [productId, input]

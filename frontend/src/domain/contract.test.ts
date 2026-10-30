@@ -4,6 +4,12 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { materialEstimateSchema, materialRequestSchema } from './materials'
 import {
+  roomInspirationSchema,
+  roomInspirationFeedSchema,
+  roomInspirationRequestSchema,
+  roomInspirationResultSchema,
+} from './inspirations'
+import {
   adminDraftSchema,
   adminProductSchema,
   adminSessionSchema,
@@ -67,6 +73,8 @@ describe('OpenAPI contract', () => {
       '/product/{id}/calc',
       '/products',
       '/recommendations',
+      '/room-inspirations',
+      '/room-inspirations/{id}/analyze',
     ])
   })
 
@@ -84,6 +92,10 @@ describe('OpenAPI contract', () => {
       Recommendations: recommendationSchema.shape,
       MaterialRequest: materialRequestSchema.shape,
       MaterialEstimate: materialEstimateSchema.innerType().shape,
+      RoomInspiration: roomInspirationSchema.shape,
+      RoomInspirationFeed: roomInspirationFeedSchema.shape,
+      RoomInspirationRequest: roomInspirationRequestSchema.shape,
+      RoomInspirationResult: roomInspirationResultSchema.innerType().shape,
     }
     for (const [name, shape] of Object.entries(pairs)) {
       const schema = schemas[name]

@@ -13,7 +13,8 @@
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test && playwright test --config playwright.inspirations.config.ts",
+    "test:e2e:inspirations": "playwright test --config playwright.inspirations.config.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

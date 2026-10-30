@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">
+  <defs><linearGradient id="wall" x2="0" y2="1"><stop stop-color="#f6eee1"/><stop offset="1" stop-color="#ded6c6"/></linearGradient><linearGradient id="floor" x2="1" y2="1"><stop stop-color="#c49c72"/><stop offset="1" stop-color="#e4c8a2"/></linearGradient></defs>
+  <path fill="url(#wall)" d="M0 0h1200v525H0z"/><path fill="#c9c7b9" d="M930 0h270v540l-270-80z"/>
+  <path fill="url(#floor)" d="M0 500l930-40 270 80v210H0z"/>
+  <g stroke="#ad835e" stroke-width="3" opacity=".5"><path d="M100 750l290-270m20 270 170-280m120 280 80-285m220 285-55-260M0 580h1200M0 665h1200"/></g>
+  <rect x="70" y="72" width="300" height="345" rx="5" fill="#faf8ef"/><path fill="#c3d6cf" d="M85 88h270v311H85z"/><path fill="#dbe8de" d="M85 345l100-165 90 110 80-40v149H85z"/><path stroke="#faf8ef" stroke-width="12" d="M220 88v311M85 240h270"/>
+  <ellipse cx="670" cy="635" rx="340" ry="67" fill="#f3ead7"/>
+  <path fill="#546c55" d="M406 365q0-30 30-30h417q30 0 30 30v170H406z"/><rect x="393" y="448" width="502" height="110" rx="22" fill="#71896b"/><rect x="386" y="410" width="58" height="143" rx="20" fill="#627e60"/><rect x="844" y="410" width="58" height="143" rx="20" fill="#627e60"/>
+  <path stroke="#334c38" stroke-width="10" d="M430 555v42m425-42v42"/><rect x="465" y="367" width="100" height="91" rx="15" fill="#d8c59e" transform="rotate(-9 515 410)"/><rect x="729" y="368" width="88" height="85" rx="15" fill="#bbc2a1" transform="rotate(10 770 410)"/>
+  <ellipse cx="660" cy="592" rx="153" ry="42" fill="#a4744d"/><path stroke="#795438" stroke-width="12" d="M555 610v65m211-65v65"/><ellipse cx="660" cy="584" rx="153" ry="39" fill="#c3946a"/>
+  <rect x="605" y="566" width="70" height="12" rx="3" fill="#ece0ca"/><ellipse cx="718" cy="568" rx="20" ry="8" fill="#f6efdf"/>
+  <path stroke="#746047" stroke-width="9" d="M1020 240v310"/><path fill="#efe4cf" d="M970 170h100l45 100H925z"/><ellipse cx="1020" cy="551" rx="55" ry="12" fill="#746047"/>
+  <path fill="#b77c56" d="M142 536h90l-13 100h-64z"/><g fill="#6a8260"><ellipse cx="172" cy="470" rx="28" ry="78" transform="rotate(-25 172 470)"/><ellipse cx="215" cy="458" rx="25" ry="82" transform="rotate(24 215 458)"/></g>
+  <rect x="525" y="97" width="220" height="160" fill="#b69b77"/><path fill="#f2e8d4" d="M535 107h200v140H535z"/><circle cx="631" cy="155" r="35" fill="#c9a075"/><path fill="#94a68a" d="M535 230l90-50 110 67H535z"/>
+  <text x="36" y="716" font-family="sans-serif" font-size="18" fill="#584a3c">REPAIRCALC · DEMO ILLUSTRATION</text>
+</svg>

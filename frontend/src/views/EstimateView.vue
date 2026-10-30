@@ -12,16 +12,23 @@ import type { Estimate, Product } from '../domain/types'
 import { geometry, compatible } from '../domain/room'
 import { service, dataMode } from '../services/api'
 import { money, number } from '../domain/format'
+import { takeInspiration } from '../composables/useInspirationImport'
+
+const imported = takeInspiration()
+if (imported) Object.assign(workspace.project, imported.result.project)
 
 const project = workspace.project
-const step = ref(1)
+const step = ref(imported ? 2 : 1)
 const activeRoom = ref(0)
 const showValidation = ref(false)
 const room = computed(() => project.rooms[activeRoom.value]!)
 const { busy, error, run } = useAsync()
-const products = ref<Product[]>([])
-const selections = ref<Record<string, string>>({})
-const estimate = ref<Estimate | null>(null)
+const products = ref<Product[]>(imported?.products || [])
+const selections = ref<Record<string, string>>(imported?.result.selections || {})
+const estimate = ref<Estimate | null>(imported?.estimate || null)
+const inspiration = ref(
+  imported ? { title: imported.image.title, warnings: imported.result.warnings } : null,
+)
 const steps = ['Параметры проекта', 'Выбор материалов', 'Готовая смета']
 const totalArea = computed(() =>
   project.rooms.reduce((sum, item) => sum + (geometry(item).area || 0), 0),
@@ -31,7 +38,20 @@ watch(
   project,
   () => {
     estimate.value = null
-    selections.value = {}
+    selections.value = inspiration.value
+      ? Object.fromEntries(
+          Object.entries(selections.value).filter(([key, id]) => {
+            const product = products.value.find((item) => item.id === id)
+            const target = project.rooms.find((item) => key === `${item.id}:${product?.kind}`)
+            return (
+              product &&
+              target &&
+              compatible(product, target) &&
+              product.works.some((work) => target.works.includes(work))
+            )
+          }),
+        )
+      : {}
     if (step.value === 3) step.value = 1
   },
   { deep: true },
@@ -120,6 +140,18 @@ async function replace(key: string, event: Event) {
     <RoomPlan :length="room.length" :width="room.width" /><span class="banner-corner"
       >01 / ПЛАНИРОВАНИЕ</span
     >
+  </section>
+
+  <section v-if="inspiration" class="alert info" aria-label="Подбор по изображению">
+    <div>
+      <strong>Материалы по интерьеру «{{ inspiration.title }}»</strong>
+      <p>
+        Размеры взяты из вашего проекта. Проверьте параметры и товары перед окончательным расчётом.
+      </p>
+      <ul>
+        <li v-for="warning in inspiration.warnings" :key="warning">{{ warning }}</li>
+      </ul>
+    </div>
   </section>
 
   <ol class="stepper" aria-label="Этапы расчёта">

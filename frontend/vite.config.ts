@@ -13,6 +13,12 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       strictPort: true,
       proxy: {
+        '/api/v1/room-inspirations': {
+          target: env.API_UPSTREAM || 'http://127.0.0.1:8000',
+          changeOrigin: true,
+          timeout: 125_000,
+          proxyTimeout: 125_000,
+        },
         '/api/v1/plans': {
           target: env.ESTIMATION_UPSTREAM || 'http://127.0.0.1:8010',
           changeOrigin: true,

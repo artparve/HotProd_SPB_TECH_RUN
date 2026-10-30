@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests',
+  testIgnore: '**/inspirations.api.spec.ts',
   use: { baseURL: 'http://127.0.0.1:5173', trace: 'retain-on-failure' },
   webServer: {
     command: 'npm run dev -- --mode test',
