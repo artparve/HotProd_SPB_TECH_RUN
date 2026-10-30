@@ -54,6 +54,7 @@ function setWall(work: Work) {
     </fieldset>
 
     <RoomPlanImport :room="room" />
+    <slot name="inspiration" />
     <div class="section-heading small">
       <h3>Размеры помещения</h3>
       <span class="muted">В метрах, по внутренним стенам</span>

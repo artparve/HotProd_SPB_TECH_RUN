@@ -2,7 +2,6 @@
 import { nextTick, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AppIcon from './components/AppIcon.vue'
-import { dataMode } from './services/api'
 import { workspace } from './composables/useWorkspace'
 
 const route = useRoute()
@@ -98,11 +97,7 @@ const links = [
         <div class="topbar-actions">
           <span class="mode-pill"
             ><i />{{
-              route.path.startsWith('/admin')
-                ? 'Административный API'
-                : dataMode === 'demo'
-                  ? 'Демо-режим'
-                  : 'REST API'
+              route.path.startsWith('/admin') ? 'Управление каталогом' : 'Калькулятор ремонта'
             }}</span
           ><button class="icon-button help-button" aria-label="Помощь" @click="helpOpen = true">
             <AppIcon name="help" /></button
@@ -120,14 +115,7 @@ const links = [
       </main>
       <footer class="page-footer">
         <span>RepairCalc · Умный подход к ремонту</span
-        ><span
-          ><AppIcon name="shield" :size="15" />
-          {{
-            dataMode === 'demo'
-              ? 'Демо работает без внешних сервисов'
-              : 'Расчёты через подключённый API'
-          }}</span
-        >
+        ><span><AppIcon name="shield" :size="15" /> Сохранение и экспорт смет</span>
       </footer>
     </div>
   </div>
@@ -159,8 +147,8 @@ const links = [
         <li>Сохраните смету или выгрузите состав корзины в JSON.</li>
       </ol>
       <p class="muted">
-        Деморежим использует учебный каталог и правила, а не ML. Цены не актуальные. Сметы хранятся
-        только в этом браузере. Интеграция с реальной корзиной пока не подключена.
+        Сметы сохраняются в этом браузере. Состав корзины можно выгрузить в JSON; это действие не
+        оформляет заказ в магазине.
       </p>
       <button class="button primary" @click="helpOpen = false">
         Всё понятно <AppIcon name="check" :size="17" />

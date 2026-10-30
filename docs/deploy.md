@@ -1,5 +1,7 @@
 # RepairCalc: полный стек Docker Compose
 
+Деплой готовых образов через GitHub Actions и Ansible: [RELEASE.md](RELEASE.md).
+
 Команды выполняются из корня репозитория. Нужны Docker Engine с Linux containers,
 Compose v2.20+ и GNU Make. Для `make init-config` нужен Node.js; на Docker-only хосте
 можно вручную скопировать `env/.env.example` в `env/.env`, а

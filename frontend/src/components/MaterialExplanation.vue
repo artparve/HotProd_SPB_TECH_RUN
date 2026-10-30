@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { MaterialEstimate } from '../domain/materials'
+import MarkdownText from './MarkdownText.vue'
 
 defineProps<{ response: MaterialEstimate }>()
 </script>
@@ -9,7 +10,7 @@ defineProps<{ response: MaterialEstimate }>()
     <h3>Пояснение ИИ</h3>
     <p class="field-hint">Помощник: {{ response.model }}</p>
     <template v-if="response.explanationStatus === 'unverified_model_text'">
-      <p class="explanation-text">{{ response.explanation }}</p>
+      <MarkdownText :text="response.explanation || ''" />
       <p class="field-hint">
         Текст создан ИИ и может содержать ошибки. Проверенные количество и стоимость указаны в смете
         выше.
@@ -26,10 +27,5 @@ defineProps<{ response: MaterialEstimate }>()
   margin-top: 24px;
   padding-top: 20px;
   border-top: 1px solid #dfe6d6;
-}
-.explanation-text {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  line-height: 1.7;
 }
 </style>

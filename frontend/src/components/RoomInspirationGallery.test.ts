@@ -62,6 +62,9 @@ describe('RoomInspirationGallery', () => {
     await wrapper.get('.inspiration-image').trigger('click')
     expect(wrapper.get('dialog').attributes('open')).toBeDefined()
     expect(wrapper.get('dialog img').attributes('alt')).toBe(image.alt)
+    expect(
+      wrapper.findAll('button').every((button) => button.attributes('type') === 'button'),
+    ).toBe(true)
     await wrapper.get('dialog').trigger('cancel')
     expect(wrapper.find('dialog img').exists()).toBe(false)
     expect(service.analyzeRoomInspiration).not.toHaveBeenCalled()
@@ -217,5 +220,13 @@ describe('RoomInspirationGallery', () => {
     await wrapper.get('.inspiration-image img').trigger('error')
     expect(wrapper.get('.inspiration-image-fallback').text()).toContain('Изображение недоступно')
     expect(wrapper.get('.inspiration-card-body button').attributes('disabled')).toBeDefined()
+  })
+
+  it('does not submit another selection while the parent is recalculating the project', async () => {
+    const wrapper = await render()
+    await wrapper.setProps({ disabled: true })
+    expect(wrapper.get('.inspiration-card-body button').attributes('disabled')).toBeDefined()
+    await wrapper.get('.inspiration-card-body button').trigger('click')
+    expect(service.analyzeRoomInspiration).not.toHaveBeenCalled()
   })
 })

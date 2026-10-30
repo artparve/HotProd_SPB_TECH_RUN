@@ -1,0 +1,21 @@
+---
+release_base: "/opt/repaircalc/{{ release_environment }}"
+release_path: "{{ release_base }}/releases/{{ release_id }}"
+release_project: "repaircalc_{{ release_environment | replace('-', '_') }}"
+release_frontend_port: 8080
+release_wait_timeout: 240
+release_registry_username: "{{ lookup('ansible.builtin.env', 'REGISTRY_USERNAME') }}"
+release_registry_password: "{{ lookup('ansible.builtin.env', 'REGISTRY_PASSWORD') }}"
+release_compose:
+  - docker
+  - compose
+  - --project-directory
+  - "{{ release_path }}/docker"
+  - --project-name
+  - "{{ release_project }}"
+  - --env-file
+  - "{{ release_path }}/env/.env"
+  - -f
+  - "{{ release_path }}/docker/docker-compose.yml"
+  - -f
+  - "{{ release_path }}/docker/docker-compose.release.yml"

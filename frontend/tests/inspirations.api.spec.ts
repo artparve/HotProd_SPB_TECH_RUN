@@ -11,12 +11,18 @@ test('backend feed, large preview and photo selection lead to the ordinary calcu
   page.on('pageerror', (error) => errors.push(error.message))
   const requests = await mockInspirationApi(page)
   await page.goto('/')
-  await expect(page.locator('.inspiration-gallery')).toHaveCount(0)
+  await expect(page.locator('.inspiration-gallery')).toHaveCount(1)
   await page.goto('/room')
   await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
   await page.getByRole('spinbutton', { name: 'Длина м', exact: true }).fill('5')
   await page.getByRole('spinbutton', { name: 'Ширина м', exact: true }).fill('4')
   const gallery = page.getByRole('region', { name: 'Вдохновитесь готовой комнатой' })
+  await expect(page.locator('.main-panel .room-editor > .inspiration-gallery')).toHaveCount(1)
+  expect(
+    await gallery.evaluate((element) =>
+      element.previousElementSibling?.classList.contains('plan-import'),
+    ),
+  ).toBe(true)
   await expect(gallery.locator('.inspiration-card')).toHaveCount(3)
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
   const inspect = gallery.getByRole('button', { name: 'Рассмотреть: Тёплая гостиная' })
@@ -26,7 +32,8 @@ test('backend feed, large preview and photo selection lead to the ordinary calcu
     const width = await page
       .locator('.inspiration-hover-preview img')
       .evaluate((image) => image.getBoundingClientRect().width)
-    expect(width).toBeGreaterThan(500)
+    expect(width).toBeGreaterThan(300)
+    expect(width).toBeLessThanOrEqual(400)
   }
   await inspect.click()
   await expect(page.getByRole('dialog')).toBeVisible()
@@ -59,6 +66,9 @@ test('backend feed, large preview and photo selection lead to the ordinary calcu
     .filter((request) => new URL(request.url()).pathname === '/api/v1/estimate')
     .at(-1)!
   expect(lastCalculation.postDataJSON().selections[`${room.id}:covering`]).toBe('demo-laminate')
+  expect(
+    requests.some((request) => new URL(request.url()).pathname === '/api/v1/recommendations'),
+  ).toBe(false)
   expect(errors).toEqual([])
 })
 
@@ -201,7 +211,7 @@ for (const mode of ['uploaded-only', 'applied', 'edited-after-apply'] as const) 
     if (await menu.isVisible()) await menu.click()
     await page.getByRole('link', { name: 'RepairCalc — главная' }).click()
     await expect(page).toHaveURL('/')
-    await expect(page.locator('.inspiration-gallery')).toHaveCount(0)
+    await expect(page.locator('.inspiration-gallery')).toHaveCount(1)
     await expect(page.getByRole('spinbutton', { name: 'Длина м', exact: true })).toHaveValue('9')
     await expect(page.getByRole('region', { name: 'Подбор по изображению' })).toHaveCount(0)
   })

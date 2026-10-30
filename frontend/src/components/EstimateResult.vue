@@ -16,11 +16,9 @@ defineProps<{ estimate: Estimate; readonly?: boolean }>()
         <h2>Ваша смета готова</h2>
         <p>
           {{ estimate.lines.length }} позиций ·
-          {{ estimate.mode === 'demo' ? 'Учебный расчёт' : 'Расчёт API' }} ·
           {{ new Date(estimate.createdAt).toLocaleDateString('ru-RU') }}
         </p>
       </div>
-      <span class="tag">{{ estimate.mode === 'demo' ? 'ДЕМО' : 'API' }}</span>
     </div>
     <div v-if="!estimate.lines.length" class="empty-state">
       <AppIcon name="box" :size="36" />

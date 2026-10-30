@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: make init-config
+      - run: npm --prefix frontend ci --no-fund
+      - run: make check
+      - run: npm --prefix frontend exec -- playwright install --with-deps chromium
+      - run: npm --prefix frontend run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-failure
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 7
+
+  backend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      # GitHub hosted Linux runner supplies Docker for Testcontainers.
+      - run: bash ./mvnw -B verify
+        working-directory: backend
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: java-test-failure
+          path: |
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
+          retention-days: 7
+
+  python-and-deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r ansible/requirements.txt -r backend/estimation/requirements.txt -r backend/classification/requirements.txt
+      - run: python -m unittest discover -s backend/estimation/tests
+        env:
+          PYTHONPATH: backend/estimation
+      - run: python -m unittest discover -s backend/classification/tests
+        env:
+          PYTHONPATH: backend/classification
+      - run: python -m unittest discover -s tests/release
+      - run: ansible-playbook -i localhost, ansible/deploy.yml --syntax-check
+      - name: Validate release Compose without real credentials
+        run: python -m scripts.github_actions validate-compose
+
+  images:
+    needs: [frontend, backend, python-and-deploy]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: frontend
+            context: frontend
+          - image: backend
+            context: backend
+          - image: estimator
+            context: backend/estimation
+          - image: classifier
+            context: backend/classification
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Lowercase GHCR namespace
+        id: registry
+        env:
+          REPOSITORY: ${{ github.repository }}
+        run: python3 -m scripts.github_actions image-prefix
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.registry.outputs.prefix }}/${{ matrix.image }}:sha-${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}

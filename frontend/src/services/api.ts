@@ -9,7 +9,8 @@ import {
   roomInspirationResultSchema,
 } from '../domain/inspirations'
 
-const configuredMode = import.meta.env.VITE_DATA_MODE || 'demo'
+// Production builds never use synthetic fixtures, even with an old local env file.
+const configuredMode = import.meta.env.PROD ? 'api' : import.meta.env.VITE_DATA_MODE || 'api'
 if (!['demo', 'api'].includes(configuredMode)) throw new Error('VITE_DATA_MODE must be demo or api')
 export const dataMode = configuredMode as 'demo' | 'api'
 const base = (import.meta.env.VITE_API_BASE_URL || '/api/v1').replace(/\/$/, '')
@@ -93,7 +94,7 @@ async function request<T>(
 
 export const service = {
   async roomInspirations(cursor?: string, signal?: AbortSignal) {
-    if (dataMode === 'demo')
+    if (import.meta.env.DEV && dataMode === 'demo')
       return roomInspirationFeedSchema.parse(
         (await import('../data/inspirations')).inspirationFeedMock,
       )
@@ -108,7 +109,7 @@ export const service = {
   async analyzeRoomInspiration(imageId: string, project: Project, signal?: AbortSignal) {
     const body = roomInspirationRequestSchema.parse({ project })
     const result = roomInspirationResultSchema.parse(
-      dataMode === 'demo'
+      import.meta.env.DEV && dataMode === 'demo'
         ? (await import('../data/inspirations')).analyzeInspirationMock(imageId, body.project)
         : await request(
             `/room-inspirations/${encodeURIComponent(imageId)}/analyze`,
@@ -138,19 +139,22 @@ export const service = {
     return request('/plans/extract', planResultSchema, { imageBase64 }, 660_000)
   },
   async catalog(): Promise<Product[]> {
-    if (dataMode === 'demo') return (await import('./demo')).demoCatalog()
+    if (import.meta.env.DEV && dataMode === 'demo') return (await import('./demo')).demoCatalog()
     return request('/products', z.array(productSchema))
   },
   async estimate(project: Project, selections: Record<string, string> = {}) {
-    if (dataMode === 'demo') return (await import('./demo')).estimateDemo(project, selections)
+    if (import.meta.env.DEV && dataMode === 'demo')
+      return (await import('./demo')).estimateDemo(project, selections)
     return request('/estimate', estimateSchema, { project, selections })
   },
   async recommendations(room: Room) {
-    if (dataMode === 'demo') return (await import('./demo')).recommendDemo(room)
+    if (import.meta.env.DEV && dataMode === 'demo')
+      return (await import('./demo')).recommendDemo(room)
     return request('/recommendations', recommendationSchema, { room })
   },
   async product(product: Product, input: ProductInput) {
-    if (dataMode === 'demo') return (await import('./demo')).productDemo(product, input)
+    if (import.meta.env.DEV && dataMode === 'demo')
+      return (await import('./demo')).productDemo(product, input)
     return request(`/product/${encodeURIComponent(product.id)}/calc`, estimateSchema, input)
   },
   async materialEstimate(product: Product, input: ProductInput) {

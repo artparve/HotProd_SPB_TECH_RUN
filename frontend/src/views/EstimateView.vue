@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, nextTick, reactive, ref, watch } from 'vue'
 import AppIcon from '../components/AppIcon.vue'
 import RoomEditor from '../components/RoomEditor.vue'
 import RoomPlan from '../components/RoomPlan.vue'
 import ProductSwatch from '../components/ProductSwatch.vue'
 import EstimateResult from '../components/EstimateResult.vue'
+import RoomInspirationGallery from '../components/RoomInspirationGallery.vue'
 import { workspace } from '../composables/useWorkspace'
 import { useAsync } from '../composables/useAsync'
 import { newRoom, projectSchema, roomLabels } from '../domain/types'
 import type { Estimate, Product } from '../domain/types'
 import { geometry, compatible } from '../domain/room'
-import { service, dataMode } from '../services/api'
+import { service } from '../services/api'
 import { money, number } from '../domain/format'
 import { takeInspiration } from '../composables/useInspirationImport'
+import { validateInspirationEstimate, type PreparedInspiration } from '../domain/inspirations'
 
 const imported = takeInspiration()
 // A standalone room calculation must not replace the user's multi-room project.
@@ -35,6 +37,11 @@ const totalArea = computed(() =>
   project.rooms.reduce((sum, item) => sum + (geometry(item).area || 0), 0),
 )
 const g = computed(() => geometry(room.value))
+const inspirationProject = computed(() => ({
+  object: project.object,
+  renovation: project.renovation,
+  rooms: [room.value],
+}))
 watch(
   project,
   () => {
@@ -70,6 +77,40 @@ function removeRoom() {
 function choices(roomId: string, kind: Product['kind']) {
   const target = project.rooms.find((r) => r.id === roomId)!
   return products.value.filter((product) => product.kind === kind && compatible(product, target))
+}
+async function applyInspiration(value: PreparedInspiration) {
+  await run(async () => {
+    const target = room.value
+    const selectedRoom = value.result.project.rooms[0]!
+    if (target.id !== selectedRoom.id)
+      throw new Error('Выбрана другая комната. Повторите подбор интерьера.')
+    const fingerprint = JSON.stringify(project)
+    const snapshot = projectSchema.parse(project)
+    snapshot.rooms[activeRoom.value] = selectedRoom
+    const nextSelections = {
+      ...Object.fromEntries(
+        Object.entries(selections.value).filter(
+          ([key]) => key.slice(0, key.lastIndexOf(':')) !== target.id,
+        ),
+      ),
+      ...value.result.selections,
+    }
+    const response =
+      snapshot.rooms.length === 1
+        ? value.estimate
+        : await service.estimate(snapshot, nextSelections)
+    validateInspirationEstimate(value.result, response)
+    if (fingerprint !== JSON.stringify(project) || room.value.id !== target.id)
+      throw new Error('Проект изменился. Повторите подбор интерьера для текущих параметров.')
+    Object.assign(target, selectedRoom)
+    // Let the ordinary project invalidation watcher finish before applying the new result.
+    await nextTick()
+    products.value = value.products
+    selections.value = nextSelections
+    estimate.value = response
+    inspiration.value = { title: value.image.title, warnings: value.result.warnings }
+    step.value = 2
+  })
 }
 async function next() {
   showValidation.value = true
@@ -258,7 +299,15 @@ async function replace(key: string, event: Event) {
               <AppIcon name="trash" :size="18" />
             </button>
           </div>
-          <RoomEditor :key="room.id" :room="room" :show-validation="showValidation" />
+          <RoomEditor :key="room.id" :room="room" :show-validation="showValidation">
+            <template #inspiration>
+              <RoomInspirationGallery
+                :project="inspirationProject"
+                :disabled="busy"
+                @prepared="applyInspiration"
+              />
+            </template>
+          </RoomEditor>
           <div v-if="error" class="alert error" role="alert">{{ error }}</div>
           <div class="panel-bottom">
             <span class="muted"
@@ -282,11 +331,9 @@ async function replace(key: string, event: Event) {
           <span class="subtle-number">02</span>
         </div>
         <div class="alert info">
-          <AppIcon name="info" :size="18" /><span>{{
-            dataMode === 'demo'
-              ? 'Подбор по демо-правилам, без ML. Нормы и цены учебные.'
-              : 'Материалы и объяснения получены из API.'
-          }}</span>
+          <AppIcon name="info" :size="18" /><span>
+            Проверьте материалы, количество и совместимость с условиями вашего проекта.
+          </span>
         </div>
         <div v-for="line in estimate?.lines" :key="line.id" class="material-choice">
           <ProductSwatch :product="line.product" />

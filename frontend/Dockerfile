@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-fund
 COPY . .
-ARG VITE_DATA_MODE=demo
+ARG VITE_DATA_MODE=api
 ARG VITE_API_BASE_URL=/api/v1
 ENV VITE_DATA_MODE=$VITE_DATA_MODE VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build

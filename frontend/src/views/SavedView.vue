@@ -40,10 +40,7 @@ function remove(id: string) {
       <span class="saved-file-icon"><AppIcon name="file" :size="23" /></span>
       <div>
         <h2>Смета от {{ new Date(estimate.createdAt).toLocaleDateString('ru-RU') }}</h2>
-        <p>
-          {{ estimate.lines.length }} позиций ·
-          {{ estimate.mode === 'demo' ? 'Демонстрационный расчёт' : 'Расчёт API' }}
-        </p>
+        <p>{{ estimate.lines.length }} позиций</p>
       </div>
       <strong>{{ money(estimate.total) }}</strong
       ><button

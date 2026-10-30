@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import { service, dataMode } from '../services/api'
+import { service } from '../services/api'
 import { projectSchema, type Project } from '../domain/types'
 import {
   validateInspirationEstimate,
@@ -9,7 +9,7 @@ import {
   type RoomInspiration,
 } from '../domain/inspirations'
 
-const props = defineProps<{ project: Project }>()
+const props = defineProps<{ project: Project; disabled?: boolean }>()
 const emit = defineEmits<{ prepared: [value: PreparedInspiration] }>()
 const items = ref<RoomInspiration[]>([])
 const cursor = ref<string | null>(null)
@@ -58,13 +58,13 @@ function closePreview() {
   preview.value = null
 }
 async function choose(image: RoomInspiration) {
-  if (selecting.value) return
+  if (selecting.value || props.disabled) return
   closePreview()
   hovered.value = null
   selectionError.value = ''
   const parsed = projectSchema.safeParse(props.project)
   if (!parsed.success) {
-    selectionError.value = 'Сначала проверьте размеры и параметры комнаты в форме выше.'
+    selectionError.value = 'Сначала проверьте размеры и параметры в карточке комнаты.'
     return
   }
   const snapshot = parsed.data
@@ -104,28 +104,27 @@ onBeforeUnmount(() => {
   <section
     class="inspiration-gallery panel"
     aria-labelledby="inspiration-title"
-    :aria-busy="loading || !!selecting"
+    :aria-busy="loading || !!selecting || disabled"
   >
     <div class="inspiration-heading">
       <div>
         <span class="eyebrow">ОТ ИДЕИ К РАСЧЁТУ</span>
         <h2 id="inspiration-title">Вдохновитесь готовой комнатой</h2>
         <p>
-          Наведите на фото, чтобы рассмотреть. Выберите интерьер — подберём материалы для указанной
-          выше комнаты.
+          Наведите на фото, чтобы рассмотреть. Выберите интерьер — подберём материалы для этой
+          комнаты.
         </p>
       </div>
-      <span v-if="dataMode === 'demo'" class="tag">ДЕМО · ИЛЛЮСТРАЦИИ</span>
     </div>
     <p class="muted">
-      Используем текущие параметры комнаты выше. Размеры из плана учитываются только после
+      Используем текущие параметры этой карточки. Размеры из плана учитываются только после
       «Применить параметры»; последующие ручные правки имеют приоритет. Мебель и декор могут не
       входить в подбор.
     </p>
     <p v-if="loading && !items.length" role="status">Загружаем изображения комнат…</p>
     <div v-if="feedError" class="alert error" role="alert">
       {{ feedError }}
-      <button class="text-button" :disabled="loading" @click="load(!!items.length)">
+      <button type="button" class="text-button" :disabled="loading" @click="load(!!items.length)">
         Повторить загрузку
       </button>
     </div>
@@ -135,6 +134,7 @@ onBeforeUnmount(() => {
     <ul v-if="items.length" class="inspiration-strip" aria-label="Изображения комнат">
       <li v-for="image in items" :key="image.id" class="inspiration-card">
         <button
+          type="button"
           class="inspiration-image"
           :aria-label="`Рассмотреть: ${image.title}`"
           @mouseenter="hovered = image"
@@ -157,8 +157,9 @@ onBeforeUnmount(() => {
           <h3>{{ image.title }}</h3>
           <p>{{ image.description }}</p>
           <button
+            type="button"
             class="button primary"
-            :disabled="!!selecting || broken.has(image.id)"
+            :disabled="disabled || !!selecting || broken.has(image.id)"
             @click="choose(image)"
           >
             {{ selecting === image.id ? 'Распознаём…' : 'Выбрать интерьер' }}
@@ -167,9 +168,10 @@ onBeforeUnmount(() => {
       </li>
     </ul>
     <button
+      type="button"
       v-if="cursor"
       class="button ghost"
-      :disabled="loading || !!selecting"
+      :disabled="disabled || loading || !!selecting"
       @click="load(true)"
     >
       {{ loading ? 'Загружаем…' : 'Ещё комнаты' }}
@@ -177,7 +179,12 @@ onBeforeUnmount(() => {
     <p v-if="selecting" role="status">
       Подбираем товары с изображения. Это может занять до двух минут. Ваш проект пока не изменён.
     </p>
-    <button v-if="selecting" class="text-button" @click="selectionController?.abort()">
+    <button
+      v-if="selecting"
+      type="button"
+      class="text-button"
+      @click="selectionController?.abort()"
+    >
       Отменить распознавание
     </button>
     <div v-if="selectionError" class="alert error" role="alert">
@@ -202,13 +209,16 @@ onBeforeUnmount(() => {
       <template v-if="preview">
         <div class="inspiration-dialog-heading">
           <h2 id="inspiration-preview-title">{{ preview.title }}</h2>
-          <button class="button ghost" autofocus @click="closePreview">Закрыть просмотр</button>
+          <button type="button" class="button ghost" autofocus @click="closePreview">
+            Закрыть просмотр
+          </button>
         </div>
         <img :src="preview.imageUrl" :alt="preview.alt" @error="broken.add(preview.id)" />
         <p>{{ preview.description }}</p>
         <button
+          type="button"
           class="button primary"
-          :disabled="!!selecting || broken.has(preview.id)"
+          :disabled="disabled || !!selecting || broken.has(preview.id)"
           @click="choose(preview)"
         >
           Выбрать интерьер
@@ -305,8 +315,8 @@ onBeforeUnmount(() => {
     z-index: 30;
     inset: 50% auto auto 50%;
     transform: translate(-50%, -50%);
-    width: min(850px, 75vw);
-    max-height: 75vh;
+    width: min(400px, calc(100vw - 32px));
+    max-height: 40vh;
     padding: 12px;
     border: 1px solid #dedbd5;
     border-radius: 16px;
@@ -314,7 +324,7 @@ onBeforeUnmount(() => {
     box-shadow: 0 16px 80px #17251a55;
     img {
       width: 100%;
-      max-height: 65vh;
+      max-height: 30vh;
       object-fit: contain;
     }
     strong {

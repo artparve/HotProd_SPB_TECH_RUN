@@ -1,0 +1,8 @@
+---
+- name: Deploy RepairCalc images to one stand
+  hosts: all
+  become: "{{ release_become | default(true) | bool }}"
+  gather_facts: false
+  any_errors_fatal: true
+  roles:
+    - repaircalc

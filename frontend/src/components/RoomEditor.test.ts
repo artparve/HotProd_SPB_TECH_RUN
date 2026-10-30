@@ -4,6 +4,16 @@ import { newRoom } from '../domain/types'
 import RoomEditor from './RoomEditor.vue'
 
 describe('RoomEditor', () => {
+  it('places the interior feed beside plan import, before room dimensions', () => {
+    const wrapper = mount(RoomEditor, {
+      props: { room: newRoom() },
+      slots: { inspiration: '<section class="test-interiors">Интерьеры</section>' },
+    })
+    const feed = wrapper.get('.test-interiors').element
+    expect(feed.previousElementSibling?.classList.contains('plan-import')).toBe(true)
+    expect(feed.nextElementSibling?.textContent).toContain('Размеры помещения')
+    wrapper.unmount()
+  })
   it('updates contextual defaults when a bathroom is selected', async () => {
     const room = newRoom()
     const wrapper = mount(RoomEditor, { props: { room } })

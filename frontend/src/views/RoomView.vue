@@ -9,7 +9,7 @@ import RoomPlan from '../components/RoomPlan.vue'
 import RoomInspirationGallery from '../components/RoomInspirationGallery.vue'
 import { newRoom, roomSchema } from '../domain/types'
 import type { Recommendations } from '../domain/types'
-import { service, dataMode } from '../services/api'
+import { service } from '../services/api'
 import { useAsync } from '../composables/useAsync'
 import { workspace, notify } from '../composables/useWorkspace'
 import { money } from '../domain/format'
@@ -86,12 +86,14 @@ function addToProject() {
         </div>
       </div>
       <form @submit.prevent="recommend">
-        <RoomEditor :room="room" :show-validation="showValidation" />
+        <RoomEditor :room="room" :show-validation="showValidation">
+          <template #inspiration>
+            <RoomInspirationGallery :project="inspirationProject" @prepared="openCalculator" />
+          </template>
+        </RoomEditor>
         <div v-if="error" class="alert error" role="alert">{{ error }}</div>
         <div class="panel-bottom">
-          <span class="muted">{{
-            dataMode === 'demo' ? 'Демо-правила, не ML' : 'Рекомендации из API'
-          }}</span
+          <span class="muted">Подбор с учётом условий комнаты</span
           ><button class="button primary" :disabled="busy">
             {{ busy ? 'Подбираем…' : 'Найти материалы' }}<AppIcon name="arrow" :size="18" />
           </button>
@@ -107,13 +109,10 @@ function addToProject() {
           <li><AppIcon name="check" :size="17" /> Нагрузка на поверхность</li>
           <li><AppIcon name="check" :size="17" /> Отопление помещения</li>
         </ul>
-        <p class="field-hint">
-          Неизвестный признак — не разрешение. В демо такие товары исключаются.
-        </p>
+        <p class="field-hint">Товары с неподтверждённой совместимостью исключаются из подбора.</p>
       </section>
     </aside>
   </div>
-  <RoomInspirationGallery :project="inspirationProject" @prepared="openCalculator" />
   <section v-if="result" class="recommendations-section">
     <div class="section-heading">
       <div>

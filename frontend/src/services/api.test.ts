@@ -120,6 +120,29 @@ describe('material estimation API', () => {
 })
 
 describe('API adapter', () => {
+  it('never uses fixtures in production even if an old env file selects them', async () => {
+    vi.stubEnv('PROD', true)
+    vi.stubEnv('DEV', false)
+    vi.stubEnv('VITE_DATA_MODE', 'demo')
+    const fetch = vi.fn().mockResolvedValue(new Response('[]', { status: 200 }))
+    vi.stubGlobal('fetch', fetch)
+    const { service, dataMode } = await import('./api')
+    expect(dataMode).toBe('api')
+    expect(await service.catalog()).toEqual([])
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+  it('uses the backend by default rather than returning synthetic data', async () => {
+    vi.stubEnv('VITE_DATA_MODE', '')
+    const fetch = vi.fn().mockResolvedValue(new Response('[]', { status: 200 }))
+    vi.stubGlobal('fetch', fetch)
+    const { service, dataMode } = await import('./api')
+    expect(dataMode).toBe('api')
+    expect(await service.catalog()).toEqual([])
+    expect(fetch).toHaveBeenCalledWith(
+      '/api/v1/products',
+      expect.objectContaining({ method: 'GET' }),
+    )
+  })
   it('calls the agreed API, not the external raw catalog', async () => {
     vi.stubEnv('VITE_DATA_MODE', 'api')
     const fetch = vi.fn().mockResolvedValue(new Response('[]', { status: 200 }))
