@@ -18,10 +18,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # Only configurable runtime settings used by the release Compose stack.
 # Frontend build settings, upstream service names and image references are fixed by deployment.
-DEPLOYMENT_ENV_DEFAULTS = {
-    "DB_PASSWORD": None,
+DEPLOYMENT_PUBLIC_DEFAULTS = {
+    "DB_NAME": "repaircalc",
+    "DB_USER": "repaircalc",
+    "POSTGRES_IMAGE_TAG": "17.11",
     "ADMIN_USERNAME": "",
-    "ADMIN_PASSWORD_HASH": "",
     "ADMIN_COOKIE_SECURE": "true",
     "ADMIN_SESSION_SECONDS": "1800",
     "OLLAMA_URL": "http://ollama:11434",
@@ -29,12 +30,15 @@ DEPLOYMENT_ENV_DEFAULTS = {
     "OLLAMA_NUM_THREADS": "8",
     "OLLAMA_IMAGE_TAG": "0.40.13",
     "OLLAMA_CPU_LIMIT": "8.0",
+    "OLLAMA_MEMORY_LIMIT": "12g",
 }
+DEPLOYMENT_SECRET_DEFAULTS = {"DB_PASSWORD": None, "ADMIN_PASSWORD_HASH": ""}
+DEPLOYMENT_ENV_DEFAULTS = {**DEPLOYMENT_PUBLIC_DEFAULTS, **DEPLOYMENT_SECRET_DEFAULTS}
 
 
-def deployment_dotenv(environ):
+def _dotenv(environ, defaults):
     lines = []
-    for name, default in DEPLOYMENT_ENV_DEFAULTS.items():
+    for name, default in defaults.items():
         value = environ.get(name, default)
         if value is None or (default is None and not value.strip()):
             raise ValueError(f"Set {name}")
@@ -44,6 +48,14 @@ def deployment_dotenv(environ):
         # in passwords/hashes; JSON quoting handles quotes and backslashes safely.
         lines.append(name + "=" + json.dumps(value, ensure_ascii=False).replace("$", "$$"))
     return "\n".join(lines) + "\n"
+
+
+def deployment_dotenv(environ):
+    return _dotenv(environ, DEPLOYMENT_PUBLIC_DEFAULTS)
+
+
+def deployment_secret_dotenv(environ):
+    return _dotenv(environ, DEPLOYMENT_SECRET_DEFAULTS)
 
 
 def bounded_int(value, minimum, maximum):
@@ -88,12 +100,17 @@ def configuration(args, environ):
     if any(char in key for char in "\n\r\"'"):
         raise ValueError("SSH file paths cannot contain quotes or newlines")
     port = bounded_int(environ.get("DEPLOY_PORT", "22"), 1, 65535)
+    try:
+        frontend_host = str(ipaddress.ip_address(environ.get("DEPLOY_FRONTEND_HOST", "127.0.0.1")))
+    except ValueError:
+        raise ValueError("DEPLOY_FRONTEND_HOST must be an IP address without a port") from None
     release_id = args.image_tag + "-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
     variables = {
         "release_environment": args.environment,
         "release_image_tag": args.image_tag,
         "release_image_prefix": args.image_prefix,
         "release_id": release_id,
+        "release_frontend_host": frontend_host,
         "release_frontend_port": bounded_int(environ.get("DEPLOY_FRONTEND_PORT", "8080"), 1024, 65535),
         "release_become": not args.no_become,
     }
@@ -124,8 +141,12 @@ def main(argv=None, environ=None):
     try:
         inventory, variables = configuration(args, environ)
         dotenv = deployment_dotenv(environ)
+        secret_dotenv = deployment_secret_dotenv(environ)
         print(f"Deploy {args.image_prefix}/*:{args.image_tag} to {args.environment}", flush=True)
-        print(f"Directory: /opt/repaircalc/{args.environment}; frontend: 127.0.0.1:{variables['release_frontend_port']}", flush=True)
+        bind_host = variables["release_frontend_host"]
+        if ":" in bind_host:
+            bind_host = "[" + bind_host + "]"
+        print(f"Directory: /opt/repaircalc/{args.environment}; frontend: {bind_host}:{variables['release_frontend_port']}", flush=True)
         if args.dry_run:
             print("Inputs validated; no network requests or remote changes made.")
             return 0
@@ -137,10 +158,14 @@ def main(argv=None, environ=None):
         # Keep generated application secrets in a private temporary file, never argv or logs.
         with tempfile.TemporaryDirectory(prefix="repaircalc-release-") as directory:
             tmp = Path(directory)
-            env_file = tmp / "stand.env"
+            env_file = tmp / ".env"
             env_file.write_text(dotenv, encoding="utf-8")
             env_file.chmod(0o600)
             variables["release_env_file"] = str(env_file)
+            secret_file = tmp / "secret.env"
+            secret_file.write_text(secret_dotenv, encoding="utf-8")
+            secret_file.chmod(0o600)
+            variables["release_secret_env_file"] = str(secret_file)
             (tmp / "inventory.json").write_text(json.dumps(inventory), encoding="utf-8")
             (tmp / "vars.json").write_text(json.dumps(variables), encoding="utf-8")
             for name in DEPLOYMENT_ENV_DEFAULTS:

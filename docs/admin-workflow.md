@@ -11,7 +11,7 @@ V6 хранит неизменяемый вход задания, UUID това�
 Worker не имеет HTTP-порта. Подключение — стандартные libpq `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`; отдельный `CLASSIFIER_DB_DSN` необязателен. Секреты не выводятся в лог. `OLLAMA_URL`, `OLLAMA_MODEL`, `OLLAMA_NUM_THREADS` задают исполнение, timeout 600 секунд. Compose включает `classifier-worker` в профиль `llm`, с restart, лимитами памяти/CPU и read-only FS. Запуск после настройки существующего `env/.env`:
 
 ```bash
-docker compose --env-file env/.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml --profile llm up -d --build classifier-worker ollama
+docker compose --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml --profile llm up -d --build classifier-worker ollama
 ```
 
 Модель должна быть предварительно установлена согласно [deploy.md](deploy.md). Worker сам не скачивает её. Если Ollama недоступен, задание выполнит ограниченные повторные попытки; после исправления нажмите запуск снова. Нет гарантии единственного вызова модели: восстановление может повторить inference, но только владелец действующей аренды запишет итог.

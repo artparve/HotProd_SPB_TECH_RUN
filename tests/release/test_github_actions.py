@@ -116,7 +116,11 @@ class GitHubActionsTests(unittest.TestCase):
         seen = []
 
         def run(argv, **kwargs):
-            file = Path(argv[3])
+            public_file = Path(argv[3])
+            self.assertNotIn("DB_PASSWORD=", public_file.read_text())
+            self.assertNotIn("ADMIN_PASSWORD_HASH=", public_file.read_text())
+            self.assertEqual(argv[4], "--env-file")
+            file = Path(argv[5])
             self.assertEqual(file.read_text(), "DB_PASSWORD=ci-validation-only\n")
             self.assertEqual(kwargs["env"]["COMPOSE_PROFILES"], "")
             self.assertNotIn("DB_PASSWORD", kwargs["env"])
@@ -124,11 +128,13 @@ class GitHubActionsTests(unittest.TestCase):
             self.assertEqual(argv[-2:], ["config", "--quiet"])
             self.assertFalse(kwargs["check"])
             seen.append(file)
+            seen.append(public_file)
             return type("Result", (), {"returncode": 3})()
 
         with patch.object(github_actions.subprocess, "run", side_effect=run):
             self.assertEqual(github_actions.main(["validate-compose"], self.environ), 3)
         self.assertFalse(seen[0].exists())
+        self.assertFalse(seen[1].exists())
 
 
 @unittest.skipUnless(yaml, "PyYAML is installed with the Ansible requirements")
@@ -148,6 +154,7 @@ class WorkflowTests(unittest.TestCase):
         job = yaml.safe_load(path.read_text())["jobs"]["deploy"]
         self.assertEqual(job["environment"]["name"], "${{ inputs.environment }}")
         self.assertEqual(job["env"]["DEPLOY_HOST"], "${{ vars.DEPLOY_HOST }}")
+        self.assertEqual(job["env"]["DEPLOY_FRONTEND_HOST"], "${{ vars.DEPLOY_FRONTEND_HOST || '0.0.0.0' }}")
         step = next(step for step in job["steps"] if step.get("run") == "python -m scripts.github_actions deploy")
         self.assertEqual(step["env"]["SSH_PRIVATE_KEY"], "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}")
         self.assertEqual(step["env"]["DB_PASSWORD"], "${{ secrets.DB_PASSWORD }}")

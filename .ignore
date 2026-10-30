@@ -40,4 +40,6 @@
 **/yarn.lock
 **/.env
 **/.env.*
+**/secret.env
 !**/.env.example
+!**/secret.env.example

@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from shutil import copyfile
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -81,12 +82,14 @@ def image_prefix(environ):
 def validate_compose(environ):
     # This CI-only file contains a synthetic password, never deployment credentials.
     with tempfile.TemporaryDirectory(prefix="repaircalc-compose-", dir=environ.get("RUNNER_TEMP")) as directory:
-        path = Path(directory, "compose.env")
+        public_path = Path(directory, ".env")
+        copyfile(ROOT / "env/.env.example", public_path)
+        path = Path(directory, "secret.env")
         path.write_text("DB_PASSWORD=ci-validation-only\n", encoding="utf-8")
         env = {name: value for name, value in environ.items() if name not in release.DEPLOYMENT_ENV_DEFAULTS}
         env.update(IMAGE_PREFIX="ghcr.io/repaircalc/ci", IMAGE_TAG="sha-" + "0" * 40, COMPOSE_PROFILES="")
         return subprocess.run([
-            "docker", "compose", "--env-file", str(path),
+            "docker", "compose", "--env-file", str(public_path), "--env-file", str(path),
             "-f", "docker/docker-compose.yml", "-f", "docker/docker-compose.release.yml",
             "config", "--quiet",
         ], cwd=ROOT, env=env, check=False).returncode

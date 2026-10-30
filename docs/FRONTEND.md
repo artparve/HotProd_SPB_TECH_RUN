@@ -150,13 +150,17 @@ Docker и модель не нужны. Сценарии с локальными
 
 `NODE`, `NPM` и `DOCKER` можно переопределить стандартными переменными Make, например `make check NPM=npm`. Обычно это не требуется. Тег образа задаётся только в `env/.env`, а не отдельным дублирующим аргументом `VERSION`.
 
-## Единый env/.env
+## Общие env/.env и env/secret.env
+
+Полная схема загрузки и миграция старых настроек: [CONFIG.md](CONFIG.md).
+Vite читает только `.env`; `secret.env` предназначен для Java/Compose и не
+загружается frontend. `make init-config` создаёт оба файла без перезаписи.
 
 ```dotenv
 VITE_DATA_MODE=api
 VITE_API_BASE_URL=/api/v1
 API_UPSTREAM=http://127.0.0.1:8000
-DOCKER_API_UPSTREAM=http://host.docker.internal:8000
+ESTIMATION_UPSTREAM=http://127.0.0.1:8010
 FRONTEND_HOST=127.0.0.1
 FRONTEND_PORT=8080
 IMAGE_TAG=local
@@ -167,18 +171,17 @@ IMAGE_TAG=local
 | `VITE_DATA_MODE` | По умолчанию `api`. `demo` — только dev/test-фикстуры; production всегда использует API без fallback |
 | `VITE_API_BASE_URL` | Префикс браузерных запросов; рекомендуется `/api/v1` |
 | `API_UPSTREAM` | Адрес backend для локального Vite на хосте |
-| `DOCKER_API_UPSTREAM` | Старый параметр ручного запуска nginx; полный Compose использует `backend:8000` |
+| `DEV_HOST`, `DEV_PORT` | Адрес/порт Vite, по умолчанию `127.0.0.1:5173` |
 | `ESTIMATION_UPSTREAM` | Адрес Python estimation-сервиса для Vite, по умолчанию `http://127.0.0.1:8010` |
-| `DOCKER_ESTIMATION_UPSTREAM` | Старый параметр ручного запуска; полный Compose использует `estimator:8010` |
 | `COMPOSE_DATA_MODE` | Режим сборки frontend в Compose, по умолчанию `api` |
-| `DB_PASSWORD` | Пароль отдельной PostgreSQL в полном Compose |
+| `DB_PASSWORD` | Только в `secret.env`: пароль PostgreSQL |
 | `FRONTEND_HOST` | Интерфейс публикации Docker-порта, по умолчанию localhost |
 | `FRONTEND_PORT` | Порт frontend на хосте |
 | `IMAGE_TAG` | Тег Docker-образа для Compose, по умолчанию `local` |
 
-Vite настроен на папку `env/`; Compose получает тот же файл через явный `--env-file env/.env`. Makefile **не включает env как Make-код и не разбирает его сам**: каждый инструмент использует штатный dotenv-механизм. Переменные окружения процесса имеют приоритет над файлом.
+Vite настроен на папку `env/`; Compose получает `--env-file env/.env --env-file env/secret.env`. Makefile **не включает env как Make-код**. При локальном запуске Java/Python `scripts/local.mjs` использует стандартный `node:util.parseEnv`; Compose/Vite используют свои dotenv-механизмы. Переменные окружения процесса имеют приоритет над файлами.
 
-`127.0.0.1` внутри контейнера — сам контейнер, не компьютер разработчика. Поэтому для backend на хосте используются разные `API_UPSTREAM` и `DOCKER_API_UPSTREAM`. Для одного удалённого сервера можно указать одинаковый адрес, например `http://10.0.0.5:8000`, в обеих переменных. Адрес — origin без завершающего `/`.
+`127.0.0.1` внутри контейнера — сам контейнер, не компьютер разработчика. Полный Compose использует фиксированные DNS-имена `backend:8000` / `estimator:8010`. `API_UPSTREAM` и `ESTIMATION_UPSTREAM` задают origins для локального Vite, без завершающего `/`.
 
 Для локального Vite поставьте `VITE_DATA_MODE=api` и задайте адреса. Backend должен поддерживать [OpenAPI](openapi.yaml). После изменения env перезапустите `make dev`. Полный Compose использует `COMPOSE_DATA_MODE=api` и внутренние адреса сервисов; после изменения настроек выполните `make up`.
 
@@ -197,26 +200,26 @@ proxy и увеличенный таймаут: на CPU первый ответ
 
 ```bash
 make init-config
-# Задайте собственный DB_PASSWORD в env/.env перед первым запуском.
+# Задайте DB_PASSWORD в env/secret.env перед первым запуском.
 make config
 make up
 # http://127.0.0.1:8080
 ```
 
-Node нужен для автоматического создания конфигов, но **не для запуска уже собранного контейнера**. На Docker-only хосте без Node можно вручную скопировать `env/.env.example` в `env/.env`, а `docker/docker-compose.override.yml.example` в `docker/docker-compose.override.yml`. Если оба файла существуют, `make up`, `make config` и `make image` не выполняют копирование и не требуют Node.
+Node нужен для автоматического создания конфигов, но **не для запуска уже собранного контейнера**. На Docker-only хосте вручную скопируйте `.env.example` → `.env` и `secret.env.example` → `secret.env` в `env/`, а также шаблон Compose override. Если все три файла существуют, Compose-команды Make не требуют Node.
 
-Порт frontend публикуется в игнорируемом `docker/docker-compose.override.yml`. Базовый Compose не публикует порты хоста. Он запускает frontend, Java, PostgreSQL, импорт учебных данных и Python estimator; Ollama доступна через профиль `llm`, классификатор — `batch`. Подробности и команды — в [инструкции полного стека](deploy.md).
+Порты публикуются в игнорируемом `docker/docker-compose.override.yml`: frontend по `FRONTEND_HOST`, зависимости только на localhost для разработки. Базовый Compose не публикует порты хоста. Он запускает frontend, Java, PostgreSQL, импорт учебных данных и Python estimator; Ollama доступна через профиль `llm`, классификатор — `batch`. Подробности — в [CONFIG.md](CONFIG.md) и [инструкции стека](deploy.md).
 
 Build context — `frontend/`: env, большие каталоги и документы не отправляются Docker daemon. Публичные параметры передаются явно через build args. Образ: Node 22 → непривилегированный nginx, read-only root FS и writable `/tmp`. `/healthz` проверяет nginx, не backend.
 
-В старом локальном override может оставаться `host.docker.internal:host-gateway`. Полный стек использует DNS-имена сервисов в общей сети Compose.
+Дополнительная запись `host.docker.internal` не нужна: полный стек использует DNS-имена сервисов.
 
 nginx сохраняет `/api/...` и не возвращает HTML SPA вместо ошибок API. CSP допускает same-origin подключения. TLS, внешнее iframe-встраивание, production CORS и авторизация настраиваются отдельно.
 
 Прямой эквивалент `make up` на всех трёх ОС:
 
 ```bash
-docker compose --project-directory docker --env-file env/.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml up --build --detach --wait
+docker compose --project-directory docker --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml up --build --detach --wait
 ```
 
 ## Проверки и результат релиза

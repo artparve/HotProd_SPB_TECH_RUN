@@ -4,3 +4,16 @@ services:
   frontend:
     ports:
       - "${FRONTEND_HOST:-127.0.0.1}:${FRONTEND_PORT:-8080}:8080"
+  # Host-only development access; these bindings never enter the release stack.
+  postgres:
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-55432}:5432"
+  backend:
+    ports:
+      - "127.0.0.1:${SERVER_PORT:-8000}:8000"
+  estimator:
+    ports:
+      - "127.0.0.1:${ESTIMATOR_PORT:-8010}:8010"
+  ollama:
+    ports:
+      - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"

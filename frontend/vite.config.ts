@@ -10,7 +10,8 @@ export default defineConfig(({ mode }) => {
     envDir,
     plugins: [vue()],
     server: {
-      port: 5173,
+      host: env.DEV_HOST || '127.0.0.1',
+      port: Number(env.DEV_PORT || 5173),
       strictPort: true,
       proxy: {
         '/api/v1/room-inspirations': {

@@ -4,7 +4,8 @@
 
 Команды выполняются из корня репозитория. Нужны Docker Engine с Linux containers,
 Compose v2.20+ и GNU Make. Для `make init-config` нужен Node.js; на Docker-only хосте
-можно вручную скопировать `env/.env.example` в `env/.env`, а
+можно вручную скопировать `env/.env.example` в `env/.env`, `env/secret.env.example`
+в `env/secret.env`, а
 `docker/docker-compose.override.yml.example` в `docker/docker-compose.override.yml`.
 Java, Maven и Python на хосте не требуются. Первая сборка требует сети.
 
@@ -12,7 +13,7 @@ Java, Maven и Python на хосте не требуются. Первая сб
 
 ```bash
 make init-config
-# В env/.env задайте собственный DB_PASSWORD перед первым запуском.
+# В env/secret.env задайте DB_PASSWORD перед первым запуском.
 make config
 make up
 make ps
@@ -44,7 +45,8 @@ make ps
 
 nginx направляет `/api/v1/materials/` в estimator, остальные `/api/` в backend.
 Estimator обращается в Java за расчётом. PostgreSQL доступен backend и задаче импорта;
-порты БД, Java, Python и Ollama на хост не публикуются.
+базовый/release Compose не публикует их порты. Local override публикует их только
+на loopback: PostgreSQL 55432, Java 8000, Python 8010, Ollama 11434 (профиль `llm`).
 Сервисы используют общую сеть Compose; это не отдельные сетевые зоны доступа.
 
 Постоянные volumes: `repaircalc_pgdata` и `repaircalc_ollama-data`.
@@ -55,17 +57,21 @@ Estimator обращается в Java за расчётом. PostgreSQL дос�
 
 Внутри контейнеров адреса зависимостей заданы именами сервисов. Переменные
 `API_UPSTREAM`, `ESTIMATION_UPSTREAM` относятся к Vite на хосте;
-`DOCKER_API_UPSTREAM`/`DOCKER_ESTIMATION_UPSTREAM` полный Compose больше не использует.
+Устаревшие `DOCKER_API_UPSTREAM`/`DOCKER_ESTIMATION_UPSTREAM` удалены из общего шаблона.
 Публикация порта frontend остаётся в локальном override. `FRONTEND_HOST` и
 `FRONTEND_PORT` задаются в env/.env. Файлы локальных настроек Make не перезаписывает.
+
+Compose получает два файла: `--env-file env/.env --env-file env/secret.env`.
+Пароли и admin-хеш находятся только во втором. Старые значения перенесите вручную,
+не меняя пароль существующей БД. Общая схема и host-запуск: [CONFIG.md](CONFIG.md).
 
 ## Ollama и модель
 
 Ollama включается явно. Веса не скачиваются при обычном старте стека.
 
 ```bash
-docker compose --env-file env/.env -f docker/docker-compose.yml --profile llm up -d --wait ollama
-docker compose --env-file env/.env -f docker/docker-compose.yml exec ollama ollama pull gemma4:12b
+docker compose --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml --profile llm up -d --wait ollama
+docker compose --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml exec ollama ollama pull gemma4:12b
 ```
 
 После этого можно включить пояснение ИИ в карточке товара. Тег в команде pull
@@ -78,7 +84,7 @@ docker compose --env-file env/.env -f docker/docker-compose.yml exec ollama olla
 Для NVIDIA GPU установите NVIDIA Container Toolkit на хосте и добавьте override:
 
 ```bash
-docker compose --env-file env/.env -f docker/docker-compose.yml -f docker/docker-compose.gpu.yml --profile llm up -d --wait ollama
+docker compose --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml -f docker/docker-compose.gpu.yml --profile llm up -d --wait ollama
 ```
 
 Поддержку GPU и достаточный объём VRAM нужно проверить на целевом сервере.
@@ -90,10 +96,10 @@ docker compose --env-file env/.env -f docker/docker-compose.yml -f docker/docker
 После старта Ollama и загрузки модели:
 
 ```bash
-docker compose --env-file env/.env -f docker/docker-compose.yml --profile batch build classifier
-docker compose --env-file env/.env -f docker/docker-compose.yml --profile batch run --rm classifier
+docker compose --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml --profile batch build classifier
+docker compose --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml --profile batch run --rm classifier
 # Реальная классификация одного примера; результат — stdout:
-docker compose --env-file env/.env -f docker/docker-compose.yml --profile batch run --rm classifier --host http://ollama:11434 --model gemma4:12b --input /input/paint.json
+docker compose --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml --profile batch run --rm classifier --host http://ollama:11434 --model gemma4:12b --input /input/paint.json
 ```
 
 Без аргументов контейнер проверяет сервер и наличие модели (`--status`), без inference.
@@ -120,7 +126,7 @@ make down
 профилей используйте:
 
 ```bash
-docker compose --env-file env/.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml --profile llm --profile batch down
+docker compose --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml --profile llm --profile batch down
 ```
 
 `COMPOSE_CLI` в Makefile можно переопределить путём к standalone Compose v2.

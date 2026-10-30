@@ -24,6 +24,7 @@
 **/dumps
 **/.env
 **/.env.*
+**/secret.env
 !**/.env.example
 **/docker-compose.override.yml
 reports

@@ -42,11 +42,14 @@ CI сам не деплоит. Повторный CI для того же SHA м
 - SSH должен быть доступен runner. Для закрытой сети используйте self-hosted runner
   и измените `runs-on`; не открывайте SSH всему интернету ради Actions.
 - Доступ к GHCR/Docker Hub; свободное место под образы и PostgreSQL.
-- Внешний reverse proxy с HTTPS перед `127.0.0.1:8080`. Роль **не** настраивает
+- HTTPS через внешний reverse proxy. При proxy на том же хосте задайте
+  `DEPLOY_FRONTEND_HOST=127.0.0.1`, чтобы закрыть прямой внешний доступ.
+  В Actions default — `0.0.0.0`: frontend публикуется на всех IPv4-интерфейсах,
+  поэтому ограничьте доступ firewall/security groups. Роль **не** настраивает
   DNS, сертификаты, firewall, Docker или резервное копирование.
 
 Каталог релиза: `/opt/repaircalc/<environment>/releases/<tag>-<timestamp>-<id>`.
-Compose-манифесты и `env/.env` имеют права `0600`, каталоги — `0700`.
+Compose-манифесты, `env/.env` и `env/secret.env` имеют права `0600`, каталоги — `0700`.
 Compose project — `repaircalc_<environment>`; volumes переживают релизы.
 Пароль существующей БД сохраняйте между релизами: смена `DB_PASSWORD` в файле
 не меняет пароль уже созданного PostgreSQL.
@@ -97,7 +100,11 @@ package; отдельный registry token в Environment не использу�
 | `DEPLOY_HOST` | IP/DNS стенда, без схемы и порта |
 | `DEPLOY_USER` | Linux SSH-пользователь |
 | `DEPLOY_PORT` | SSH-порт, по умолчанию `22` |
-| `DEPLOY_FRONTEND_PORT` | Loopback-порт frontend, по умолчанию `8080`, допустимо `1024..65535` |
+| `DEPLOY_FRONTEND_HOST` | IP привязки frontend без порта; в Actions default `0.0.0.0`, для локального reverse proxy задайте `127.0.0.1` |
+| `DEPLOY_FRONTEND_PORT` | Порт frontend, по умолчанию `8080`, допустимо `1024..65535` |
+| `DB_NAME` | Имя PostgreSQL database, по умолчанию `repaircalc` |
+| `DB_USER` | Пользователь PostgreSQL, по умолчанию `repaircalc` |
+| `POSTGRES_IMAGE_TAG` | Версия PostgreSQL, по умолчанию `17.11`; обновление major требует отдельной миграции |
 | `ADMIN_USERNAME` | Логин администратора; по умолчанию пусто (admin API отключён) |
 | `ADMIN_COOKIE_SECURE` | `true` по умолчанию; `false` только для закрытого HTTP-стенда |
 | `ADMIN_SESSION_SECONDS` | Время сессии, по умолчанию `1800` |
@@ -106,13 +113,15 @@ package; отдельный registry token в Environment не использу�
 | `OLLAMA_NUM_THREADS` | Потоки inference, по умолчанию `8` |
 | `OLLAMA_IMAGE_TAG` | Тег для отдельно включаемого профиля `llm`, по умолчанию `0.40.13` |
 | `OLLAMA_CPU_LIMIT` | CPU-лимит отдельно включаемого профиля `llm`, по умолчанию `8.0` |
+| `OLLAMA_MEMORY_LIMIT` | RAM/memory+swap лимит профиля `llm`, по умолчанию `12g` |
 
 ### Передача настроек приложения
 
 Каждая настройка задаётся отдельно в выбранном GitHub Environment, под своим именем
-из таблиц выше. `release.py` сам создаёт временный `stand.env` только из разрешённых
-runtime-параметров, Ansible копирует его на стенд как `env/.env`. Временный файл
-имеет права `0600` и удаляется после выполнения, включая ошибку деплоя.
+из таблиц выше. `release.py` создаёт два временных файла только из разрешённых
+runtime-параметров: `.env` без секретов и `secret.env` с `DB_PASSWORD`/`ADMIN_PASSWORD_HASH`.
+Ansible копирует их в `env/` релиза и передаёт Compose два `--env-file` в этом порядке.
+Оба файла имеют права `0600` и удаляются на controller после выполнения, включая ошибку деплоя.
 Не нужно загружать общий dotenv-файл в GitHub.
 
 Значения Secrets/Variables вводите **как есть, без внешних dotenv-кавычек**.
@@ -126,9 +135,11 @@ runtime-параметров, Ansible копирует его на стенд к
 без `ADMIN_PASSWORD_HASH=` и внешних одинарных кавычек.
 Для входа администратора нужны обе настройки: `ADMIN_USERNAME` и `ADMIN_PASSWORD_HASH`.
 
-`IMAGE_PREFIX`/`IMAGE_TAG` берутся из репозитория и выбранного SHA, `FRONTEND_PORT`
-соответствует `DEPLOY_FRONTEND_PORT`. `VITE_DATA_MODE=api`, `VITE_API_BASE_URL=/api/v1`,
-loopback bind и внутренние upstream-адреса зафиксированы production-стеком;
+`IMAGE_PREFIX`/`IMAGE_TAG` берутся из репозитория и выбранного SHA, `FRONTEND_HOST`
+и `FRONTEND_PORT` соответствуют `DEPLOY_FRONTEND_HOST` и `DEPLOY_FRONTEND_PORT`.
+У ручного `release.py` и Compose без явного адреса сохраняется default `127.0.0.1`;
+Actions явно передаёт `0.0.0.0`, если в Environment не задан другой адрес.
+`VITE_DATA_MODE=api`, `VITE_API_BASE_URL=/api/v1` и внутренние upstream-адреса зафиксированы production-стеком;
 локальные Vite-настройки из `env/.env.example` в GitHub переносить не нужно.
 GitHub/SSH-токены в runtime dotenv не попадают.
 
@@ -192,7 +203,7 @@ python release.py --environment staging \
   После жёсткого выключения проверьте оставшиеся `repaircalc-docker-*` в temp.
 - Ansible-вывод скрыт через `no_log`, чтобы не раскрывать секреты в GitHub logs.
   Для диагностики используйте на стенде `docker compose` с обоими манифестами
-  из `current/docker`, `--env-file ../env/.env`, `-p repaircalc_staging` и
+  из `current/docker`, `--env-file ../env/.env --env-file ../env/secret.env`, `-p repaircalc_staging` и
   `IMAGE_PREFIX`/`IMAGE_TAG` нужного релиза. Логи ограничивайте
   `logs --no-color --tail 80 <service>`; проверяйте их перед публикацией.
 

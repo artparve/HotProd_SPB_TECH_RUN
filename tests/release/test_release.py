@@ -5,6 +5,7 @@ from contextlib import redirect_stderr, redirect_stdout
 import io
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -73,6 +74,19 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(inventory["all"]["hosts"]["stand"]["ansible_port"], 2222)
         self.assertEqual(variables["release_frontend_port"], 8081)
 
+    def test_frontend_binding_defaults_to_loopback_for_manual_deployment(self):
+        _, variables = self.config()
+        self.assertEqual(variables["release_frontend_host"], "127.0.0.1")
+        for host in ("0.0.0.0", "127.0.0.1", "192.0.2.10", "::", "::1"):
+            with self.subTest(host=host), patch.dict(self.environ, {"DEPLOY_FRONTEND_HOST": host}):
+                _, variables = self.config()
+                self.assertEqual(variables["release_frontend_host"], host)
+
+    def test_rejects_frontend_binding_with_a_port_or_invalid_address(self):
+        for host in ("0.0.0.0:8080", "http://example.org", "example.org", "", "0.0.0.0\nOTHER=value"):
+            with self.subTest(host=host), patch.dict(self.environ, {"DEPLOY_FRONTEND_HOST": host}), self.assertRaises(ValueError):
+                self.config()
+
     def test_dry_run_never_calls_ansible_and_never_prints_secrets(self):
         output = io.StringIO()
         with patch("scripts.release.subprocess.run") as run, redirect_stdout(output):
@@ -89,6 +103,9 @@ class ReleaseTests(unittest.TestCase):
             self.assertEqual(inventory["all"]["hosts"]["stand"]["ansible_user"], "deploy")
             env_file = Path(variables["release_env_file"])
             self.assertEqual(env_file.read_text(encoding="utf-8"), release.deployment_dotenv(self.environ))
+            secret_file = Path(variables["release_secret_env_file"])
+            self.assertEqual(secret_file.read_text(encoding="utf-8"), release.deployment_secret_dotenv(self.environ))
+            self.assertNotIn("private-db-value", env_file.read_text())
             self.assertNotIn("private-db-value", json.dumps(variables))
             self.assertNotIn("DB_PASSWORD", kwargs["env"])
             self.assertEqual(kwargs["env"]["ANSIBLE_HOST_KEY_CHECKING"], "True")
@@ -98,17 +115,23 @@ class ReleaseTests(unittest.TestCase):
             self.assertNotIn("private-db-value", " ".join(command))
             seen.append(Path(command[2]))
             seen.append(env_file)
+            seen.append(secret_file)
             return subprocess_result(7)
 
         with patch("scripts.release.sys.platform", "linux"), patch("scripts.release.shutil.which", return_value="/bin/ansible-playbook"), patch("scripts.release.subprocess.run", side_effect=run), redirect_stdout(io.StringIO()):
             self.assertEqual(release.main(self.argv, self.environ), 7)
         self.assertFalse(seen[0].exists())
         self.assertFalse(seen[1].exists())
+        self.assertFalse(seen[2].exists())
 
     def test_generates_only_allowlisted_settings_with_defaults(self):
         self.environ["UNRELATED_SECRET"] = "do-not-copy"
         dotenv = release.deployment_dotenv(self.environ)
-        self.assertIn('DB_PASSWORD="private-db-value"\n', dotenv)
+        self.assertNotIn('DB_PASSWORD=', dotenv)
+        self.assertNotIn('ADMIN_PASSWORD_HASH=', dotenv)
+        secret_dotenv = release.deployment_secret_dotenv(self.environ)
+        self.assertIn('DB_PASSWORD="private-db-value"\n', secret_dotenv)
+        self.assertNotIn('ADMIN_USERNAME=', secret_dotenv)
         self.assertIn('ADMIN_USERNAME=""\n', dotenv)
         self.assertIn('ADMIN_COOKIE_SECURE="true"\n', dotenv)
         self.assertIn('OLLAMA_NUM_THREADS="8"\n', dotenv)
@@ -130,6 +153,69 @@ class ReleaseTests(unittest.TestCase):
             self.assertRegex(workflow, rf"(?m)^\s+{name}:")
         self.assertIn("REGISTRY_PASSWORD: ${{ github.token }}", workflow)
 
+    def test_shared_templates_separate_secret_keys_and_cover_release_settings(self):
+        public_text = (release.ROOT / "env/.env.example").read_text(encoding="utf-8")
+        secret_text = (release.ROOT / "env/secret.env.example").read_text(encoding="utf-8")
+        public_keys = set(re.findall(r"^([A-Z][A-Z0-9_]*)=", public_text, re.MULTILINE))
+        secret_keys = set(re.findall(r"^([A-Z][A-Z0-9_]*)=", secret_text, re.MULTILINE))
+        self.assertEqual(secret_keys, set(release.DEPLOYMENT_SECRET_DEFAULTS))
+        self.assertTrue(set(release.DEPLOYMENT_PUBLIC_DEFAULTS) <= public_keys)
+        self.assertFalse(public_keys & secret_keys)
+        self.assertFalse((release.ROOT / "backend/.env.example").exists())
+
+    @unittest.skipUnless(shutil.which("docker"), "requires Compose CLI, not Docker Engine")
+    def test_release_compose_publishes_configured_frontend_interface(self):
+        version = subprocess.run([shutil.which("docker"), "compose", "version", "--short"],
+                                 capture_output=True, text=True, timeout=30)
+        if version.returncode:
+            self.skipTest("Compose CLI is not available in this controller environment")
+        env = {name: value for name, value in os.environ.items() if name not in release.DEPLOYMENT_ENV_DEFAULTS}
+        env.update(DB_PASSWORD="configuration-check-only", IMAGE_PREFIX="ghcr.io/owner/repo",
+                   IMAGE_TAG="sha-" + "a" * 40, FRONTEND_PORT="8080", COMPOSE_PROFILES="")
+        for host in ("0.0.0.0", "127.0.0.1", "::"):
+            with self.subTest(host=host):
+                env["FRONTEND_HOST"] = host
+                result = subprocess.run([
+                    shutil.which("docker"), "compose", "--env-file", "env/.env.example", "--env-file", "env/secret.env.example",
+                    "-f", "docker/docker-compose.yml", "-f", "docker/docker-compose.release.yml",
+                    "config", "--format", "json",
+                ], cwd=release.ROOT, env=env, capture_output=True, text=True, encoding="utf-8", timeout=30)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                port = json.loads(result.stdout)["services"]["frontend"]["ports"][0]
+                self.assertEqual(port["host_ip"], host)
+                self.assertEqual(str(port["published"]), "8080")
+                self.assertEqual(port["target"], 8080)
+
+    @unittest.skipUnless(shutil.which("docker"), "requires Compose CLI, not Docker Engine")
+    def test_two_env_files_configure_database_and_ollama_without_exposing_secrets_in_public_file(self):
+        version = subprocess.run([shutil.which("docker"), "compose", "version", "--short"],
+                                 capture_output=True, text=True, timeout=30)
+        if version.returncode:
+            self.skipTest("Compose CLI is not available in this controller environment")
+        values = dict(self.environ, DB_NAME="stand_db", DB_USER="stand_user", DB_URL="jdbc:postgresql://127.0.0.1:55432/wrong",
+                      POSTGRES_IMAGE_TAG="17.11", OLLAMA_MEMORY_LIMIT="6g")
+        public_file = Path(self.directory.name, ".env")
+        secret_file = Path(self.directory.name, "secret.env")
+        public_file.write_text(release.deployment_dotenv(values))
+        secret_file.write_text(release.deployment_secret_dotenv(values))
+        env = {name: value for name, value in os.environ.items() if name not in release.DEPLOYMENT_ENV_DEFAULTS}
+        env.update(IMAGE_PREFIX="ghcr.io/owner/repo", IMAGE_TAG="sha-" + "a" * 40, COMPOSE_PROFILES="")
+        result = subprocess.run([
+            shutil.which("docker"), "compose", "--env-file", str(public_file), "--env-file", str(secret_file),
+            "-f", "docker/docker-compose.yml", "-f", "docker/docker-compose.release.yml", "--profile", "llm",
+            "config", "--format", "json",
+        ], cwd=release.ROOT, env=env, capture_output=True, text=True, encoding="utf-8", timeout=30)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        services = json.loads(result.stdout)["services"]
+        self.assertEqual(services["postgres"]["environment"]["POSTGRES_DB"], "stand_db")
+        self.assertEqual(services["postgres"]["environment"]["POSTGRES_USER"], "stand_user")
+        self.assertEqual(services["backend"]["environment"]["DB_URL"], "jdbc:postgresql://postgres:5432/stand_db")
+        self.assertEqual(services["backend"]["environment"]["DB_PASSWORD"], "private-db-value")
+        self.assertEqual(services["classifier-worker"]["environment"]["PGUSER"], "stand_user")
+        self.assertEqual(int(services["ollama"]["mem_limit"]), 6 * 1024 ** 3)
+        self.assertNotIn("DB_PASSWORD", public_file.read_text())
+        self.assertNotIn("DB_URL", public_file.read_text())
+
     @unittest.skipUnless(shutil.which("docker"), "requires Compose CLI, not Docker Engine")
     def test_compose_round_trip_preserves_dollars_quotes_backslashes_and_whitespace(self):
         version = subprocess.run([shutil.which("docker"), "compose", "version", "--short"],
@@ -141,10 +227,13 @@ class ReleaseTests(unittest.TestCase):
         root = Path(self.directory.name)
         env_file = root / "generated.env"
         env_file.write_text(release.deployment_dotenv(environ), encoding="utf-8")
+        secret_file = root / "secret.env"
+        secret_file.write_text(release.deployment_secret_dotenv(environ), encoding="utf-8")
         compose = root / "compose.yml"
         compose.write_text('services:\n  check:\n    image: busybox\n    environment:\n      DB_PASSWORD: ${DB_PASSWORD}\n      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH}\n', encoding="utf-8")
         process_env = {name: value for name, value in os.environ.items() if name not in release.DEPLOYMENT_ENV_DEFAULTS}
         result = subprocess.run([shutil.which("docker"), "compose", "-p", "release-env-test", "--env-file", str(env_file),
+                                 "--env-file", str(secret_file),
                                  "-f", str(compose), "config", "--format", "json"],
                                 capture_output=True, text=True, encoding="utf-8", env=process_env, timeout=30)
         self.assertEqual(result.returncode, 0, result.stderr)

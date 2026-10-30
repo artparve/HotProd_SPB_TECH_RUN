@@ -2,7 +2,10 @@
 release_base: "/opt/repaircalc/{{ release_environment }}"
 release_path: "{{ release_base }}/releases/{{ release_id }}"
 release_project: "repaircalc_{{ release_environment | replace('-', '_') }}"
+release_frontend_host: "127.0.0.1"
 release_frontend_port: 8080
+release_frontend_health_host: "{{ {'0.0.0.0': '127.0.0.1', '::': '::1'}.get(release_frontend_host, release_frontend_host) }}"
+release_frontend_health_address: "{{ '[' ~ release_frontend_health_host ~ ']' if ':' in release_frontend_health_host else release_frontend_health_host }}"
 release_wait_timeout: 240
 release_registry_username: "{{ lookup('ansible.builtin.env', 'REGISTRY_USERNAME') }}"
 release_registry_password: "{{ lookup('ansible.builtin.env', 'REGISTRY_PASSWORD') }}"
@@ -15,6 +18,8 @@ release_compose:
   - "{{ release_project }}"
   - --env-file
   - "{{ release_path }}/env/.env"
+  - --env-file
+  - "{{ release_path }}/env/secret.env"
   - -f
   - "{{ release_path }}/docker/docker-compose.yml"
   - -f

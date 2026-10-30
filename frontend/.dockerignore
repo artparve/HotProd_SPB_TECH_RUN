@@ -24,4 +24,5 @@ tests
 **/*.log
 **/dumps
 .env.*
+**/secret.env
 !.env.example

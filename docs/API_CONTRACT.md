@@ -44,10 +44,10 @@ Java 21 backend (BE-02–14) реализует витрину и калькул
 VITE_DATA_MODE=api
 VITE_API_BASE_URL=/api/v1
 API_UPSTREAM=http://127.0.0.1:8000
-DOCKER_API_UPSTREAM=http://host.docker.internal:8000
+ESTIMATION_UPSTREAM=http://127.0.0.1:8010
 ```
 
-`API_UPSTREAM` — backend для локального Vite; `DOCKER_API_UPSTREAM` — backend с точки зрения контейнера nginx. Браузер обращается к тому же origin через `/api/v1`. После изменения настроек перезапустите Vite или пересоберите Docker-сервис.
+`API_UPSTREAM` — backend для локального Vite; внутри Compose nginx использует `backend:8000` и `estimator:8010`. Браузер обращается к тому же origin через `/api/v1`. Пароль БД и admin-хеш хранятся отдельно в `env/secret.env`, который Vite не загружает; см. [CONFIG.md](CONFIG.md). После изменения настроек перезапустите соответствующий сервис.
 
 С текущим backend в режиме `api` работают витрина и калькулятор товара. Общий мастер сметы и подбор комнаты потребуют ещё не реализованных `/estimate` и `/recommendations`; полный frontend-сценарий пока доступен через демонстрационный адаптер.
 

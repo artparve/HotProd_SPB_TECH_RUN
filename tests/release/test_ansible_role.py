@@ -45,7 +45,8 @@ class AnsibleRoleTests(unittest.TestCase):
 import json, os, pathlib, sys
 args = sys.argv[1:]
 record = {"args": args, "config": os.environ.get("DOCKER_CONFIG"),
-          "tag": os.environ.get("IMAGE_TAG"), "profiles": os.environ.get("COMPOSE_PROFILES")}
+          "tag": os.environ.get("IMAGE_TAG"), "profiles": os.environ.get("COMPOSE_PROFILES"),
+          "frontend_host": os.environ.get("FRONTEND_HOST")}
 with open(os.environ["FAKE_DOCKER_LOG"], "a") as log:
     log.write(json.dumps(record) + "\\n")
 if args[0] == "info":
@@ -60,7 +61,8 @@ elif "up" in args and os.environ.get("FAKE_DOCKER_FAIL") == "1":
     sys.exit(23)
 ''', encoding="utf-8")
         fake.chmod(0o700)
-        (self.directory / "stand.env").write_text("DB_PASSWORD=synthetic-check-only\n", encoding="utf-8")
+        (self.directory / "stand.env").write_text("DB_NAME=repaircalc\n", encoding="utf-8")
+        (self.directory / "secret.env").write_text("DB_PASSWORD=synthetic-check-only\n", encoding="utf-8")
         self.environ = dict(os.environ, PATH=str(bin_dir) + os.pathsep + os.environ["PATH"],
                             FAKE_DOCKER_LOG=str(self.directory / "docker.jsonl"),
                             ANSIBLE_CONFIG=str(ROOT / "ansible/ansible.cfg"),
@@ -72,6 +74,8 @@ elif "up" in args and os.environ.get("FAKE_DOCKER_FAIL") == "1":
             "release_id": "sha-" + "a" * 40 + "-20261030T000000Z-1234abcd",
             "release_base": str(self.directory / "stand"),
             "release_env_file": str(self.directory / "stand.env"),
+            "release_secret_env_file": str(self.directory / "secret.env"),
+            "release_frontend_host": "0.0.0.0",
             "release_frontend_port": self.server.server_port,
         }
         inventory = {"all": {"hosts": {"stand": {"ansible_connection": "local", "ansible_python_interpreter": sys.executable}}}}
@@ -100,9 +104,15 @@ elif "up" in args and os.environ.get("FAKE_DOCKER_FAIL") == "1":
         self.assertIn("--wait", up["args"])
         self.assertEqual(up["profiles"], "")
         self.assertEqual(up["tag"], self.variables["release_image_tag"])
+        self.assertEqual(up["frontend_host"], "0.0.0.0")
         self.assertTrue((self.directory / "stand/current").is_symlink())
         env_file = self.directory / "stand/current/env/.env"
         self.assertEqual(env_file.stat().st_mode & 0o777, 0o600)
+        self.assertNotIn("DB_PASSWORD=", env_file.read_text())
+        secret_file = self.directory / "stand/current/env/secret.env"
+        self.assertEqual(secret_file.stat().st_mode & 0o777, 0o600)
+        self.assertIn("DB_PASSWORD=synthetic-check-only", secret_file.read_text())
+        self.assertEqual(up["args"].count("--env-file"), 2)
         self.assertNotIn("private-test-registry-password", result.stdout + result.stderr)
 
     def test_failed_start_does_not_mark_release_and_always_removes_credentials_and_lock(self):

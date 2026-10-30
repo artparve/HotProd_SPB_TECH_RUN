@@ -50,10 +50,18 @@
         mode: "0600"
       loop: [docker-compose.yml, docker-compose.release.yml]
 
-    - name: Install environment secrets for this release
+    - name: Install non-secret environment settings for this release
       ansible.builtin.copy:
         src: "{{ release_env_file }}"
         dest: "{{ release_path }}/env/.env"
+        mode: "0600"
+      no_log: true
+      diff: false
+
+    - name: Install secret environment settings separately
+      ansible.builtin.copy:
+        src: "{{ release_secret_env_file }}"
+        dest: "{{ release_path }}/env/secret.env"
         mode: "0600"
       no_log: true
       diff: false
@@ -69,6 +77,7 @@
         DOCKER_CONFIG: "{{ registry_config.path }}"
         IMAGE_PREFIX: "{{ release_image_prefix }}"
         IMAGE_TAG: "{{ release_image_tag }}"
+        FRONTEND_HOST: "{{ release_frontend_host }}"
         FRONTEND_PORT: "{{ release_frontend_port | string }}"
         COMPOSE_PROFILES: ""
         COMPOSE_IGNORE_ORPHANS: "true"
@@ -105,9 +114,9 @@
           changed_when: true
           no_log: true
 
-        - name: Check frontend through the published loopback port
+        - name: Check frontend through the published port
           ansible.builtin.uri:
-            url: "http://127.0.0.1:{{ release_frontend_port }}/healthz"
+            url: "http://{{ release_frontend_health_address }}:{{ release_frontend_port }}/healthz"
             status_code: 200
             use_proxy: false
           register: frontend_health
@@ -117,7 +126,7 @@
 
         - name: Check Java catalog through the frontend API proxy
           ansible.builtin.uri:
-            url: "http://127.0.0.1:{{ release_frontend_port }}/api/v1/products"
+            url: "http://{{ release_frontend_health_address }}:{{ release_frontend_port }}/api/v1/products"
             status_code: 200
             return_content: false
             use_proxy: false

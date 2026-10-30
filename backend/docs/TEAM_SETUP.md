@@ -2,6 +2,37 @@
 
 Для полного стека с Java внутри Docker используйте [Docker Compose](../../docs/deploy.md). Ниже описан альтернативный запуск для разработки: **Java на компьютере + PostgreSQL в Docker**.
 
+## Общие настройки проекта (рекомендуемый запуск)
+
+Прежний `backend/.env.example` перенесён в общие `env/.env.example` и
+`env/secret.env.example`. Создайте локальные файлы через `make init-config`,
+задайте пароль БД в `env/secret.env`; настройки профиля, JDBC URL, порта и
+пользователя находятся в `env/.env`. Не оставляйте пароль/admin-хеш в публичном
+файле. Полные правила: [CONFIG.md](../../docs/CONFIG.md).
+
+Для этого варианта нужны Node.js 22.12+, GNU Make и JDK 21. Из корня:
+
+```bash
+make init-config
+# Заполните env/secret.env (для старой БД сохраните прежний пароль).
+make dependencies
+```
+
+Затем соберите JAR через Maven Wrapper (`backend/mvnw verify`, на Windows
+`backend/mvnw.cmd verify`, выполняя из `backend`). Из корня:
+
+```bash
+make backend-import-catalog
+make backend-import-rules
+make backend
+```
+
+`scripts/local.mjs` передаёт оба файла в env Java-процесса. `make dependencies`
+использует Compose-volume `repaircalc_pgdata`, а не старый `repaircalc-pgdata`.
+Не смешивайте его со старым контейнером ниже на порту 55432: остановите один из
+вариантов или осознанно выберите другой порт/DB_URL. Следующая инструкция —
+самостоятельная альтернатива **без Node/Make**, с ручным экспортом переменных.
+
 Сейчас доступны каталог из 12 учебных карточек, калькулятор 11 карточек и health probes. Неполный лак отклоняется с 422. Подбор `/recommendations`, общая смета `/estimate`, полный JSON/XML-импорт и ML относятся к следующим этапам. Цены и нормы тестовые.
 
 ## Что установить и получить

@@ -37,7 +37,11 @@ jobs:
       DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
       DEPLOY_USER: ${{ vars.DEPLOY_USER }}
       DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+      DEPLOY_FRONTEND_HOST: ${{ vars.DEPLOY_FRONTEND_HOST || '0.0.0.0' }}
       DEPLOY_FRONTEND_PORT: ${{ vars.DEPLOY_FRONTEND_PORT || '8080' }}
+      DB_NAME: ${{ vars.DB_NAME || 'repaircalc' }}
+      DB_USER: ${{ vars.DB_USER || 'repaircalc' }}
+      POSTGRES_IMAGE_TAG: ${{ vars.POSTGRES_IMAGE_TAG || '17.11' }}
       ADMIN_USERNAME: ${{ vars.ADMIN_USERNAME }}
       ADMIN_COOKIE_SECURE: ${{ vars.ADMIN_COOKIE_SECURE || 'true' }}
       ADMIN_SESSION_SECONDS: ${{ vars.ADMIN_SESSION_SECONDS || '1800' }}
@@ -46,6 +50,7 @@ jobs:
       OLLAMA_NUM_THREADS: ${{ vars.OLLAMA_NUM_THREADS || '8' }}
       OLLAMA_IMAGE_TAG: ${{ vars.OLLAMA_IMAGE_TAG || '0.40.13' }}
       OLLAMA_CPU_LIMIT: ${{ vars.OLLAMA_CPU_LIMIT || '8.0' }}
+      OLLAMA_MEMORY_LIMIT: ${{ vars.OLLAMA_MEMORY_LIMIT || '12g' }}
     steps:
       - uses: actions/checkout@v4
         with:
