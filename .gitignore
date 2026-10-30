@@ -11,6 +11,7 @@
 **/secret.env
 !**/.env.example
 !**/secret.env.example
+/.idea
 
 # Frontend build artifacts.
 **/node_modules/
