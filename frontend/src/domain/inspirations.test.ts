@@ -25,7 +25,6 @@ describe('inspiration fixtures and calculator invariants', () => {
               humidity: restricted ? 'high' : 'normal',
               heated: !restricted,
             },
-            { ...newRoom(2), id: 'room-2' },
           ],
         }
         const original = structuredClone(project)
@@ -33,7 +32,6 @@ describe('inspiration fixtures and calculator invariants', () => {
         validateInspirationProducts(result, catalog)
         validateInspirationEstimate(result, estimateDemo(result.project, result.selections))
         expect(project).toEqual(original)
-        expect(result.project.rooms[1]).toEqual(original.rooms[1])
         expect(result.project.rooms[0]!.length).toBe(original.rooms[0]!.length)
       }
     }

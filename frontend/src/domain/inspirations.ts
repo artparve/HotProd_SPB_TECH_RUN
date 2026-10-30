@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { projectSchema, type Estimate, type Product } from './types'
+import { projectSchema, roomSchema, type Estimate, type Product } from './types'
 import { compatible } from './room'
 
 // Same-origin images work with the existing CSP and do not leak visits to third parties.
@@ -19,11 +19,12 @@ export const roomInspirationFeedSchema = z.object({
   items: z.array(roomInspirationSchema).max(24),
   nextCursor: z.string().min(1).max(512).nullable(),
 })
-export const roomInspirationRequestSchema = z.object({ project: projectSchema })
+const inspirationProjectSchema = projectSchema.extend({ rooms: z.array(roomSchema).length(1) })
+export const roomInspirationRequestSchema = z.object({ project: inspirationProjectSchema })
 export const roomInspirationResultSchema = z
   .object({
     imageId: z.string().min(1).max(128),
-    project: projectSchema,
+    project: inspirationProjectSchema,
     selections: z.record(z.string().min(1).max(128)),
     warnings: z.array(z.string().min(1).max(1000)).max(50),
   })

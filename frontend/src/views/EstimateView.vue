@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import AppIcon from '../components/AppIcon.vue'
 import RoomEditor from '../components/RoomEditor.vue'
 import RoomPlan from '../components/RoomPlan.vue'
@@ -15,9 +15,10 @@ import { money, number } from '../domain/format'
 import { takeInspiration } from '../composables/useInspirationImport'
 
 const imported = takeInspiration()
-if (imported) Object.assign(workspace.project, imported.result.project)
-
-const project = workspace.project
+// A standalone room calculation must not replace the user's multi-room project.
+const project = imported
+  ? reactive(projectSchema.parse(imported.result.project))
+  : workspace.project
 const step = ref(imported ? 2 : 1)
 const activeRoom = ref(0)
 const showValidation = ref(false)

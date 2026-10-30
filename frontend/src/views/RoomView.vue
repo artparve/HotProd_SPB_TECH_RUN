@@ -1,16 +1,20 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { newId } from '../domain/id'
 import AppIcon from '../components/AppIcon.vue'
 import RoomEditor from '../components/RoomEditor.vue'
 import ProductSwatch from '../components/ProductSwatch.vue'
 import RoomPlan from '../components/RoomPlan.vue'
+import RoomInspirationGallery from '../components/RoomInspirationGallery.vue'
 import { newRoom, roomSchema } from '../domain/types'
 import type { Recommendations } from '../domain/types'
 import { service, dataMode } from '../services/api'
 import { useAsync } from '../composables/useAsync'
 import { workspace, notify } from '../composables/useWorkspace'
 import { money } from '../domain/format'
+import { stageInspiration } from '../composables/useInspirationImport'
+import type { PreparedInspiration } from '../domain/inspirations'
 
 const room = ref({
   ...newRoom(),
@@ -21,6 +25,16 @@ const room = ref({
   humidity: 'high' as const,
 })
 const result = ref<Recommendations | null>(null)
+const router = useRouter()
+const inspirationProject = computed(() => ({
+  object: workspace.project.object,
+  renovation: workspace.project.renovation,
+  rooms: [room.value],
+}))
+async function openCalculator(value: PreparedInspiration) {
+  stageInspiration(value)
+  await router.push('/calculator')
+}
 const showValidation = ref(false)
 const { busy, error, run } = useAsync()
 watch(
@@ -99,6 +113,7 @@ function addToProject() {
       </section>
     </aside>
   </div>
+  <RoomInspirationGallery :project="inspirationProject" @prepared="openCalculator" />
   <section v-if="result" class="recommendations-section">
     <div class="section-heading">
       <div>

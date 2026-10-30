@@ -77,18 +77,17 @@ describe('room inspiration API', () => {
     },
   )
 
-  it.each(['image', 'dimensions', 'empty', 'unknown-room', 'other-room-works'] as const)(
+  it.each(['image', 'dimensions', 'empty', 'unknown-room', 'additional-room'] as const)(
     'rejects inconsistent analysis: %s',
     async (mutation) => {
       vi.stubEnv('VITE_DATA_MODE', 'api')
       const input = project()
-      input.rooms.push({ ...newRoom(2), id: 'room-2' })
       const result = analyzeInspirationMock(imageId, input)
       if (mutation === 'image') result.imageId = 'wrong-image'
       if (mutation === 'dimensions') result.project.rooms[0]!.length = 99
       if (mutation === 'empty') result.selections = {}
       if (mutation === 'unknown-room') result.selections = { 'unknown:paint': 'demo-paint' }
-      if (mutation === 'other-room-works') result.project.rooms[1]!.works = ['electrical']
+      if (mutation === 'additional-room') result.project.rooms.push({ ...newRoom(2), id: 'room-2' })
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response(result)))
       const { service } = await import('./api')
       await expect(service.analyzeRoomInspiration(imageId, input)).rejects.toThrow()
@@ -148,6 +147,17 @@ describe('room inspiration API', () => {
     expect((await service.roomInspirations()).items).toHaveLength(3)
     const result = await service.analyzeRoomInspiration(imageId, project())
     expect(result.warnings.join(' ')).toContain('без распознавания')
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('does not accept a multi-room project as the target of room interior selection', async () => {
+    vi.stubEnv('VITE_DATA_MODE', 'api')
+    const fetch = vi.fn()
+    vi.stubGlobal('fetch', fetch)
+    const input = project()
+    input.rooms.push({ ...newRoom(2), id: 'room-2' })
+    const { service } = await import('./api')
+    await expect(service.analyzeRoomInspiration(imageId, input)).rejects.toThrow()
     expect(fetch).not.toHaveBeenCalled()
   })
 })

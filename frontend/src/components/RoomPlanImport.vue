@@ -32,7 +32,10 @@ const labels: Record<DimensionKey, string> = {
   openings: 'Площадь окон и дверей',
 }
 const stale = computed(
-  () => !!fingerprint.value && JSON.stringify(props.room) !== fingerprint.value,
+  () =>
+    (busy.value || !!result.value) &&
+    !!fingerprint.value &&
+    JSON.stringify(props.room) !== fingerprint.value,
 )
 const unsupported = computed(() => result.value && result.value.draft.shape !== 'rectangle')
 const box = computed(() =>
@@ -177,6 +180,11 @@ function apply() {
       <p class="field-hint">
         Загрузите план одной прямоугольной комнаты с внутренними размерами в мм, см или метрах. Если
         комнат несколько, сначала вырежьте нужную.
+      </p>
+      <p class="field-hint">
+        Загрузка и распознавание сами не меняют параметры комнаты. Нажмите «Применить параметры»,
+        чтобы перенести проверенные размеры в поля. Подбор интерьера использует текущие значения
+        этих полей, включая последующие ручные правки; файл плана повторно не отправляется.
       </p>
       <div
         class="plan-dropzone"

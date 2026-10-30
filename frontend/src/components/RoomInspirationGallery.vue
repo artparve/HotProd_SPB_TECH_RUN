@@ -64,7 +64,7 @@ async function choose(image: RoomInspiration) {
   selectionError.value = ''
   const parsed = projectSchema.safeParse(props.project)
   if (!parsed.success) {
-    selectionError.value = 'Сначала проверьте размеры и параметры проекта в калькуляторе ниже.'
+    selectionError.value = 'Сначала проверьте размеры и параметры комнаты в форме выше.'
     return
   }
   const snapshot = parsed.data
@@ -111,15 +111,16 @@ onBeforeUnmount(() => {
         <span class="eyebrow">ОТ ИДЕИ К РАСЧЁТУ</span>
         <h2 id="inspiration-title">Вдохновитесь готовой комнатой</h2>
         <p>
-          Наведите на фото, чтобы рассмотреть. Выберите интерьер — подберём материалы для вашего
-          проекта.
+          Наведите на фото, чтобы рассмотреть. Выберите интерьер — подберём материалы для указанной
+          выше комнаты.
         </p>
       </div>
       <span v-if="dataMode === 'demo'" class="tag">ДЕМО · ИЛЛЮСТРАЦИИ</span>
     </div>
     <p class="muted">
-      Размеры берём из калькулятора ниже, не из фотографии. Мебель и декор могут не входить в
-      подбор.
+      Используем текущие параметры комнаты выше. Размеры из плана учитываются только после
+      «Применить параметры»; последующие ручные правки имеют приоритет. Мебель и декор могут не
+      входить в подбор.
     </p>
     <p v-if="loading && !items.length" role="status">Загружаем изображения комнат…</p>
     <div v-if="feedError" class="alert error" role="alert">

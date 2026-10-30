@@ -1,8 +1,9 @@
 import type { Page, Request } from '@playwright/test'
 import { catalog } from '../../src/data/catalog'
 import { inspirationFeedMock, analyzeInspirationMock } from '../../src/data/inspirations'
-import { estimateDemo } from '../../src/services/demo'
+import { estimateDemo, recommendDemo } from '../../src/services/demo'
 import type { Project } from '../../src/domain/types'
+import { roomPlanResultMock } from './roomPlan'
 
 export async function mockInspirationApi(
   page: Page,
@@ -42,6 +43,10 @@ export async function mockInspirationApi(
       const result = analyzeInspirationMock(id, request.postDataJSON().project as Project)
       if (options.corruptDimensions) result.project.rooms[0]!.length = 88
       await route.fulfill({ json: result })
+    } else if (url.pathname === '/api/v1/plans/extract') {
+      await route.fulfill({ json: roomPlanResultMock })
+    } else if (url.pathname === '/api/v1/recommendations') {
+      await route.fulfill({ json: recommendDemo(request.postDataJSON().room) })
     } else if (url.pathname === '/api/v1/products') {
       await route.fulfill({ json: catalog })
     } else if (url.pathname === '/api/v1/estimate') {

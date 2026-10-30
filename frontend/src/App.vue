@@ -116,7 +116,7 @@ const links = [
         <div v-if="workspace.storageMessage" class="alert warning" role="status">
           {{ workspace.storageMessage }}
         </div>
-        <RouterView />
+        <RouterView :key="route.path" />
       </main>
       <footer class="page-footer">
         <span>RepairCalc · Умный подход к ремонту</span

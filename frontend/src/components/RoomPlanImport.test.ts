@@ -95,6 +95,9 @@ describe('RoomPlanImport', () => {
     await wrapper.get('button.button.primary').trigger('click')
     expect(room).toMatchObject({ length: 5.32, width: 3.32, height: 3, openings: 0 })
     expect(wrapper.text()).toContain('Проверенные размеры применены')
+    await wrapper.setProps({ room: { ...room, length: 7 } })
+    expect(wrapper.text()).not.toContain('Комната изменилась. Результат нельзя применить')
+    expect(wrapper.props('room').length).toBe(7)
   })
 
   it('does not apply a late response after edits or a room switch', async () => {

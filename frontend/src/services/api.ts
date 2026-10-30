@@ -120,7 +120,7 @@ export const service = {
     )
     if (result.imageId !== imageId)
       throw new Error('Ответ распознавания относится к другому изображению. Повторите запрос.')
-    // A photograph cannot establish dimensions. The server may change works, not geometry.
+    // A photograph cannot establish dimensions. Only the supplied room's works may change.
     const geometry = (value: Project) =>
       value.rooms.map((room, index) => (index === 0 ? { ...room, works: undefined } : room))
     if (
