@@ -1,4 +1,4 @@
-name: Deploy release
+name: CD
 
 on:
   workflow_dispatch:
@@ -8,9 +8,9 @@ on:
         type: environment
         required: true
       commit_sha:
-        description: Full lowercase SHA of a successful main CI run
+        description: Optional full SHA of a successful main CI run (defaults to latest main commit)
         type: string
-        required: true
+        required: false
 
 permissions:
   contents: read
@@ -32,7 +32,7 @@ jobs:
     # Scripts receive normal process environment variables, never GitHub expressions.
     env:
       DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
-      RELEASE_SHA: ${{ inputs.commit_sha }}
+      RELEASE_SHA: ${{ inputs.commit_sha || github.sha }}
       REPOSITORY: ${{ github.repository }}
       DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
       DEPLOY_USER: ${{ vars.DEPLOY_USER }}
@@ -133,7 +133,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.sha }}
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
@@ -142,10 +142,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -m scripts.github_actions check-release
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.commit_sha }}
-          persist-credentials: false
+      # Keep deployment fixes from the dispatch commit even when selecting older images.
+      # RELEASE_SHA selects immutable image tags, not an older version of the deploy tooling.
       - run: python -m pip install -r docker/ansible/requirements.txt
       - name: Deploy the selected release
         env:

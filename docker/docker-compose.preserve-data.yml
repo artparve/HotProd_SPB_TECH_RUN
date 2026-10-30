@@ -1,0 +1,4 @@
+# Existing Mongo databases keep their active catalog/rules; Java still ensures indexes.
+services:
+  init-data:
+    entrypoint: [sh, -c, "exit 0"]

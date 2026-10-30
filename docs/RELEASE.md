@@ -2,7 +2,7 @@
 
 CI запускается для PR и push в `backend`/`main`. Он проверяет frontend, Java/Mongo Testcontainers, Python, конфигурацию и сквозной Docker/API/Playwright-прогон. На PR публикации нет. После успешных проверок доверенного push публикуются три образа `frontend`, `backend`, `llm` с тегом `sha-<полный SHA>`.
 
-Workflow Deploy release запускается вручную из `main`, требует успешный push-CI для выбранного SHA именно в `main` и использует выбранный GitHub Environment. Он не пересобирает код на стенде. Код контроллера находится в `scripts/release.py`, `scripts/github_actions.py`; роль — `docker/ansible`.
+Workflow `CD` (`.github/workflows/cd.yml`) запускается вручную из `main`, требует успешный push-CI для выбранного SHA именно в `main` и использует выбранный GitHub Environment. SHA необязателен: по умолчанию выбирается commit запуска workflow. Он определяет immutable images; инструменты деплоя берутся из commit запуска, поэтому выбор старого образа не отменяет исправления безопасности деплоя. Код контроллера находится в `scripts/release.py`, `scripts/github_actions.py`; роль — `docker/ansible`.
 
 ## Настройка environment
 
@@ -11,6 +11,16 @@ Workflow Deploy release запускается вручную из `main`, тр�
 DEPLOY_LLM_ENABLED=false оставляет только базовый стек. true добавляет Python; DEPLOY_LOCAL_OLLAMA=true дополнительно запускает контейнер Ollama. При false задайте внешний OLLAMA_URL. В обоих случаях LLM требует INTERNAL_SERVICE_TOKEN. Модели не скачиваются автоматически.
 
 Роль создаёт отдельный Compose project на environment, копирует только manifests/init scripts и env, подтягивает готовые образы, повторяет bootstrap и ждёт healthchecks. Frontend проверяется отдельно от Java; деградировавший пустой каталог не считается успешным релизом. Указатель current меняется после проверок. Registry credentials и deploy lock удаляются в always, env-файлы имеют mode 600. Обновление приложения сохраняет Mongo volume и не трогает старый PostgreSQL volume.
+
+## Проверка существующего стенда и сохранение данных
+
+`scripts/deploy_target.py` перед изменением сервисов проверяет владельца frontend-порта, Compose project, Mongo volume, имя базы/пользователя, major-версию Mongo, replica set и активную пару каталога/правил. Прикладные и root-реквизиты проверяются через Docker bridge, не через localhost. Пароли передаются mongosh через stdin и не попадают в argv или открытый отчёт.
+
+В `prod` здоровый Mongo-стек `repaircalc` на целевом порту может быть принят с сохранением его `repaircalc_mongo-data`. Выбор закрепляется в `compose-project.json`; смена порта или временно остановленный frontend не должны переключить данные на новый volume. PostgreSQL-стек автоматически не принимается и не преобразуется в Mongo: нужен новый Mongo project на свободном порту и отдельное переключение ingress оператором. Старые PostgreSQL контейнеры и volumes не удаляются.
+
+Для существующей публикации `docker-compose.preserve-data.yml` отключает только seed; Java продолжает создавать индексы. Перед обновлением выполняется согласованный Mongo backup с SHA-256 и счётчиками коллекций. Он кратко останавливает прежний Java writer и запускает его в finally. Архив `database-before.archive.gz` и sidecar остаются в закрытом каталоге release. Повторный запуск использует новый release ID и не перезаписывает прошлый backup.
+
+При ошибке `scripts/deploy_diagnostics.py` сохраняет ограниченные логи и детали на стенде в `deployment-diagnostics.json` с mode 600; в Actions выводятся только типы сбоев и состояния контейнеров. Сырые логи автоматически не публикуются. Автоматического отката БД нет; указатель `current` меняется только после успешных health/API проверок.
 
 ## Локальный контроллер
 

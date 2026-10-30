@@ -26,3 +26,5 @@ Compose читает оба файла через `--env-file`; переменн
 Задайте независимые `MONGO_ROOT_PASSWORD`, `MONGO_PASSWORD`, `MONGO_KEYFILE_SECRET`. Base64-ключ можно получить командой `node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"`. Для LLM задайте `INTERNAL_SERVICE_TOKEN`. Хеш admin-пароля создаётся `python scripts/admin-password-hash.py` интерактивно, без пароля в argv.
 
 Старые DB_PASSWORD/DB_URL/POSTGRES_* больше не используются. Конфигуратор обнаруживает прежний DB_PASSWORD и сообщает о ручном переносе. Пароли уже созданных Mongo-пользователей меняются отдельной операцией MongoDB: изменение init env не выполняет ротацию существующего тома.
+
+CD проверяет Mongo-реквизиты по Docker bridge до рестарта, сохраняет привязку project/volume и делает backup перед обновлением. Инициализированная публикация не заменяется seed-каталогом. Автоматическое принятие старого стека допустимо только для Mongo; PostgreSQL требует отдельного нового размещения без удаления прежних данных. См. [RELEASE.md](RELEASE.md).

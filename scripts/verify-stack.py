@@ -14,6 +14,7 @@ from pathlib import Path
 import secrets
 import socket
 import subprocess
+import shutil
 import tempfile
 import time
 from urllib.error import HTTPError, URLError
@@ -141,6 +142,25 @@ def main():
                 run("build", "backend", "frontend", *([] if args.base_only else ["llm"]))
             run("up", "--detach", "--no-build", "--wait", "--wait-timeout", "240", "backend", "frontend", *([] if args.base_only else ["llm", "ollama"]))
             catalog = wait("/api/v1/products", lambda value: len(value) == 12)
+            # Exercise the release preflight against real network authentication without
+            # using any developer configuration or changing running services.
+            release = temporary / "preflight"
+            (release / "docker").mkdir(parents=True)
+            (release / "env").mkdir()
+            for filename in ("docker-compose.yml", "docker-compose.release.yml"):
+                shutil.copyfile(ROOT / "docker" / filename, release / "docker" / filename)
+            shutil.copyfile(public, release / "env/.env")
+            shutil.copyfile(secret, release / "env/secret.env")
+            preflight_env = dict(env, IMAGE_PREFIX="ghcr.io/repaircalc/test", IMAGE_TAG="sha-" + "a" * 40)
+            preflight = [sys.executable, str(ROOT / "scripts/deploy_target.py"), "plan", "--path", str(release),
+                         "--base", str(release), "--project", project, "--environment", "staging", "--host", "127.0.0.1", "--port", str(port)]
+            checked = subprocess.run(preflight, cwd=ROOT, env=preflight_env, capture_output=True, text=True, check=False)
+            assert checked.returncode == 0, checked.stdout
+            verified = json.loads(checked.stdout)
+            assert verified["existing_database"] and verified["preserve_catalog"] and verified["volume"] == project + "_mongo-data"
+            denied = subprocess.run(preflight, cwd=ROOT, env=dict(preflight_env, MONGO_PASSWORD="invalid-test-password"), capture_output=True, text=True, check=False)
+            assert denied.returncode == 1 and "credentials" in json.loads(denied.stdout)["error"]
+            print("PASS deployment preflight and rejection of invalid network credentials", flush=True)
             assert all("demo-" not in item["id"] for item in catalog)
             tile = "ac1f222a-f5e9-3b5d-a91e-c943b053e92e"
             room = {"id": "room-a", "name": "Комната", "type": "living", "length": 5, "width": 4, "height": 2.7,

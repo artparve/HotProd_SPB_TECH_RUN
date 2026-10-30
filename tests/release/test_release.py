@@ -149,7 +149,7 @@ class ReleaseTests(unittest.TestCase):
                 self.assertNotIn("private-", output.getvalue())
 
     def test_workflow_has_an_individual_setting_for_every_runtime_variable(self):
-        workflow = (release.ROOT / ".github/workflows/deploy.yml").read_text(encoding="utf-8")
+        workflow = (release.ROOT / ".github/workflows/cd.yml").read_text(encoding="utf-8")
         for name in release.DEPLOYMENT_ENV_DEFAULTS:
             self.assertRegex(workflow, rf"(?m)^\s+{name}:")
         self.assertIn("REGISTRY_PASSWORD: ${{ github.token }}", workflow)
@@ -163,6 +163,28 @@ class ReleaseTests(unittest.TestCase):
         self.assertTrue(set(release.DEPLOYMENT_PUBLIC_DEFAULTS) <= public_keys)
         self.assertFalse(public_keys & secret_keys)
         self.assertFalse((release.ROOT / "backend/.env.example").exists())
+
+    @unittest.skipUnless(shutil.which("docker"), "requires Compose CLI, not Docker Engine")
+    def test_preserve_data_override_skips_bootstrap_but_keeps_selected_images_and_database(self):
+        version = subprocess.run([shutil.which("docker"), "compose", "version", "--short"],
+                                 capture_output=True, text=True, timeout=30)
+        if version.returncode:
+            self.skipTest("Compose CLI unavailable")
+        env = {name: value for name, value in os.environ.items() if name not in release.DEPLOYMENT_ENV_DEFAULTS}
+        env.update(MONGO_PASSWORD="configuration-only", MONGO_ROOT_PASSWORD="configuration-only-root",
+                   MONGO_KEYFILE_SECRET="configuration-only-key", IMAGE_PREFIX="ghcr.io/owner/repo", IMAGE_TAG="sha-" + "a" * 40,
+                   FRONTEND_HOST="127.0.0.1", FRONTEND_PORT="8080", COMPOSE_PROFILES="")
+        result = subprocess.run([
+            shutil.which("docker"), "compose", "-p", "repaircalc", "--env-file", "env/.env.example",
+            "--env-file", "env/secret.env.example", "-f", "docker/docker-compose.yml", "-f", "docker/docker-compose.release.yml",
+            "-f", "docker/docker-compose.preserve-data.yml", "config", "--format", "json",
+        ], cwd=release.ROOT, env=env, capture_output=True, text=True, encoding="utf-8", timeout=30)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        config = json.loads(result.stdout)
+        self.assertEqual(config["services"]["init-data"]["entrypoint"], ["sh", "-c", "exit 0"])
+        self.assertEqual(config["services"]["backend"]["depends_on"]["init-data"]["condition"], "service_completed_successfully")
+        self.assertEqual(config["volumes"]["mongo-data"]["name"], "repaircalc_mongo-data")
+        self.assertEqual(config["services"]["backend"]["image"], "ghcr.io/owner/repo/backend:sha-" + "a" * 40)
 
     @unittest.skipUnless(shutil.which("docker"), "requires Compose CLI, not Docker Engine")
     def test_release_compose_publishes_configured_frontend_interface(self):

@@ -48,7 +48,7 @@ class GitHubActionsTests(unittest.TestCase):
         self.assertNotIn("private-api-token", output.getvalue())
 
     def test_rejects_failed_wrong_branch_event_or_sha_runs(self):
-        runs = [self.run_record(conclusion="failure"), self.run_record(head_branch="feature"),
+        runs = [self.run_record(conclusion="failure"), self.run_record(head_branch="feature"), self.run_record(head_branch="master"),
                 self.run_record(event="pull_request"), self.run_record(head_sha="b" * 40)]
         response = io.BytesIO(json.dumps({"workflow_runs": runs}).encode())
         with patch.object(github_actions, "urlopen", return_value=response), redirect_stderr(io.StringIO()):
@@ -151,10 +151,10 @@ class WorkflowTests(unittest.TestCase):
                     self.assertNotRegex(command, r"(?:<<|\becho\b|\bprintf\b|python(?:3)?\s+-c)")
 
     def test_deployment_settings_are_bound_to_selected_environment_and_exported_to_process_env(self):
-        path = github_actions.ROOT / ".github/workflows/deploy.yml"
+        path = github_actions.ROOT / ".github/workflows/cd.yml"
         job = yaml.safe_load(path.read_text())["jobs"]["deploy"]
         self.assertEqual(job["if"], "github.ref == 'refs/heads/main'")
-        self.assertEqual(job["steps"][0]["with"]["ref"], "main")
+        self.assertEqual(job["steps"][0]["with"]["ref"], "${{ github.sha }}")
         self.assertEqual(job["environment"]["name"], "${{ inputs.environment }}")
         self.assertEqual(job["env"]["DEPLOY_HOST"], "${{ vars.DEPLOY_HOST }}")
         self.assertEqual(job["env"]["DEPLOY_FRONTEND_HOST"], "${{ vars.DEPLOY_FRONTEND_HOST || '0.0.0.0' }}")
@@ -164,6 +164,21 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(step["env"]["REGISTRY_PASSWORD"], "${{ github.token }}")
         exported = {**job["env"], **step["env"]}
         self.assertTrue(set(github_actions.release.DEPLOYMENT_ENV_DEFAULTS) <= set(exported))
+
+    def test_cd_uses_optional_sha_or_dispatch_commit_consistently_on_main(self):
+        path = github_actions.ROOT / ".github/workflows/cd.yml"
+        workflow = yaml.load(path.read_text(), Loader=yaml.BaseLoader)
+        self.assertEqual(workflow["name"], "CD")
+        inputs = workflow["on"]["workflow_dispatch"]["inputs"]
+        self.assertEqual(inputs["commit_sha"]["required"], "false")
+        self.assertEqual(inputs["environment"]["required"], "true")
+        job = workflow["jobs"]["deploy"]
+        self.assertEqual(job["if"], "github.ref == 'refs/heads/main'")
+        self.assertEqual(job["env"]["RELEASE_SHA"], "${{ inputs.commit_sha || github.sha }}")
+        checkouts = [step for step in job["steps"] if step.get("uses") == "actions/checkout@v4"]
+        self.assertEqual(len(checkouts), 1, "Selecting older images must not roll back deployment safety checks")
+        self.assertEqual(checkouts[0]["with"]["ref"], "${{ github.sha }}")
+        self.assertFalse((github_actions.ROOT / ".github/workflows/deploy.yml").exists())
 
 
 if __name__ == "__main__":
