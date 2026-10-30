@@ -5,6 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+@org.springframework.scheduling.annotation.EnableScheduling
 @SpringBootApplication
 public class RepairCalcApplication {
     public static void main(String[] args) {
@@ -16,8 +17,8 @@ public class RepairCalcApplication {
         }
         var commands = options.getOptionValues("repaircalc.command");
         if (commands == null || commands.size() != 1
-                || !("import-catalog".equals(commands.getFirst()) || "import-rules".equals(commands.getFirst()))) {
-            System.err.println("Supported operator commands: --repaircalc.command=import-catalog|import-rules");
+                || !("import-catalog".equals(commands.getFirst()) || "import-rules".equals(commands.getFirst()) || "import-inspirations".equals(commands.getFirst()))) {
+            System.err.println("Supported operator commands: --repaircalc.command=import-catalog|import-rules|import-inspirations");
             System.exit(2);
             return;
         }

@@ -3,53 +3,104 @@ name: repaircalc
 x-logging: &logging
   driver: json-file
   options:
-    max-size: "10m"
-    max-file: "3"
+    max-size: "${LOG_MAX_SIZE:-10m}"
+    max-file: "${LOG_MAX_FILES:-3}"
 
 x-java: &java
   image: repaircalc-backend:${IMAGE_TAG:-local}
   build:
-    context: ../backend
+    context: ..
+    dockerfile: docker/backend.Dockerfile
+    args:
+      MAVEN_IMAGE: ${MAVEN_IMAGE:-maven:3.9-eclipse-temurin-21}
+      JAVA_IMAGE: ${JAVA_IMAGE:-eclipse-temurin:21-jre-jammy}
   environment: &java-env
     SPRING_PROFILES_ACTIVE: deploy
-    SERVER_ADDRESS: 0.0.0.0
-    SERVER_PORT: "8000"
-    DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-repaircalc}
-    DB_USER: ${DB_USER:-repaircalc}
-    DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in env/secret.env}
+    SERVER_ADDRESS: ${BACKEND_ADDRESS:-0.0.0.0}
+    SERVER_PORT: ${BACKEND_PORT:-8000}
+    MONGO_URI: mongodb://mongo:${MONGO_PORT:-27017}/${MONGO_DATABASE:-repaircalc}?replicaSet=${MONGO_REPLICA_SET:-rs0}&directConnection=true
+    MONGO_USER: ${MONGO_USER:-repaircalc}
+    MONGO_PASSWORD: ${MONGO_PASSWORD:?Set MONGO_PASSWORD in env/secret.env}
+    MONGO_SERVER_SELECTION_TIMEOUT_MS: ${MONGO_SERVER_SELECTION_TIMEOUT_MS:-3000}
+    MONGO_CONNECT_TIMEOUT_MS: ${MONGO_CONNECT_TIMEOUT_MS:-3000}
+    MONGO_READ_TIMEOUT_MS: ${MONGO_READ_TIMEOUT_MS:-10000}
     ADMIN_USERNAME: ${ADMIN_USERNAME:-}
     ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
     ADMIN_COOKIE_SECURE: ${ADMIN_COOKIE_SECURE:-true}
     ADMIN_SESSION_SECONDS: ${ADMIN_SESSION_SECONDS:-1800}
-    JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75
+    ADMIN_BODY_MAX_BYTES: ${ADMIN_BODY_MAX_BYTES:-262144}
+    LLM_SERVICE_URL: http://llm:${LLM_PORT:-8010}
+    INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
+    LLM_CONNECT_TIMEOUT_SECONDS: ${LLM_CONNECT_TIMEOUT_SECONDS:-3}
+    LLM_REQUEST_TIMEOUT_SECONDS: ${LLM_REQUEST_TIMEOUT_SECONDS:-1260}
+    LLM_RESPONSE_MAX_BYTES: ${LLM_RESPONSE_MAX_BYTES:-1048576}
+    CLASSIFICATION_ENABLED: ${CLASSIFICATION_ENABLED:-true}
+    CLASSIFICATION_MAX_ATTEMPTS: ${CLASSIFICATION_MAX_ATTEMPTS:-3}
+    CLASSIFICATION_LEASE_MS: ${CLASSIFICATION_LEASE_MS:-90000}
+    CLASSIFICATION_HEARTBEAT_MS: ${CLASSIFICATION_HEARTBEAT_MS:-20000}
+    CLASSIFICATION_RETRY_MS: ${CLASSIFICATION_RETRY_MS:-15000}
+    CLASSIFICATION_POLL_MS: ${CLASSIFICATION_POLL_MS:-2000}
+    CLASSIFICATION_TAXONOMY: /app/data/classification/taxonomy.json
+    INSPIRATIONS_DIR: /app/data/inspirations
+    INSPIRATIONS_MANIFEST: /app/data/inspirations/manifest.json
+    IMAGE_MAX_BYTES: ${IMAGE_MAX_BYTES:-8388608}
+    IMAGE_MAX_PIXELS: ${IMAGE_MAX_PIXELS:-12000000}
+    INSPIRATION_THUMBNAIL_SIZE: ${INSPIRATION_THUMBNAIL_SIZE:-480}
+    INSPIRATION_PAGE_LIMIT: ${INSPIRATION_PAGE_LIMIT:-24}
+    JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=75}
   read_only: true
-  cpus: "1.0"
-  mem_limit: 768m
-  memswap_limit: 768m
+  cpus: "${BACKEND_CPU_LIMIT:-1.0}"
+  mem_limit: ${BACKEND_MEMORY_LIMIT:-768m}
+  memswap_limit: ${BACKEND_MEMORY_LIMIT:-768m}
   tmpfs:
-    - /tmp:rw,noexec,nosuid,size=128m,mode=1777
+    - /tmp:rw,noexec,nosuid,size=${BACKEND_TMP_LIMIT:-128m},mode=1777
   cap_drop: [ALL]
   security_opt: [no-new-privileges:true]
   logging: *logging
 
 services:
-  postgres:
-    image: postgres:${POSTGRES_IMAGE_TAG:-17.11}
-    cpus: "0.5"
-    mem_limit: 512m
-    memswap_limit: 512m
+  mongo:
+    image: mongo:${MONGO_IMAGE_TAG:-8.0}
+    entrypoint: [sh, /opt/repaircalc/start.sh]
     environment:
-      POSTGRES_DB: ${DB_NAME:-repaircalc}
-      POSTGRES_USER: ${DB_USER:-repaircalc}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in env/secret.env}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-root}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD in env/secret.env}
+      MONGO_KEYFILE_SECRET: ${MONGO_KEYFILE_SECRET:?Set MONGO_KEYFILE_SECRET in env/secret.env}
+      MONGO_REPLICA_SET: ${MONGO_REPLICA_SET:-rs0}
+      MONGO_PORT: ${MONGO_PORT:-27017}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - mongo-data:/data/db
+      - ./mongo/start.sh:/opt/repaircalc/start.sh:ro
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    cpus: "${MONGO_CPU_LIMIT:-1.0}"
+    mem_limit: ${MONGO_MEMORY_LIMIT:-1g}
+    memswap_limit: ${MONGO_MEMORY_LIMIT:-1g}
     restart: unless-stopped
     healthcheck:
-      test: [CMD-SHELL, 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
-      interval: 5s
-      timeout: 3s
-      retries: 20
+      test: [CMD-SHELL, 'mongosh --port "$$MONGO_PORT" --quiet --eval "quit(db.runCommand({ping:1}).ok ? 0 : 1)"']
+      interval: ${HEALTH_INTERVAL:-10s}
+      timeout: ${HEALTH_TIMEOUT:-5s}
+      retries: ${HEALTH_RETRIES:-12}
+    logging: *logging
+
+  mongo-init:
+    image: mongo:${MONGO_IMAGE_TAG:-8.0}
+    environment:
+      MONGO_ROOT_USER: ${MONGO_ROOT_USER:-root}
+      MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD}
+      MONGO_DATABASE: ${MONGO_DATABASE:-repaircalc}
+      MONGO_USER: ${MONGO_USER:-repaircalc}
+      MONGO_PASSWORD: ${MONGO_PASSWORD:?Set MONGO_PASSWORD}
+      MONGO_REPLICA_SET: ${MONGO_REPLICA_SET:-rs0}
+      MONGO_REPLICA_HOST: mongo:${MONGO_PORT:-27017}
+      MONGO_INIT_TIMEOUT_MS: ${MONGO_INIT_TIMEOUT_MS:-60000}
+    entrypoint: [mongosh, --host, mongo, --port, "${MONGO_PORT:-27017}", --quiet, /init.js]
+    volumes:
+      - ./mongo/init.js:/init.js:ro
+    depends_on:
+      mongo: {condition: service_healthy}
+    restart: "no"
     logging: *logging
 
   init-data:
@@ -57,106 +108,93 @@ services:
     entrypoint: [sh, /app/init-data.sh]
     restart: "no"
     depends_on:
-      postgres:
-        condition: service_healthy
+      mongo-init: {condition: service_completed_successfully}
 
   backend:
     <<: *java
-    expose: ["8000"]
+    expose: ["${BACKEND_PORT:-8000}"]
     restart: unless-stopped
     depends_on:
-      postgres:
-        condition: service_healthy
-      init-data:
-        condition: service_completed_successfully
+      init-data: {condition: service_completed_successfully}
     healthcheck:
-      test: [CMD, curl, --fail, --silent, http://127.0.0.1:8000/actuator/health/readiness]
-      interval: 10s
-      timeout: 3s
-      start_period: 60s
-      retries: 12
+      test: [CMD-SHELL, 'curl --fail --silent "http://127.0.0.1:$$SERVER_PORT/actuator/health/readiness" > /dev/null']
+      interval: ${HEALTH_INTERVAL:-10s}
+      timeout: ${HEALTH_TIMEOUT:-5s}
+      start_period: ${BACKEND_START_PERIOD:-60s}
+      retries: ${HEALTH_RETRIES:-12}
 
-  estimator:
-    image: repaircalc-estimator:${IMAGE_TAG:-local}
-    build:
-      context: ../backend/estimation
-    command: [--backend, "http://backend:8000", --host, "${OLLAMA_URL:-http://ollama:11434}", --model, "${OLLAMA_MODEL:-gemma4:12b}", --num-threads, "${OLLAMA_NUM_THREADS:-8}", serve, --listen, 0.0.0.0, --port, "8010"]
-    cpus: "0.5"
-    mem_limit: 256m
-    memswap_limit: 256m
-    expose: ["8010"]
-    restart: unless-stopped
-    depends_on:
-      backend:
-        condition: service_healthy
-    read_only: true
-    cap_drop: [ALL]
-    security_opt: [no-new-privileges:true]
-    healthcheck:
-      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8010/health', timeout=2).read()"]
-      interval: 10s
-      timeout: 3s
-      retries: 6
-    logging: *logging
-
-  classifier-worker:
-    image: repaircalc-classifier:${IMAGE_TAG:-local}
-    build:
-      context: ../backend/classification
+  llm:
+    image: repaircalc-llm:${IMAGE_TAG:-local}
     profiles: [llm]
-    entrypoint: [python, -m, repaircalc_classifier.worker]
+    build:
+      context: ..
+      dockerfile: docker/llm.Dockerfile
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-python:3.12-slim}
     environment:
-      PGHOST: postgres
-      PGDATABASE: ${DB_NAME:-repaircalc}
-      PGUSER: ${DB_USER:-repaircalc}
-      PGPASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in env/secret.env}
+      LLM_ADDRESS: ${LLM_ADDRESS:-0.0.0.0}
+      LLM_PORT: ${LLM_PORT:-8010}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?Set INTERNAL_SERVICE_TOKEN for the llm profile}
       OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-gemma4:12b}
+      OLLAMA_TIMEOUT_SECONDS: ${OLLAMA_TIMEOUT_SECONDS:-600}
+      OLLAMA_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH:-16384}
+      OLLAMA_NUM_PREDICT: ${OLLAMA_NUM_PREDICT:-4096}
       OLLAMA_NUM_THREADS: ${OLLAMA_NUM_THREADS:-8}
-    depends_on:
-      backend:
-        condition: service_healthy
+      OLLAMA_RESPONSE_MAX_BYTES: ${OLLAMA_RESPONSE_MAX_BYTES:-2097152}
+      LLM_CONCURRENCY: ${LLM_CONCURRENCY:-1}
+      LLM_BODY_MAX_BYTES: ${LLM_BODY_MAX_BYTES:-12582912}
+      LLM_SOCKET_TIMEOUT_SECONDS: ${LLM_SOCKET_TIMEOUT_SECONDS:-30}
+      IMAGE_MAX_BYTES: ${IMAGE_MAX_BYTES:-8388608}
+      IMAGE_MAX_PIXELS: ${IMAGE_MAX_PIXELS:-12000000}
+    expose: ["${LLM_PORT:-8010}"]
+    cpus: "${LLM_CPU_LIMIT:-1.0}"
+    mem_limit: ${LLM_MEMORY_LIMIT:-512m}
+    memswap_limit: ${LLM_MEMORY_LIMIT:-512m}
     restart: unless-stopped
-    cpus: "0.5"
-    mem_limit: 512m
-    memswap_limit: 512m
     read_only: true
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, python, -c, "import os,urllib.request; urllib.request.urlopen('http://127.0.0.1:'+os.environ['LLM_PORT']+'/health',timeout=2).read()"]
+      interval: ${HEALTH_INTERVAL:-10s}
+      timeout: ${HEALTH_TIMEOUT:-5s}
+      retries: ${HEALTH_RETRIES:-12}
     logging: *logging
 
   frontend:
     image: repaircalc-frontend:${IMAGE_TAG:-local}
     build:
-      context: ../frontend
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/frontend.Dockerfile
       args:
-        VITE_DATA_MODE: ${COMPOSE_DATA_MODE:-api}
+        NODE_IMAGE: ${NODE_IMAGE:-node:22-alpine}
+        NGINX_IMAGE: ${NGINX_IMAGE:-nginx:1.28-alpine}
+        VITE_DATA_MODE: api
         VITE_API_BASE_URL: /api/v1
     environment:
-      API_UPSTREAM: http://backend:8000
-      ESTIMATION_UPSTREAM: http://estimator:8010
-    expose: ["8080"]
-    cpus: "0.25"
-    mem_limit: 128m
-    memswap_limit: 128m
-    depends_on:
-      backend:
-        condition: service_healthy
-      estimator:
-        condition: service_healthy
+      API_UPSTREAM: http://backend:${BACKEND_PORT:-8000}
+      FRONTEND_PORT: ${FRONTEND_PORT:-8080}
+      API_CONNECT_TIMEOUT: ${API_CONNECT_TIMEOUT:-3s}
+      API_READ_TIMEOUT: ${API_READ_TIMEOUT:-1265s}
+      API_MAX_BODY_SIZE: ${API_MAX_BODY_SIZE:-12m}
+      DNS_RESOLVER: ${DNS_RESOLVER:-127.0.0.11}
+    ports:
+      - "${FRONTEND_BIND_ADDRESS:-127.0.0.1}:${FRONTEND_PUBLIC_PORT:-8080}:${FRONTEND_PORT:-8080}"
+    cpus: "${FRONTEND_CPU_LIMIT:-0.25}"
+    mem_limit: ${FRONTEND_MEMORY_LIMIT:-128m}
+    memswap_limit: ${FRONTEND_MEMORY_LIMIT:-128m}
     restart: unless-stopped
     read_only: true
     tmpfs:
-      - /tmp:rw,noexec,nosuid,size=32m,mode=1777
+      - /tmp:rw,noexec,nosuid,size=${FRONTEND_TMP_LIMIT:-32m},mode=1777
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     healthcheck:
-      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/healthz]
-      interval: 10s
-      timeout: 3s
-      start_period: 5s
-      retries: 6
+      test: [CMD-SHELL, 'wget -q -O /dev/null "http://127.0.0.1:$$FRONTEND_PORT/healthz"']
+      interval: ${HEALTH_INTERVAL:-10s}
+      timeout: ${HEALTH_TIMEOUT:-5s}
+      retries: ${HEALTH_RETRIES:-12}
     logging: *logging
 
   ollama:
@@ -166,40 +204,22 @@ services:
     mem_limit: ${OLLAMA_MEMORY_LIMIT:-12g}
     memswap_limit: ${OLLAMA_MEMORY_LIMIT:-12g}
     environment:
-      OLLAMA_NUM_PARALLEL: "1"
-      OLLAMA_MAX_LOADED_MODELS: "1"
-      OLLAMA_CONTEXT_LENGTH: "8192"
-      OLLAMA_KEEP_ALIVE: "60s"
-      # Bound llama-server RAM when switching between tool and classifier prompts.
-      LLAMA_ARG_CACHE_RAM: "0"
-      LLAMA_ARG_CTX_CHECKPOINTS: "0"
+      OLLAMA_NUM_PARALLEL: ${LLM_CONCURRENCY:-1}
+      OLLAMA_MAX_LOADED_MODELS: ${OLLAMA_MAX_LOADED_MODELS:-1}
+      OLLAMA_CONTEXT_LENGTH: ${OLLAMA_CONTEXT_LENGTH:-16384}
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-60s}
+      LLAMA_ARG_CACHE_RAM: ${OLLAMA_CACHE_RAM:-0}
+      LLAMA_ARG_CTX_CHECKPOINTS: ${OLLAMA_CTX_CHECKPOINTS:-0}
     volumes:
       - ollama-data:/root/.ollama
     restart: unless-stopped
     healthcheck:
       test: [CMD, ollama, list]
-      interval: 15s
-      timeout: 5s
-      start_period: 10s
-      retries: 10
-    logging: *logging
-
-  classifier:
-    image: repaircalc-classifier:${IMAGE_TAG:-local}
-    profiles: [batch]
-    cpus: "0.5"
-    mem_limit: 384m
-    memswap_limit: 384m
-    build:
-      context: ../backend/classification
-    command: [--host, "${OLLAMA_URL:-http://ollama:11434}", --model, "${OLLAMA_MODEL:-gemma4:12b}", --status]
-    volumes:
-      - ../backend/classification/examples:/input:ro
-    read_only: true
-    cap_drop: [ALL]
-    security_opt: [no-new-privileges:true]
+      interval: ${HEALTH_INTERVAL:-10s}
+      timeout: ${HEALTH_TIMEOUT:-5s}
+      retries: ${HEALTH_RETRIES:-12}
     logging: *logging
 
 volumes:
-  pgdata:
+  mongo-data:
   ollama-data:

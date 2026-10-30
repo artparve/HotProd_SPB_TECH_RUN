@@ -25,7 +25,7 @@ class ProductCalculationServiceTest {
     @Test
     void buildsOneLineFromOneSnapshotWithAnInjectedUtcClockAndExactTotals() throws Exception {
         var resolver = mock(CalculationSnapshotService.class);
-        var bundle = JsonMapper.builder().build().readValue(Files.readString(Path.of("data/rules-v1.json")), RuleSetBundle.class);
+        var bundle = JsonMapper.builder().build().readValue(Files.readString(Path.of("../data/rules-v1.json")), RuleSetBundle.class);
         UUID tileId = UUID.fromString("ac1f222a-f5e9-3b5d-a91e-c943b053e92e");
         var tile = new ProductView(tileId, "Тестовая плитка", "Плитка", "covering", "2160.00", new BigDecimal("1.44"),
                 "м²", "уп.", List.of("floor"), true, true, true, "Тест", "ТЕСТОВЫЕ данные", null, null, null, null);
@@ -33,7 +33,7 @@ class ProductCalculationServiceTest {
         var catalog = new CatalogSnapshot(catalogId, bundle.catalog().version(), bundle.catalog().fingerprint(),
                 bundle.catalog().taxonomyVersion(), List.of(tile));
         var rules = new RuleSetSnapshot(UUID.randomUUID(), catalogId, bundle.version(), "f".repeat(64), bundle);
-        when(resolver.resolve()).thenReturn(new CalculationSnapshotService.Snapshot(catalog, rules));
+        when(resolver.resolve(tileId)).thenReturn(new CalculationSnapshotService.Snapshot(catalog, rules));
         Instant now = Instant.parse("2026-10-24T00:00:00Z");
         var service = new ProductCalculationService(resolver, new MaterialCalculator(), Clock.fixed(now, ZoneOffset.UTC));
         var input = new CalculationInput(new BigDecimal("20"), new BigDecimal("18"), new BigDecimal("2.7"),
@@ -55,6 +55,6 @@ class ProductCalculationServiceTest {
         assertThat(estimate.versions().catalog()).isEqualTo(catalog.version());
         assertThat(estimate.versions().rules()).isEqualTo(rules.version());
         assertThat(estimate.versions().model()).isEqualTo("not-used");
-        verify(resolver, times(1)).resolve();
+        verify(resolver, times(1)).resolve(tileId);
     }
 }

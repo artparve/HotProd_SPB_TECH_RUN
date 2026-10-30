@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { parseEnv } from "node:util";
 
 export const ROOT = fileURLToPath(new URL("../", import.meta.url));
-export const SECRET_KEYS = ["DB_PASSWORD", "ADMIN_PASSWORD_HASH"];
+export const SECRET_KEYS = ["MONGO_ROOT_PASSWORD","MONGO_PASSWORD","MONGO_KEYFILE_SECRET","INTERNAL_SERVICE_TOKEN","ADMIN_PASSWORD_HASH"];
 
 export function initConfig(root = ROOT) {
   for (const [source, target] of [
@@ -44,14 +44,14 @@ export function localEnvironment(root = ROOT, inherited = process.env) {
   const secrets = parseEnv(
     readFileSync(resolve(root, "env/secret.env"), "utf8"),
   );
-  if (SECRET_KEYS.some((key) => settings[key])) {
+  if ([...SECRET_KEYS, "DB_PASSWORD"].some((key) => settings[key])) {
     throw new Error(
-      "Move DB_PASSWORD / ADMIN_PASSWORD_HASH from env/.env to env/secret.env",
+      "Move credentials from env/.env to env/secret.env; replace obsolete DB_PASSWORD with Mongo credentials",
     );
   }
   if (Object.keys(secrets).some((key) => !SECRET_KEYS.includes(key))) {
     throw new Error(
-      "env/secret.env may contain only DB_PASSWORD and ADMIN_PASSWORD_HASH",
+      "env/secret.env may contain only the documented Mongo, LLM and admin secrets",
     );
   }
   return { ...defaults, ...settings, ...secrets, ...inherited };

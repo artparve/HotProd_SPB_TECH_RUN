@@ -1,42 +1,21 @@
 package ru.repaircalc.rules;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.dao.DataAccessException;
+import java.util.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import ru.repaircalc.storage.MongoStore;
 import ru.repaircalc.common.web.ServiceUnavailableException;
-import ru.repaircalc.rules.persistence.RuleSetRepository;
-import ru.repaircalc.rules.persistence.RuleSetStatus;
-import tools.jackson.databind.json.JsonMapper;
-
+import org.bson.Document;
+import static ru.repaircalc.storage.MongoStore.query;
 @Service
-@Transactional(readOnly = true)
 public class RuleSetReadService {
-    private final RuleSetRepository repository;
-    private final JsonMapper json;
-    private final RuleSetValidator validator;
-
-    public RuleSetReadService(RuleSetRepository repository, JsonMapper json, RuleSetValidator validator) {
-        this.repository = repository;
-        this.json = RuleSetImportService.strictMapper(json);
-        this.validator = validator;
+    private final MongoStore store; private final RuleSetValidator validator;
+    public RuleSetReadService(MongoStore store,RuleSetValidator validator){this.store=store;this.validator=validator;}
+    public Optional<RuleSetSnapshot> activeForCatalog(UUID id){
+        var p=store.id("publication_pointer","active");
+        return p==null || !id.toString().equals(p.getString("catalogReleaseId"))?Optional.empty():Optional.of(byId(p.getString("ruleSetId")));
     }
-
-    public Optional<RuleSetSnapshot> activeForCatalog(UUID catalogId) {
-        try {
-            return repository.findByCatalogReleaseIdAndActiveTrue(catalogId).map(entity -> {
-                var bundle = json.readValue(entity.getBundle(), RuleSetBundle.class);
-                validator.validateShape(bundle);
-                if (entity.getStatus() != RuleSetStatus.PUBLISHED || !entity.getVersion().equals(bundle.version())
-                        || !entity.getTaxonomyVersion().equals(bundle.catalog().taxonomyVersion())) {
-                    throw new RuleSetImportException("Stored rules metadata is inconsistent.");
-                }
-                return new RuleSetSnapshot(entity.getId(), catalogId, entity.getVersion(), entity.getFingerprint(), bundle);
-            });
-        } catch (DataAccessException | RuleSetImportException | tools.jackson.core.JacksonException exception) {
-            throw new ServiceUnavailableException("rules_unavailable", "Calculation rules are temporarily unavailable.");
-        }
+    public RuleSetSnapshot byId(String id){
+        var d=store.id("rule_set",id);if(d==null)throw new ServiceUnavailableException("rules_unavailable","Rules unavailable.");
+        var b=store.read(d.get("bundle",Document.class),RuleSetBundle.class);validator.validateShape(b);
+        return new RuleSetSnapshot(UUID.fromString(id),UUID.fromString(d.getString("catalogReleaseId")),d.getString("version"),d.getString("fingerprint"),b);
     }
 }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { apiStatus } from './services/api'
 import AppIcon from './components/AppIcon.vue'
 import { workspace } from './composables/useWorkspace'
 
@@ -111,7 +112,8 @@ const links = [
         <div v-if="workspace.storageMessage" class="alert warning" role="status">
           {{ workspace.storageMessage }}
         </div>
-        <RouterView :key="route.path" />
+        <p v-if="apiStatus.catalogWarning" class="alert" role="status">{{ apiStatus.catalogWarning }}</p>
+      <RouterView :key="route.path" />
       </main>
       <footer class="page-footer">
         <span>RepairCalc · Умный подход к ремонту</span

@@ -1,6 +1,2 @@
-spring:
-  config:
-    import: optional:file:./.env.local[.properties]
-
 server:
   address: ${SERVER_ADDRESS:127.0.0.1}

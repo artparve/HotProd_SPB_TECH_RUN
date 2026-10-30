@@ -9,12 +9,14 @@ import tools.jackson.databind.json.JsonMapper;
 
 @Component
 public final class AdminJson {
-    private static final int MAX_BYTES = 262144;
+    private final int maxBytes;
     private final JsonMapper json;
 
-    public AdminJson(JsonMapper json) {
+    public AdminJson(JsonMapper json, @org.springframework.beans.factory.annotation.Value("${ADMIN_BODY_maxBytes:262144}") int maxBytes) {
+        if (maxBytes < 1024 || maxBytes > 1048576) throw new IllegalArgumentException("Invalid admin body limit");
+        this.maxBytes = maxBytes;
         this.json = json.rebuild().enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
-                .enable(tools.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS).build();
+                .enable(tools.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS).enable(tools.jackson.databind.DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS).build();
     }
 
     public JsonNode body(HttpServletRequest request) throws IOException {

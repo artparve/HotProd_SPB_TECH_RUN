@@ -1,4 +1,11 @@
 import { z } from 'zod'
+import { reactive } from 'vue'
+
+export const apiStatus = reactive({ catalogWarning: '' })
+class ApiRequestError extends Error {
+  constructor(message: string, readonly status: number) { super(message) }
+}
+function unavailable(error: unknown) { return error instanceof ApiRequestError && error.status >= 500 }
 import { estimateSchema, productSchema, recommendationSchema } from '../domain/types'
 import type { Product, ProductInput, Project, Room } from '../domain/types'
 import { apiErrorSchema, materialEstimateSchema, materialRequestSchema } from '../domain/materials'
@@ -62,8 +69,10 @@ async function request<T>(
         error.success
           ? `API вернул HTTP ${response.status}: ${error.data.message}`
           : `API вернул HTTP ${response.status}. Проверьте подключение или повторите запрос.`,
+        response.status,
       )
     }
+    if (path === '/products') apiStatus.catalogWarning = response.headers.get('X-RepairCalc-Degraded') ? 'Каталог временно недоступен. Повторите загрузку позже.' : ''
     const parsed = schema.safeParse(await response.json())
     if (!parsed.success)
       throw new Error('Ответ API не соответствует контракту. Проверьте версию backend.')
@@ -82,9 +91,10 @@ async function request<T>(
               : timeoutMs === 15000
                 ? 'API не ответил за 15 секунд. Повторите запрос.'
                 : 'Расчёт с ИИ не завершился за отведённое время. Повторите запрос.',
+        signal?.aborted ? 499 : 503,
       )
     if (error instanceof TypeError)
-      throw new Error('Не удалось связаться с API. Проверьте адрес backend и сеть.')
+      throw new ApiRequestError('Не удалось связаться с API. Проверьте адрес backend и сеть.', 503)
     throw error
   } finally {
     clearTimeout(timeout)
@@ -140,7 +150,8 @@ export const service = {
   },
   async catalog(): Promise<Product[]> {
     if (import.meta.env.DEV && dataMode === 'demo') return (await import('./demo')).demoCatalog()
-    return request('/products', z.array(productSchema))
+    try { return await request('/products', z.array(productSchema)) }
+    catch (error) { if (!unavailable(error)) throw error; apiStatus.catalogWarning = 'Каталог временно недоступен. Повторите загрузку позже.'; return [] }
   },
   async estimate(project: Project, selections: Record<string, string> = {}) {
     if (import.meta.env.DEV && dataMode === 'demo')
@@ -150,7 +161,8 @@ export const service = {
   async recommendations(room: Room) {
     if (import.meta.env.DEV && dataMode === 'demo')
       return (await import('./demo')).recommendDemo(room)
-    return request('/recommendations', recommendationSchema, { room })
+    try { return await request('/recommendations', recommendationSchema, { room }) }
+    catch (error) { if (!unavailable(error)) throw error; return { products: [], warnings: ['Подбор временно недоступен. Повторите позже.'] } }
   },
   async product(product: Product, input: ProductInput) {
     if (import.meta.env.DEV && dataMode === 'demo')

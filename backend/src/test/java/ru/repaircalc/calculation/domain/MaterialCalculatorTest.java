@@ -154,9 +154,10 @@ class MaterialCalculatorTest {
     }
 
     @Test
-    void otherAdhesiveNormsAreNotSilentlyAccepted() {
-        assertField("consumption", () -> calculate(product("adhesive", "790", "25", null),
-                input("20", "10", "2", "6"), profile(Strategy.ADHESIVE, "3")));
+    void confirmedAdhesiveNormIsReadFromTheProfile() {
+        var result = calculate(product("adhesive", "790", "25", null),
+                input("20", "10", "2", "6"), profile(Strategy.ADHESIVE, "3"));
+        assertThat(result.packages().need()).isEqualByComparingTo("66");
     }
 
     @Test

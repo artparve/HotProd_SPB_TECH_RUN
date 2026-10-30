@@ -38,6 +38,7 @@ async function load(more = false) {
     const merged = [...(more ? items.value : []), ...result.items]
     items.value = [...new Map(merged.map((item) => [item.id, item])).values()]
     cursor.value = result.nextCursor === previous ? null : result.nextCursor
+    if (result.status === 'unavailable') feedError.value = result.warnings?.join(' ') || 'Подборка временно недоступна.'
     loaded.value = true
   } catch (error) {
     if (alive)
@@ -75,6 +76,10 @@ async function choose(image: RoomInspiration) {
   try {
     const result = await service.analyzeRoomInspiration(image.id, snapshot, controller.signal)
     if (!alive || controller.signal.aborted) return
+    if (result.status && result.status !== 'ok') {
+      selectionError.value = result.warnings.join(' ') || 'Не удалось подобрать материалы. Продолжите вручную.'
+      return
+    }
     const products = await service.catalog()
     validateInspirationProducts(result, products)
     const estimate = await service.estimate(result.project, result.selections)

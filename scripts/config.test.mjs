@@ -16,7 +16,7 @@ import { ROOT, initConfig, localEnvironment } from "./config.mjs";
 import { localCommand } from "./local.mjs";
 
 function fixture(t) {
-  const base = process.platform === "win32" ? "D:/Temp/opencode" : tmpdir();
+  const base = tmpdir();
   const root = mkdtempSync(resolve(base, "repaircalc-config-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   mkdirSync(resolve(root, "env"));
@@ -39,7 +39,7 @@ test("initialization creates both env files without overwriting existing configu
   writeFileSync(resolve(root, "env/.env"), "DEV_PORT=5199\n");
   writeFileSync(
     resolve(root, "env/secret.env"),
-    "DB_PASSWORD='private-$value'\n",
+    "MONGO_PASSWORD='private-$value'\n",
   );
   initConfig(root);
   assert.equal(
@@ -48,7 +48,7 @@ test("initialization creates both env files without overwriting existing configu
   );
   assert.equal(
     readFileSync(resolve(root, "env/secret.env"), "utf8"),
-    "DB_PASSWORD='private-$value'\n",
+    "MONGO_PASSWORD='private-$value'\n",
   );
   if (process.platform !== "win32")
     assert.equal(statSync(resolve(root, "env/secret.env")).mode & 0o777, 0o600);
@@ -62,20 +62,20 @@ test("local Java/Python configuration merges defaults, public settings, secrets,
   );
   writeFileSync(
     resolve(root, "env/secret.env"),
-    "DB_PASSWORD='private-$value'\nADMIN_PASSWORD_HASH='pbkdf2-sha256$600000$salt$hash'\n",
+    "MONGO_PASSWORD='private-$value'\nADMIN_PASSWORD_HASH='pbkdf2-sha256$600000$salt$hash'\n",
   );
   const env = localEnvironment(root, { SERVER_PORT: "8091" });
   assert.equal(env.SERVER_PORT, "8091");
-  assert.equal(env.DB_PASSWORD, "private-$value");
+  assert.equal(env.MONGO_PASSWORD, "private-$value");
   assert.equal(env.ADMIN_PASSWORD_HASH, "pbkdf2-sha256$600000$salt$hash");
-  assert.equal(env.DB_USER, "repaircalc");
+  assert.equal(env.MONGO_USER, "repaircalc");
   assert.equal(env.ADMIN_USERNAME, "operator");
   assert.equal(env.SPRING_PROFILES_ACTIVE, "local");
 });
 
 test("legacy secrets in public env fail safely rather than silently replacing credentials", (t) => {
   const root = fixture(t);
-  writeFileSync(resolve(root, "env/.env"), "DB_PASSWORD=private-value\n");
+  writeFileSync(resolve(root, "env/.env"), "MONGO_PASSWORD=private-value\n");
   assert.throws(
     () => localEnvironment(root, {}),
     (error) => !error.message.includes("private-value"),
@@ -93,22 +93,22 @@ test("secret file cannot introduce client-exposed VITE variables or arbitrary co
 
 test("local services receive credentials through child env, never command arguments", (t) => {
   const root = fixture(t);
-  writeFileSync(resolve(root, "env/secret.env"), "DB_PASSWORD=private-value\n");
+  writeFileSync(resolve(root, "env/secret.env"), "MONGO_PASSWORD=private-value\n");
   const env = localEnvironment(root, {});
   const java = localCommand("backend", env, root);
   const python = localCommand("estimator", env, root);
   assert.equal(java.command, "java");
-  assert.equal(java.env.DB_PASSWORD, "private-value");
-  assert.equal(python.env.DB_PASSWORD, undefined);
+  assert.equal(java.env.MONGO_PASSWORD, "private-value");
+  assert.equal(python.env.MONGO_PASSWORD, undefined);
   assert.equal(python.env.ADMIN_PASSWORD_HASH, undefined);
   assert.equal(java.cwd, resolve(root, "backend"));
-  assert.ok(python.args.includes("http://127.0.0.1:11434"));
-  assert.ok(python.args.includes("8010"));
+  assert.equal(python.env.OLLAMA_URL, "http://127.0.0.1:11434");
+  assert.equal(python.env.LLM_PORT, "8010");
   assert.ok(
     ![...java.args, ...python.args].join(" ").includes("private-value"),
   );
   assert.throws(
-    () => localCommand("backend", { DB_PASSWORD: "" }),
+    () => localCommand("backend", { MONGO_PASSWORD: "" }),
     /secret.env/,
   );
 });

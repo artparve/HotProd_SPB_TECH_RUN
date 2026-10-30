@@ -65,6 +65,7 @@ export const adminDraftSchema = z
     kind: field(
       z.enum(['covering', 'paint', 'primer', 'wallpaper', 'adhesive', 'socket', 'cable']),
     ).optional(),
+    materialFamily: field(z.enum(['tile', 'laminate', 'vinyl'])).optional(),
     wet: field(z.boolean()).optional(),
     highLoad: field(z.boolean()).optional(),
     unheated: field(z.boolean()).optional(),

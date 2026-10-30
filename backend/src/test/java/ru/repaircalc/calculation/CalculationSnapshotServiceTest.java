@@ -29,28 +29,30 @@ class CalculationSnapshotServiceTest {
 
     @BeforeEach
     void preparePair() throws Exception {
-        var bundle = JsonMapper.builder().build().readValue(Files.readString(Path.of("data/rules-v1.json")), RuleSetBundle.class);
+        var bundle = JsonMapper.builder().build().readValue(Files.readString(Path.of("../data/rules-v1.json")), RuleSetBundle.class);
         var reference = bundle.catalog();
         UUID catalogId = UUID.randomUUID();
         catalog = new CatalogSnapshot(catalogId, reference.version(), reference.fingerprint(), reference.taxonomyVersion(), List.of());
         ruleSet = new RuleSetSnapshot(UUID.randomUUID(), catalogId, bundle.version(), "f".repeat(64), bundle);
-        when(catalogs.activeSnapshot()).thenReturn(catalog);
+        when(catalogs.pointer()).thenReturn(new org.bson.Document("catalogReleaseId",catalog.releaseId().toString()).append("ruleSetId",ruleSet.id().toString()));
+        when(catalogs.snapshot(catalog.releaseId().toString(),null)).thenReturn(catalog);
     }
 
     @Test
     void selectsEachVersionExactlyOnceAndRetainsDetachedSnapshots() {
-        when(rules.activeForCatalog(catalog.releaseId())).thenReturn(Optional.of(ruleSet));
+        when(rules.byId(ruleSet.id().toString())).thenReturn(ruleSet);
         var result = service.resolve();
         assertThat(result.catalog()).isSameAs(catalog);
         assertThat(result.rules()).isSameAs(ruleSet);
-        verify(catalogs, times(1)).activeSnapshot();
-        verify(rules, times(1)).activeForCatalog(catalog.releaseId());
+        verify(catalogs, times(1)).pointer();
+        verify(catalogs, times(1)).snapshot(catalog.releaseId().toString(),null);
+        verify(rules, times(1)).byId(ruleSet.id().toString());
         verifyNoMoreInteractions(catalogs, rules);
     }
 
     @Test
     void catalogWithoutRulesIsUnavailable() {
-        when(rules.activeForCatalog(catalog.releaseId())).thenReturn(Optional.empty());
+        when(rules.byId(ruleSet.id().toString())).thenThrow(new ServiceUnavailableException("calculation_unavailable","Calculation data is temporarily unavailable."));
         assertThatThrownBy(service::resolve).isInstanceOf(ServiceUnavailableException.class)
                 .hasMessage("Calculation data is temporarily unavailable.");
     }
@@ -58,14 +60,15 @@ class CalculationSnapshotServiceTest {
     @Test
     void storedRuleReferenceMustMatchTheActualCatalogFingerprint() {
         catalog = new CatalogSnapshot(catalog.releaseId(), catalog.version(), "0".repeat(64), catalog.taxonomyVersion(), List.of());
-        when(catalogs.activeSnapshot()).thenReturn(catalog);
-        when(rules.activeForCatalog(catalog.releaseId())).thenReturn(Optional.of(ruleSet));
+        when(catalogs.pointer()).thenReturn(new org.bson.Document("catalogReleaseId",catalog.releaseId().toString()).append("ruleSetId",ruleSet.id().toString()));
+        when(catalogs.snapshot(catalog.releaseId().toString(),null)).thenReturn(catalog);
+        when(rules.byId(ruleSet.id().toString())).thenReturn(ruleSet);
         assertThatThrownBy(service::resolve).isInstanceOf(ServiceUnavailableException.class);
     }
 
     @Test
     void transactionBoundaryFailuresCannotLeakDatabaseDetails() {
-        when(catalogs.activeSnapshot()).thenThrow(new org.springframework.transaction.CannotCreateTransactionException("secret jdbc password"));
+        when(catalogs.pointer()).thenThrow(new org.springframework.dao.DataAccessResourceFailureException("secret Mongo password"));
         assertThatThrownBy(service::resolve).isInstanceOf(ServiceUnavailableException.class)
                 .hasMessage("Calculation data is temporarily unavailable.");
         verifyNoInteractions(rules);
@@ -74,7 +77,7 @@ class CalculationSnapshotServiceTest {
     @Test
     void programmingErrorsAreNotDisguisedAsDependencyFailures() {
         var failure = new IllegalStateException("programming error");
-        when(catalogs.activeSnapshot()).thenThrow(failure);
+        when(catalogs.pointer()).thenThrow(failure);
         assertThatThrownBy(service::resolve).isSameAs(failure);
     }
 }

@@ -78,6 +78,7 @@ export const productSchema = z.object({
   rollWidth: z.number().positive().optional(),
   rollLength: z.number().positive().optional(),
   rapport: z.number().nonnegative().optional(),
+  materialFamily: z.enum(['tile', 'laminate', 'vinyl']).nullable().optional(),
 })
 export type Product = z.infer<typeof productSchema>
 export const lineSchema = z.object({

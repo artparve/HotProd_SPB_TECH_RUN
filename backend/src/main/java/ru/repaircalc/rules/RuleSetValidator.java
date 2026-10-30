@@ -63,12 +63,9 @@ public class RuleSetValidator {
             if (usesConsumption != (profile.consumption() != null)) {
                 reject("Consumption is required only for paint, primer and adhesive profiles.");
             }
-            if (profile.strategy() == Strategy.ADHESIVE && profile.consumption().compareTo(new BigDecimal("4")) != 0) {
-                reject("The supported educational adhesive profile requires 4 kg/m².");
-            }
             if (profile.strategy() == Strategy.WALLPAPER) {
-                if (profile.trimAllowance() == null || profile.trimAllowance().compareTo(new BigDecimal("0.10")) != 0) {
-                    reject("The supported wallpaper profile requires a 0.10 m trim allowance.");
+                if (profile.trimAllowance() == null || profile.trimAllowance().signum() < 0) {
+                    reject("Wallpaper requires a nonnegative trim allowance.");
                 }
             } else if (profile.trimAllowance() != null) {
                 reject("Trim allowance belongs only to the wallpaper profile.");

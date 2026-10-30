@@ -9,8 +9,6 @@ import ru.repaircalc.rules.RuleSetBundle.ReservePolicy;
 import ru.repaircalc.rules.RuleSetBundle.Strategy;
 
 public final class MaterialCalculator {
-    private static final BigDecimal ADHESIVE_RATE = new BigDecimal("4");
-    private static final BigDecimal WALLPAPER_TRIM = new BigDecimal("0.10");
 
     public CalculationResult calculate(CalculationProduct product, CalculationInput input,
                                        Profile profile, String sourceDescription) {
@@ -133,12 +131,9 @@ public final class MaterialCalculator {
         } else if (profile.consumption() != null) {
             throw CalculationException.needsClarification("The selected strategy does not use a consumption norm.", "profile");
         }
-        if (profile.strategy() == Strategy.ADHESIVE && profile.consumption().compareTo(ADHESIVE_RATE) != 0) {
-            throw CalculationException.needsClarification("Only the fixed educational adhesive norm of 4 kg/m² is supported.", "consumption");
-        }
         if (profile.strategy() == Strategy.WALLPAPER) {
-            if (profile.trimAllowance() == null || profile.trimAllowance().compareTo(WALLPAPER_TRIM) != 0) {
-                throw CalculationException.needsClarification("The supported wallpaper trim allowance is 0.10 m.", "profile");
+            if (profile.trimAllowance() == null || profile.trimAllowance().signum() < 0) {
+                throw CalculationException.needsClarification("A nonnegative trim allowance is required.", "profile");
             }
             if (product.packageSize() != null) {
                 throw CalculationException.needsClarification("Wallpaper packaging must be derived from roll geometry.", "packageSize");

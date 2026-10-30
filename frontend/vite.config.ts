@@ -14,25 +14,8 @@ export default defineConfig(({ mode }) => {
       port: Number(env.DEV_PORT || 5173),
       strictPort: true,
       proxy: {
-        '/api/v1/room-inspirations': {
-          target: env.API_UPSTREAM || 'http://127.0.0.1:8000',
-          changeOrigin: true,
-          timeout: 125_000,
-          proxyTimeout: 125_000,
-        },
-        '/api/v1/plans': {
-          target: env.ESTIMATION_UPSTREAM || 'http://127.0.0.1:8010',
-          changeOrigin: true,
-          timeout: 650_000,
-          proxyTimeout: 650_000,
-        },
-        '/api/v1/materials': {
-          target: env.ESTIMATION_UPSTREAM || 'http://127.0.0.1:8010',
-          changeOrigin: true,
-          timeout: 1_250_000,
-          proxyTimeout: 1_250_000,
-        },
-        '/api': { target: env.API_UPSTREAM || 'http://127.0.0.1:8000', changeOrigin: true },
+        '/api': { target: env.API_UPSTREAM || 'http://127.0.0.1:8000', changeOrigin: true,
+          timeout: Number(env.DEV_PROXY_TIMEOUT_MS || 1265000), proxyTimeout: Number(env.DEV_PROXY_TIMEOUT_MS || 1265000) },
       },
     },
     build: { sourcemap: false },

@@ -28,7 +28,7 @@ public class ProductCalculationService {
         UUID productId;
         try { productId = UUID.fromString(id); }
         catch (IllegalArgumentException exception) { throw new ProductNotFoundException(); }
-        var snapshot = snapshots.resolve();
+        var snapshot = snapshots.resolve(productId);
         var product = snapshot.catalog().products().stream().filter(row -> row.id().equals(productId)).findFirst()
                 .orElseThrow(ProductNotFoundException::new);
         var bundle = snapshot.rules().bundle();

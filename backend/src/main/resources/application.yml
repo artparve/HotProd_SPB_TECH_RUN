@@ -3,24 +3,11 @@ spring:
     name: repaircalc-backend
   profiles:
     default: local
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://127.0.0.1:55432/repaircalc}
-    username: ${DB_USER:repaircalc}
-    password: ${DB_PASSWORD}
-    hikari:
-      connection-timeout: 3000
-      validation-timeout: 1000
-  jpa:
-    open-in-view: false
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        default_schema: repaircalc
-  flyway:
-    default-schema: public
-    locations: classpath:db/migration
-    clean-disabled: true
+  mongodb:
+    uri: ${MONGO_URI:mongodb://127.0.0.1:27017/repaircalc?replicaSet=rs0&directConnection=true&serverSelectionTimeoutMS=3000&connectTimeoutMS=3000}
+  data:
+    mongodb:
+      auto-index-creation: false
 
 server:
   port: ${SERVER_PORT:8000}
@@ -70,4 +57,4 @@ management:
         liveness:
           include: livenessState
         readiness:
-          include: readinessState,calculationData,db
+          include: readinessState,calculationData,mongo

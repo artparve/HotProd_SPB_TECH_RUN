@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 1,
+  "version": "synthetic-rules-v2",
+  "dataClass": "test",
+  "catalog": {
+    "version": "synthetic-catalog-v2",
+    "fingerprint": "e40afe2ab5ddbb2955b8788a78663aadf6ca7162c7fe6dd7a92c900ff32af143",
+    "taxonomyVersion": "work-taxonomy-v1"
+  },
+  "sources": [
+    {
+      "id": "synthetic-ui-rules-v1",
+      "description": "ТЕСТОВЫЕ нормы и правила из учебных frontend fixtures и demo calculations v1. Не нормативы производителя; цены, свойства, нормы и условия требуют независимой проверки."
+    },
+    {
+      "id": "synthetic-labor-v1",
+      "description": "ТЕСТОВЫЕ тарифы учебного frontend v1 в RUB. Не актуальная стоимость услуг и не коммерческое предложение."
+    }
+  ],
+  "profiles": [
+    {
+      "id": "covering-v1",
+      "strategy": "COVERING",
+      "unit": "м²",
+      "consumption": null,
+      "trimAllowance": null,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "ONE",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВЫЙ расчёт площади покрытия с пользовательским запасом и округлением по площади упаковки."
+    },
+    {
+      "id": "paint-012-v1",
+      "strategy": "PAINT",
+      "unit": "л",
+      "consumption": 0.12,
+      "trimAllowance": null,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "INPUT",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВАЯ норма 0,12 л/м² на один слой; число слоёв задаёт пользователь. Не норма производителя."
+    },
+    {
+      "id": "paint-014-v1",
+      "strategy": "PAINT",
+      "unit": "л",
+      "consumption": 0.14,
+      "trimAllowance": null,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "INPUT",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВАЯ норма 0,14 л/м² на один слой; число слоёв задаёт пользователь. Не норма производителя."
+    },
+    {
+      "id": "primer-v1",
+      "strategy": "PRIMER",
+      "unit": "л",
+      "consumption": 0.1,
+      "trimAllowance": null,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "ONE",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВАЯ норма 0,1 л/м² за один цикл грунтования; число слоёв краски повторно не применяется."
+    },
+    {
+      "id": "adhesive-v1",
+      "strategy": "ADHESIVE",
+      "unit": "кг",
+      "consumption": 4,
+      "trimAllowance": null,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "ONE",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВАЯ норма 4 кг/м² для условного ровного основания. Реальные толщина слоя, основание и технология не подтверждены."
+    },
+    {
+      "id": "wallpaper-v1",
+      "strategy": "WALLPAPER",
+      "unit": "полотен",
+      "consumption": null,
+      "trimAllowance": 0.1,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "ONE",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВЫЙ расчёт целых полотен и рулонов по геометрии, раппорту и подрезке 0,10 м на полотно. Проёмы не вычитаются."
+    },
+    {
+      "id": "socket-v1",
+      "strategy": "SOCKET",
+      "unit": "шт.",
+      "consumption": null,
+      "trimAllowance": null,
+      "reservePolicy": "NONE",
+      "layerPolicy": "ONE",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВЫЙ расчёт целого числа заданных электроточек без процентного запаса. Не заменяет проект электрики."
+    },
+    {
+      "id": "cable-v1",
+      "strategy": "CABLE",
+      "unit": "м",
+      "consumption": null,
+      "trimAllowance": null,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "ONE",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВЫЙ расчёт заданной длины трассы с пользовательским запасом и округлением до целых бухт. Не определяет сечение и защиту."
+    }
+  ],
+  "assignments": [
+    {
+      "productId": "47f9b29f-8972-3c84-9103-6b3281bd9de7",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 0
+    },
+    {
+      "productId": "ac1f222a-f5e9-3b5d-a91e-c943b053e92e",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 1
+    },
+    {
+      "productId": "fd43e49d-da9a-3231-b95d-49e03a60429a",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 2
+    },
+    {
+      "productId": "30473701-b10b-3d56-a15a-8591c16486c4",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 3
+    },
+    {
+      "productId": "bcabf02c-9d8a-3652-bd92-147c1599740f",
+      "profileId": "paint-014-v1",
+      "blockedReason": null,
+      "priority": 4
+    },
+    {
+      "productId": "af5d410b-f889-3db0-8b42-c6321252d412",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 5
+    },
+    {
+      "productId": "f3b607e5-5758-3db2-bbf2-605dc539184c",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 6
+    },
+    {
+      "productId": "8824b97d-4c52-3760-ba92-67bc49bf181b",
+      "profileId": "adhesive-v1",
+      "blockedReason": null,
+      "priority": 7
+    },
+    {
+      "productId": "8539fe9d-e2dc-3994-a5fc-85773eb533b5",
+      "profileId": "socket-v1",
+      "blockedReason": null,
+      "priority": 8
+    },
+    {
+      "productId": "6eb2cb4a-b71e-3865-9bb2-60ddf81c9b65",
+      "profileId": "socket-v1",
+      "blockedReason": null,
+      "priority": 9
+    },
+    {
+      "productId": "caa5dc4e-49e3-398a-8861-e164c73317d3",
+      "profileId": "cable-v1",
+      "blockedReason": null,
+      "priority": 10
+    },
+    {
+      "productId": "518d72ad-2dc4-3dd4-b462-2b93f1c4a177",
+      "profileId": null,
+      "blockedReason": "Норма расхода и совместимость не подтверждены; требуется проверка данных. ТЕСТОВАЯ карточка не получает выдуманную норму.",
+      "priority": 11
+    }
+  ],
+  "laborTariffs": [
+    {
+      "code": "floor",
+      "unit": "м²",
+      "amount": 650,
+      "sourceId": "synthetic-labor-v1"
+    },
+    {
+      "code": "paint",
+      "unit": "м²",
+      "amount": 450,
+      "sourceId": "synthetic-labor-v1"
+    },
+    {
+      "code": "wallpaper",
+      "unit": "м²",
+      "amount": 400,
+      "sourceId": "synthetic-labor-v1"
+    },
+    {
+      "code": "socket",
+      "unit": "шт.",
+      "amount": 900,
+      "sourceId": "synthetic-labor-v1"
+    },
+    {
+      "code": "cable",
+      "unit": "м",
+      "amount": 100,
+      "sourceId": "synthetic-labor-v1"
+    }
+  ],
+  "kits": [
+    {
+      "work": "floor",
+      "kind": "covering",
+      "basis": "FLOOR",
+      "coveringFamily": null,
+      "warning": null
+    },
+    {
+      "work": "floor",
+      "kind": "adhesive",
+      "basis": "FLOOR",
+      "coveringFamily": "tile",
+      "warning": null
+    },
+    {
+      "work": "paint",
+      "kind": "paint",
+      "basis": "WALL",
+      "coveringFamily": null,
+      "warning": null
+    },
+    {
+      "work": "paint",
+      "kind": "primer",
+      "basis": "WALL",
+      "coveringFamily": null,
+      "warning": null
+    },
+    {
+      "work": "wallpaper",
+      "kind": "wallpaper",
+      "basis": "WALL",
+      "coveringFamily": null,
+      "warning": "Обойный клей не включён: в учебном каталоге нет подтверждённого профиля для него."
+    },
+    {
+      "work": "wallpaper",
+      "kind": "primer",
+      "basis": "WALL",
+      "coveringFamily": null,
+      "warning": null
+    },
+    {
+      "work": "electrical",
+      "kind": "socket",
+      "basis": "SOCKET",
+      "coveringFamily": null,
+      "warning": null
+    },
+    {
+      "work": "electrical",
+      "kind": "cable",
+      "basis": "CABLE",
+      "coveringFamily": null,
+      "warning": null
+    }
+  ]
+}

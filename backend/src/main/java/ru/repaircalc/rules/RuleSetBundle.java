@@ -21,9 +21,12 @@ public record RuleSetBundle(
         @NotEmpty List<@NotNull @Valid Source> sources,
         @NotEmpty List<@NotNull @Valid Profile> profiles,
         @NotNull List<@NotNull @Valid Assignment> assignments,
-        @NotEmpty List<@NotNull @Valid LaborTariff> laborTariffs) {
+        @NotEmpty List<@NotNull @Valid LaborTariff> laborTariffs,
+        List<@NotNull @Valid Kit> kits) {
 
+    public RuleSetBundle(int schemaVersion,String version,String dataClass,CatalogReference catalog,List<Source> sources,List<Profile> profiles,List<Assignment> assignments,List<LaborTariff> laborTariffs){this(schemaVersion,version,dataClass,catalog,sources,profiles,assignments,laborTariffs,List.of());}
     public RuleSetBundle {
+        kits = kits == null ? List.of() : List.copyOf(kits);
         sources = sources == null ? null : List.copyOf(sources);
         profiles = profiles == null ? null : List.copyOf(profiles);
         assignments = assignments == null ? null : List.copyOf(assignments);
@@ -45,7 +48,11 @@ public record RuleSetBundle(
                           @NotBlank String sourceId, @NotBlank String conditions) { }
 
     /** Exactly one of profileId and blockedReason is required. */
-    public record Assignment(@NotNull UUID productId, String profileId, String blockedReason) { }
+    public record Assignment(@NotNull UUID productId, String profileId, String blockedReason, int priority) {
+        public Assignment(UUID productId,String profileId,String blockedReason){this(productId,profileId,blockedReason,0);}
+    }
+    public enum Basis { FLOOR, WALL, SOCKET, CABLE }
+    public record Kit(@NotBlank String work,@NotBlank String kind,@NotNull Basis basis,String coveringFamily,String warning) { }
     public record LaborTariff(@NotBlank String code, @NotBlank String unit,
                               @NotNull @DecimalMin(value = "0", inclusive = false)
                               @Digits(integer = 17, fraction = 2) BigDecimal amount,

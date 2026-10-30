@@ -14,7 +14,7 @@ import tools.jackson.databind.node.ObjectNode;
 @Component
 public final class AdminProductValidator {
     public static final Set<String> VALUE_FIELDS = Set.of("category", "price", "currency", "priceDate", "unit", "saleUnit",
-            "packageSize", "consumption", "consumptionUnit", "kind", "wet", "highLoad", "unheated", "rollWidth", "rollLength", "rapport");
+            "packageSize", "consumption", "consumptionUnit", "materialFamily", "kind", "wet", "highLoad", "unheated", "rollWidth", "rollLength", "rapport");
     private static final Set<String> TEXT_FIELDS = Set.of("sourceNamespace", "externalId", "name", "sku", "description", "application", "limitations", "comment");
     private static final Set<String> NUMBERS = Set.of("packageSize", "consumption", "rollWidth", "rollLength", "rapport");
     private static final Set<String> BOOLEANS = Set.of("wet", "highLoad", "unheated");
@@ -68,6 +68,7 @@ public final class AdminProductValidator {
                 error(errors, field + ".value", "Ожидается непустая строка до 4000 символов.");
             } else {
                 var text = actual.asText();
+                if (field.equals("materialFamily") && !Set.of("tile","laminate","vinyl").contains(text)) error(errors, field + ".value", "Неизвестное семейство материала.");
                 if (field.equals("kind") && !KINDS.contains(text)) error(errors, field + ".value", "Вид товара не поддерживается.");
                 if (field.equals("currency") && !text.equals("RUB")) error(errors, field + ".value", "Поддерживается RUB.");
                 if ((field.equals("unit") || field.equals("consumptionUnit")) && !UNITS.contains(text)) error(errors, field + ".value", "Единица не поддерживается.");

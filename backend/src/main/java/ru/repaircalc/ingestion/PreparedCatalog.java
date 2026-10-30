@@ -12,7 +12,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import tools.jackson.databind.JsonNode;
 
-/** Version-one operator input; independent from HTTP response and JPA models. */
+/** Version-one operator input; independent from HTTP response and BSON models. */
 public final class PreparedCatalog {
     private PreparedCatalog() { }
 
@@ -30,7 +30,7 @@ public final class PreparedCatalog {
             @DecimalMin(value = "0", inclusive = false) @Digits(integer = 16, fraction = 8) BigDecimal rollWidth,
             @DecimalMin(value = "0", inclusive = false) @Digits(integer = 16, fraction = 8) BigDecimal rollLength,
             @DecimalMin("0") @Digits(integer = 16, fraction = 8) BigDecimal rapport,
-            @NotEmpty List<@NotNull @Valid Source> sources) { }
+            @NotEmpty List<@NotNull @Valid Source> sources, String materialFamily) { }
 
     public record Source(@NotBlank String namespace, @NotBlank String externalId, @NotNull JsonNode raw) { }
 

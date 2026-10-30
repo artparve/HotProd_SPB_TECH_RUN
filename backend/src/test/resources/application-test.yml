@@ -1,15 +1,14 @@
 spring:
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
-      - org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
-      - org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
-      - org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
-
+  mongodb:
+    uri: mongodb://127.0.0.1:1/repaircalc_test
+MONGO_USER: ''
+MONGO_SERVER_SELECTION_TIMEOUT_MS: 50
+MONGO_CONNECT_TIMEOUT_MS: 50
+MONGO_READ_TIMEOUT_MS: 100
+CLASSIFICATION_ENABLED: false
 server:
   address: 127.0.0.1
   port: 0
-
 management:
   endpoint:
     health:

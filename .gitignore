@@ -26,3 +26,8 @@ frontend/test-results/
 
 # Local CPU Ollama runtime copied from the host for offline container builds.
 /docker/local-ollama-runtime/
+
+# Local verification tools and artifacts.
+/.venv/
+/.build-*.log
+/.maven-verify-settings.xml

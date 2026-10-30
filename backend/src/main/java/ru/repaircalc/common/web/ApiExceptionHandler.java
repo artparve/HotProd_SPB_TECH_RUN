@@ -67,6 +67,11 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 headers, HttpStatus.UNPROCESSABLE_CONTENT, request);
     }
 
+    @ExceptionHandler(ApiStatusException.class)
+    ResponseEntity<ApiError> status(ApiStatusException e){return ResponseEntity.status(e.status).body(new ApiError(e.code,e.getMessage()));}
+    @ExceptionHandler({org.springframework.dao.DataAccessException.class,org.springframework.transaction.TransactionException.class,com.mongodb.MongoException.class})
+    ResponseEntity<ApiError> storage(Exception e){return ResponseEntity.status(503).body(new ApiError("storage_unavailable","Хранилище временно недоступно."));}
+
     @ExceptionHandler(DomainException.class)
     ResponseEntity<ApiError> handleDomainException(DomainException exception) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
