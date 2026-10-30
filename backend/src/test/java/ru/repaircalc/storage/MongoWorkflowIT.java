@@ -1,0 +1,142 @@
+package ru.repaircalc.storage;
+
+import java.math.BigDecimal;
+import java.nio.file.*;
+import java.util.*;
+import java.util.concurrent.*;
+import org.bson.Document;
+import org.bson.types.Decimal128;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.query.*;
+import org.springframework.test.context.*;
+import org.testcontainers.junit.jupiter.*;
+import org.testcontainers.mongodb.MongoDBContainer;
+import ru.repaircalc.admin.*;
+import ru.repaircalc.calculation.*;
+import ru.repaircalc.calculation.domain.*;
+import ru.repaircalc.catalog.*;
+import ru.repaircalc.ingestion.*;
+import ru.repaircalc.rules.*;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
+import static ru.repaircalc.storage.MongoStore.query;
+import static org.assertj.core.api.Assertions.*;
+
+@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.NONE)
+@ActiveProfiles("test")
+@Testcontainers
+class MongoWorkflowIT {
+    @Container static final MongoDBContainer mongo=new MongoDBContainer("mongo:8.0").withReplicaSet();
+    @DynamicPropertySource static void mongo(DynamicPropertyRegistry r){r.add("spring.mongodb.uri",()->mongo.getReplicaSetUrl("repaircalc_it"));r.add("MONGO_SERVER_SELECTION_TIMEOUT_MS",()->5000);r.add("MONGO_CONNECT_TIMEOUT_MS",()->5000);r.add("MONGO_READ_TIMEOUT_MS",()->10000);}
+    @Autowired MongoStore store;@Autowired MongoSchema schema;@Autowired JsonMapper json;
+    @Autowired CatalogImportService catalogs;@Autowired RuleSetImportService rules;@Autowired CatalogReadService read;
+    @Autowired AdminProductService products;@Autowired AdminClassificationService jobs;@Autowired ClassificationDispatcher dispatcher;
+    @Autowired AdminReviewService reviews;@Autowired AdminPublicationService publications;
+    @Autowired CalculationSnapshotService snapshots;@Autowired ProjectCalculationService projects;@Autowired ProductCalculationService calculator;
+
+    @BeforeEach void seed(){store.mongo.getDb().drop();schema.initialize();catalogs.importFiles(Path.of("../data/catalog-v1.json"),Path.of("../data/work-mappings-v1.json"));rules.importFile(Path.of("../data/rules-v1.json"));}
+
+    @Test void exactDecimalsStableIdentityAndIdempotentSeed(){
+        var pair=snapshots.resolve();assertThat(pair.catalog().products()).hasSize(12);
+        assertThat(catalogs.importFiles(Path.of("../data/catalog-v1.json"),Path.of("../data/work-mappings-v1.json")).noOp()).isTrue();
+        assertThat(rules.importFile(Path.of("../data/rules-v1.json")).noOp()).isTrue();
+        assertThat(snapshots.resolve()).isEqualTo(pair);
+        assertThat(store.find("product_revision",new Query())).allMatch(d->d.get("price") instanceof Decimal128);
+        assertThat(MongoStore.decimal(new BigDecimal("12345678901234567.89")).bigDecimalValue()).isEqualByComparingTo("12345678901234567.89");
+        assertThatThrownBy(()->MongoStore.decimal(new BigDecimal("1.123456789012345678901234567890123456789"))).isInstanceOf(NumberFormatException.class);
+    }
+
+    @Test void editsAreVersionedIdentityIsUniqueAndConcurrentWritersCannotLoseUpdates()throws Exception{
+        var draft=draft();var p=products.create(draft,"test","create");
+        assertThatThrownBy(()->products.create(draft,"test","duplicate")).isInstanceOf(AdminException.class);
+        var gate=new CountDownLatch(1);var successes=new java.util.concurrent.atomic.AtomicInteger();
+        Runnable edit=()->{try{gate.await();products.update(p.id(),AdminProductService.etag(p),draft.deepCopy().put("name",UUID.randomUUID().toString()),"test","edit");successes.incrementAndGet();}catch(AdminException e){assertThat(e.status()).isEqualTo(412);}catch(InterruptedException e){throw new RuntimeException(e);}};
+        var a=CompletableFuture.runAsync(edit);var b=CompletableFuture.runAsync(edit);gate.countDown();a.get(15,TimeUnit.SECONDS);b.get(15,TimeUnit.SECONDS);
+        assertThat(successes.get()).isEqualTo(1);assertThat(products.history(p.id(),0,100).total()).isEqualTo(2);
+        assertThatThrownBy(()->products.update(p.id(),AdminProductService.etag(p),draft,"test","stale")).isInstanceOf(AdminException.class);
+    }
+
+    @Test void leaseTokenFencesExpiredWorkersBusyDoesNotConsumeAnAttemptAndOldVersionsFail(){
+        var p=products.create(draft(),"test","create");var job=jobs.enqueue(p.id(),AdminProductService.etag(p),"test","enqueue");
+        assertThat(jobs.enqueue(p.id(),AdminProductService.etag(p),"test","repeat").id()).isEqualTo(job.id());
+        var first=dispatcher.claim();assertThat(dispatcher.claim()).isNull();
+        store.update("admin_classification_job",query("_id",job.id().toString()),new Update().set("leaseUntil",0L));
+        var second=dispatcher.claim();dispatcher.complete(first,model(),null);assertThat(jobs.list(p.id()).getFirst().status()).isEqualTo("running");
+        dispatcher.complete(second,null,"model_busy");assertThat(jobs.list(p.id()).getFirst().attempts()).isEqualTo(1);
+        store.update("admin_classification_job",query("_id",job.id().toString()),new Update().set("availableAt",0L));
+        var third=dispatcher.claim();products.update(p.id(),AdminProductService.etag(p),draft().put("sourceNamespace",p.sourceNamespace()).put("externalId",p.externalId()),"test","edit");
+        dispatcher.complete(third,model(),null);assertThat(jobs.list(p.id()).getFirst().errorCode()).isEqualTo("stale_version");
+    }
+
+    @Test void exhaustedCrashBecomesTerminal(){
+        var p=products.create(draft(),"test","create");var job=jobs.enqueue(p.id(),AdminProductService.etag(p),"test","enqueue");
+        store.update("admin_classification_job",query("_id",job.id().toString()),new Update().set("status","running").set("attempts",3).set("leaseUntil",0L));
+        assertThat(dispatcher.claim()).isNull();assertThat(jobs.list(p.id()).getFirst().errorCode()).isEqualTo("worker_lost");
+    }
+
+    @Test void publicationRollbackRetainsPreviousPairAndSeedDoesNotUndoPublishedContent(){
+        var before=snapshots.resolve();var p=reviewed();
+        store.mongo.executeCommand(new Document("collMod","admin_audit_event").append("validator",new Document("action",new Document("$ne","publish"))));
+        try{assertThatThrownBy(()->publications.publish(p.id(),AdminProductService.etag(p),"test","fail")).isInstanceOf(RuntimeException.class);}
+        finally{store.mongo.executeCommand(new Document("collMod","admin_audit_event").append("validator",new Document()));}
+        assertThat(snapshots.resolve()).isEqualTo(before);assertThat(store.mongo.count(new Query(),"catalog_release")).isEqualTo(1);
+        var publication=publications.publish(p.id(),AdminProductService.etag(p),"test","publish");
+        assertThat(publications.publish(p.id(),AdminProductService.etag(p),"test","repeat")).isEqualTo(publication);
+        var after=snapshots.resolve();assertThat(after.catalog().products()).hasSize(13).containsAll(before.catalog().products());
+        catalogs.importFiles(Path.of("../data/catalog-v1.json"),Path.of("../data/work-mappings-v1.json"));rules.importFile(Path.of("../data/rules-v1.json"));
+        assertThat(snapshots.resolve()).isEqualTo(after);assertThat(read.snapshot(before.catalog().releaseId().toString(),null).products()).hasSize(12);
+    }
+
+    @Test void concurrentPublishersRetainBothProducts()throws Exception{
+        var one=reviewed();var two=reviewed();var gate=new CountDownLatch(1);
+        var a=CompletableFuture.supplyAsync(()->publishAfter(gate,one));var b=CompletableFuture.supplyAsync(()->publishAfter(gate,two));gate.countDown();a.get(20,TimeUnit.SECONDS);b.get(20,TimeUnit.SECONDS);
+        assertThat(read.listProducts()).hasSize(14).extracting(ProductView::id).contains(one.id(),two.id());
+    }
+
+    @Test void tileKitGoldenArithmeticZeroElectricalAndPerRoomPackaging(){
+        var room=room("a",List.of("floor","paint","electrical"));var project=new ProjectInput("apartment","capital",List.of(room));
+        var estimate=projects.estimate(project,Map.of("a:covering","ac1f222a-f5e9-3b5d-a91e-c943b053e92e"));
+        assertThat(estimate.lines()).extracting(l->l.product().kind()).containsExactly("covering","adhesive","paint","primer");
+        assertThat(estimate.lines().getFirst().quantity()).isEqualTo(16); // ceil(20*1.1/1.44)
+        assertThat(estimate.lines().get(1).quantity()).isEqualTo(4); // ceil(20*4*1.1/25)
+        assertThat(estimate.labor()).isEqualTo("33295.00"); // 20*650 + (18*2.7-3.5)*450
+        var two=projects.estimate(new ProjectInput("house","designer",List.of(room("a",List.of("floor")),room("b",List.of("floor")))),Map.of("a:covering","ac1f222a-f5e9-3b5d-a91e-c943b053e92e","b:covering","ac1f222a-f5e9-3b5d-a91e-c943b053e92e"));
+        assertThat(two.lines().stream().filter(l->l.product().kind().equals("covering")).mapToLong(ProductEstimate.Line::quantity).sum()).isEqualTo(32);
+        var laminate=projects.estimate(project,Map.of("a:covering","47f9b29f-8972-3c84-9103-6b3281bd9de7"));assertThat(laminate.lines()).noneMatch(l->l.product().kind().equals("adhesive"));
+    }
+
+    @Test void invalidSelectionsAndMissingRequiredProfilesDoNotProducePartialEstimate(){
+        var p=new ProjectInput("apartment","capital",List.of(room("a",List.of("floor"))));
+        assertThatThrownBy(()->projects.estimate(p,Map.of("unknown:paint",UUID.randomUUID().toString()))).isInstanceOf(ru.repaircalc.common.web.ApiStatusException.class);
+        var pointer=store.id("publication_pointer","active");
+        store.mongo.remove(query("releaseId",pointer.getString("catalogReleaseId")).addCriteria(Criteria.where("kind").is("adhesive")),"product_revision");
+        assertThatThrownBy(()->projects.estimate(p,Map.of("a:covering","ac1f222a-f5e9-3b5d-a91e-c943b053e92e"))).isInstanceOf(CalculationException.class);
+    }
+
+    private JsonNode publishAfter(CountDownLatch gate,AdminProductService.Product p){try{gate.await();return publications.publish(p.id(),AdminProductService.etag(p),"test","parallel");}catch(InterruptedException e){throw new RuntimeException(e);}}
+    private AdminProductService.Product reviewed(){
+        var p=products.create(draft(),"test","create");jobs.enqueue(p.id(),AdminProductService.etag(p),"test","enqueue");var claim=dispatcher.claim();dispatcher.complete(claim,model(),null);
+        var body=json.createObjectNode().put("jobId",claim.getString("id")).put("profileId","paint-012-v1");
+        body.set("decisions",json.readTree("""
+            [{"group":"work_types","label":"paint","action":"accept","reason":"Проверено"},
+             {"group":"surface_locations","label":"wall","action":"accept","reason":"Проверено"}]
+            """));
+        reviews.review(p.id(),AdminProductService.etag(p),body,"test","review");assertThat(publications.readiness(p.id()).ready()).isTrue();return p;
+    }
+    private ObjectNode draft(){
+        var d=json.createObjectNode().put("sourceNamespace","workflow").put("externalId",UUID.randomUUID().toString()).put("name","Тестовая краска").put("description","Краска для стен");
+        for(var entry:Map.of("category","Краски","kind","paint","price","1234.50","currency","RUB","priceDate","2026-10-30","unit","л","saleUnit","бан.","consumptionUnit","л").entrySet())d.set(entry.getKey(),confirmed(json.getNodeFactory().stringNode(entry.getValue())));
+        d.set("packageSize",confirmed(json.getNodeFactory().numberNode(new BigDecimal("2.5"))));d.set("consumption",confirmed(json.getNodeFactory().numberNode(new BigDecimal("0.12"))));d.set("sources",json.readTree("[{\"label\":\"Тестовая этикетка\"}]"));return d;
+    }
+    private ObjectNode confirmed(JsonNode value){return json.createObjectNode().put("state","confirmed").put("source","Тестовая этикетка").set("value",value);}
+    private JsonNode model(){return json.readTree("""
+      {"taxonomy_version":"repair-product-taxonomy-v2","model":"test-transport","classification":{"scope":"in_scope",
+      "work_types":[{"label":"paint","evidence":[{"field":"description","quote":"стен"}]}],
+      "surface_locations":[{"label":"wall","evidence":[{"field":"description","quote":"стен"}]}],
+      "substrates":[],"properties":{},"needs_review":true,"review_reasons":[]}}
+      """);}
+    public static ProjectInput.Room room(String id,List<String> works){return new ProjectInput.Room(id,"Комната","living",new BigDecimal("5"),new BigDecimal("4"),new BigDecimal("2.7"),new BigDecimal("3.5"),"normal","normal",true,works,new BigDecimal("10"),2,0,BigDecimal.ZERO);}
+}
