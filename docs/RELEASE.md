@@ -10,7 +10,7 @@
 
 ## Процесс
 
-1. Push в **`master`** запускает `.github/workflows/ci.yml`:
+1. Push в **`main`** запускает `.github/workflows/ci.yml`:
    - frontend: форматирование, TypeScript, unit/contract-тесты, production build,
      desktop/mobile Playwright с фикстурами и API-моками;
    - Java 21: `mvnw verify`, включая интеграционные Testcontainers-тесты;
@@ -24,7 +24,7 @@
 3. **Actions → Deploy release → Run workflow**: выберите environment и вставьте
    полный SHA успешного CI. Дождитесь завершения **всего CI**, включая публикацию
    всех четырёх образов. Workflow проверяет успешный CI именно для push этого SHA
-   в `master`; произвольный тег/коммит другой ветки не принимается.
+   в `main`; произвольный тег/коммит другой ветки не принимается.
 4. После Environment approval Ansible подключается по SSH, скачивает образы,
    запускает базовые сервисы, ждёт healthchecks и проверяет `/healthz` и
    `/api/v1/products` через frontend. Только затем обновляется ссылка `current`.
@@ -55,13 +55,13 @@ Compose project — `repaircalc_<environment>`; volumes переживают р�
 не меняет пароль уже созданного PostgreSQL.
 
 На одном хосте environments должны иметь разные `DEPLOY_FRONTEND_PORT`.
-Имена environment: `[a-z][a-z0-9-]{0,31}` (например `staging`, `production`).
+Имена environment: `[a-z][a-z0-9-]{0,31}` (например `staging`, `prod`).
 
 ## GitHub: секреты и переменные
 
-Создайте environments в **Settings → Environments**. Для production включите
+Создайте environment `prod` в **Settings → Environments**. Для него включите
 required reviewers, запрет self-review и deployment branch rule только для
-`master`. Запускайте workflow с `master`.
+`main`. Запускайте workflow с `main`.
 
 Настройки ниже создавайте **внутри выбранного Environment**, не в Repository
 variables/secrets. Deploy job привязан к `inputs.environment`; обычные параметры

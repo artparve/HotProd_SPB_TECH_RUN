@@ -8,7 +8,7 @@ on:
         type: environment
         required: true
       commit_sha:
-        description: Full lowercase SHA of a successful master CI run
+        description: Full lowercase SHA of a successful main CI run
         type: string
         required: true
 
@@ -23,7 +23,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment:
@@ -54,12 +54,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Allow only a fully successful master CI release
+      - name: Allow only a fully successful main CI release
         env:
           GH_TOKEN: ${{ github.token }}
         run: python -m scripts.github_actions check-release
