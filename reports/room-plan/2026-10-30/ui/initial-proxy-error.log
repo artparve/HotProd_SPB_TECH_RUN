@@ -1,0 +1,15 @@
+
+> repaircalc-frontend@0.1.0 dev
+> vite --host 127.0.0.1
+
+
+  VITE v8.3.5  ready in 229 ms
+
+  ➜  Local:   http://127.0.0.1:5173/
+2:04:38 PM [vite] (client) hmr update /src/components/RoomPlanImport.vue, /src/components/RoomPlanImport.vue?vue&type=style&index=0&scoped=110e4352&lang.css
+2:04:38 PM [vite] (client) hmr update /src/views/EstimateView.vue, /src/views/RoomView.vue, /src/views/ProductView.vue, /src/App.vue, /src/components/RoomPlanImport.vue
+2:04:47 PM [vite] (client) hmr update /src/views/EstimateView.vue, /src/views/RoomView.vue, /src/views/ProductView.vue, /src/App.vue, /src/components/RoomPlanImport.vue
+2:04:47 PM [vite] (client) hmr update /src/views/EstimateView.vue, /src/views/RoomView.vue, /src/views/ProductView.vue, /src/App.vue, /src/components/RoomPlanImport.vue
+2:07:28 PM [vite] http proxy error: /api/v1/plans/extract
+Error: connect ETIMEDOUT 172.17.0.1:8010
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1631:16)

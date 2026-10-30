@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { estimateSchema, productSchema, recommendationSchema } from '../domain/types'
 import type { Product, ProductInput, Project, Room } from '../domain/types'
 import { apiErrorSchema, materialEstimateSchema, materialRequestSchema } from '../domain/materials'
+import { planResultSchema } from '../domain/plans'
 
 const configuredMode = import.meta.env.VITE_DATA_MODE || 'demo'
 if (!['demo', 'api'].includes(configuredMode)) throw new Error('VITE_DATA_MODE must be demo or api')
@@ -29,6 +30,24 @@ async function request<T>(
     })
     if (!response.ok) {
       const error = apiErrorSchema.safeParse(await response.json().catch(() => null))
+      if (path === '/plans/extract') {
+        const messages: Record<string, string> = {
+          model_busy: 'Распознавание уже выполняется. Дождитесь завершения и попробуйте ещё раз.',
+          invalid_plan_draft:
+            'Модель вернула противоречивые размеры или единицы. Параметры не применены. Попробуйте более чёткий план или введите размеры вручную.',
+          invalid_model_response:
+            'Модель не завершила распознавание. Попробуйте ещё раз или используйте ручной ввод.',
+          upstream_unavailable:
+            'Сервис распознавания недоступен или не ответил вовремя. Попробуйте позже.',
+          invalid_image_size: 'Изображение слишком большое: до 8 МБ и 12 млн пикселей.',
+          invalid_image: 'Не удалось прочитать изображение. Выберите другой файл.',
+          unsupported_image: 'Используйте обычное изображение PNG, JPEG или WebP без анимации.',
+        }
+        throw new Error(
+          (error.success && messages[error.data.code]) ||
+            'Не удалось распознать план. Проверьте подключение сервиса и повторите попытку.',
+        )
+      }
       throw new Error(
         error.success
           ? `API вернул HTTP ${response.status}: ${error.data.message}`
@@ -44,9 +63,11 @@ async function request<T>(
       throw new Error('API вернул невалидный JSON. Проверьте адрес и маршрут API.')
     if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError')
       throw new Error(
-        timeoutMs === 15000
-          ? 'API не ответил за 15 секунд. Повторите запрос.'
-          : 'Расчёт с ИИ не завершился за отведённое время. Повторите запрос.',
+        path === '/plans/extract'
+          ? 'Распознавание не завершилось за 11 минут. Попробуйте снова или введите размеры вручную.'
+          : timeoutMs === 15000
+            ? 'API не ответил за 15 секунд. Повторите запрос.'
+            : 'Расчёт с ИИ не завершился за отведённое время. Повторите запрос.',
       )
     if (error instanceof TypeError)
       throw new Error('Не удалось связаться с API. Проверьте адрес backend и сеть.')
@@ -57,6 +78,10 @@ async function request<T>(
 }
 
 export const service = {
+  async extractPlan(imageBase64: string) {
+    // Recognition always calls the connected model, including when the catalog uses demo data.
+    return request('/plans/extract', planResultSchema, { imageBase64 }, 660_000)
+  },
   async catalog(): Promise<Product[]> {
     if (dataMode === 'demo') return (await import('./demo')).demoCatalog()
     return request('/products', z.array(productSchema))

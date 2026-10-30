@@ -1,0 +1,21 @@
+
+Running 8 tests using 1 worker
+
+(node:228699) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-persistence.spec.ts:5:5 › published panel survives reload and restart; calculation remains available (4.8s)
+(node:228877) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-public.spec.ts:3:5 › public server uses API and calculates original paint without LLM (1.5s)
+  ✓  3 [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-public.spec.ts:28:5 › public server refuses unknown consumption and recovers invalid product link (3.3s)
+  ✓  4 [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-public.spec.ts:43:5 › public layout, navigation and invalid geometry (732ms)
+(node:229076) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 [mobile] › reports/admin-workflow/2026-10-30-recheck/remote-persistence.spec.ts:5:5 › published panel survives reload and restart; calculation remains available (3.7s)
+(node:229238) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  6 [mobile] › reports/admin-workflow/2026-10-30-recheck/remote-public.spec.ts:3:5 › public server uses API and calculates original paint without LLM (1.6s)
+  ✓  7 [mobile] › reports/admin-workflow/2026-10-30-recheck/remote-public.spec.ts:28:5 › public server refuses unknown consumption and recovers invalid product link (1.6s)
+  ✓  8 [mobile] › reports/admin-workflow/2026-10-30-recheck/remote-public.spec.ts:43:5 › public layout, navigation and invalid geometry (703ms)
+
+  8 passed (20.1s)

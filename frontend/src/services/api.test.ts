@@ -10,6 +10,20 @@ afterEach(() => {
 })
 
 describe('material estimation API', () => {
+  it('uses the real plan endpoint in demo mode and explains a busy model without a fallback', async () => {
+    vi.stubEnv('VITE_DATA_MODE', 'demo')
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ code: 'model_busy', message: 'Busy' }), { status: 503 }),
+      )
+    vi.stubGlobal('fetch', fetch)
+    const { service } = await import('./api')
+    await expect(service.extractPlan('aGVsbG8=')).rejects.toThrow('Распознавание уже выполняется')
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(fetch.mock.calls[0]![0]).toBe('/api/v1/plans/extract')
+    expect(JSON.parse(fetch.mock.calls[0]![1].body)).toEqual({ imageBase64: 'aGVsbG8=' })
+  })
   const product = { ...catalog[0]!, id: '47f9b29f-8972-3c84-9103-6b3281bd9de7' }
   const input = { area: 20, perimeter: 18, height: 2.7, reserve: 10, layers: 2, quantity: 6 }
   function envelope() {

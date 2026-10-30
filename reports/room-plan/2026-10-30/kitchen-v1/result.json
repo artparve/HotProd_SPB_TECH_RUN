@@ -1,0 +1,177 @@
+{
+  "draft": {
+    "shape": "rectangle",
+    "name": {
+      "state": "found",
+      "value": "Открытая семейная кухня-столовая",
+      "label": "Открытая семейная кухня-столовая",
+      "bbox": {
+        "x": 0.328,
+        "y": 0.488,
+        "width": 0.312,
+        "height": 0.035
+      }
+    },
+    "length": {
+      "state": "found",
+      "value": "5.32",
+      "unit": "m",
+      "label": "5.32 m",
+      "bbox": {
+        "x": 0.454,
+        "y": 0.041,
+        "width": 0.062,
+        "height": 0.015
+      }
+    },
+    "width": {
+      "state": "found",
+      "value": "3.32",
+      "unit": "m",
+      "label": "3.32 m",
+      "bbox": {
+        "x": 0.122,
+        "y": 0.385,
+        "width": 0.022,
+        "height": 0.285
+      }
+    },
+    "height": {
+      "state": "unknown",
+      "value": null,
+      "unit": null,
+      "label": null,
+      "bbox": null
+    },
+    "openings": [
+      {
+        "kind": "door",
+        "width": {
+          "state": "unknown",
+          "value": null,
+          "unit": null,
+          "label": null,
+          "bbox": null
+        },
+        "height": {
+          "state": "unknown",
+          "value": null,
+          "unit": null,
+          "label": null,
+          "bbox": null
+        }
+      },
+      {
+        "kind": "window",
+        "width": {
+          "state": "unknown",
+          "value": null,
+          "unit": null,
+          "label": null,
+          "bbox": null
+        },
+        "height": {
+          "state": "unknown",
+          "value": null,
+          "unit": null,
+          "label": null,
+          "bbox": null
+        }
+      },
+      {
+        "kind": "window",
+        "width": {
+          "state": "unknown",
+          "value": null,
+          "unit": null,
+          "label": null,
+          "bbox": null
+        },
+        "height": {
+          "state": "unknown",
+          "value": null,
+          "unit": null,
+          "label": null,
+          "bbox": null
+        }
+      },
+      {
+        "kind": "window",
+        "width": {
+          "state": "unknown",
+          "value": null,
+          "unit": null,
+          "label": null,
+          "bbox": null
+        },
+        "height": {
+          "state": "unknown",
+          "value": null,
+          "unit": null,
+          "label": null,
+          "bbox": null
+        }
+      },
+      {
+        "kind": "window",
+        "width": {
+          "state": "unknown",
+          "value": null,
+          "unit": null,
+          "label": null,
+          "bbox": null
+        },
+        "height": {
+          "state": "unknown",
+          "value": null,
+          "unit": null,
+          "label": null,
+          "bbox": null
+        }
+      }
+    ],
+    "warnings": [
+      "На плане присутствуют несколько размеров по горизонтали (5.32 m, 5.62 m) и вертикали (3.32 m, 3.62 m). В качестве длины и ширины приняты внутренние размеры 5.32 m и 3.32 m, так как они соответствуют границам основной зоны кухни.",
+      "Высота потолка не указана на плане."
+    ]
+  },
+  "dimensionsMetres": {
+    "length": 5.32,
+    "width": 3.32,
+    "height": null
+  },
+  "missingFields": [
+    "height",
+    "openings.0.width",
+    "openings.0.height",
+    "openings.1.width",
+    "openings.1.height",
+    "openings.2.width",
+    "openings.2.height",
+    "openings.3.width",
+    "openings.3.height",
+    "openings.4.width",
+    "openings.4.height",
+    "openingsArea"
+  ],
+  "requiresConfirmation": true,
+  "warnings": [
+    "На плане присутствуют несколько размеров по горизонтали (5.32 m, 5.62 m) и вертикали (3.32 m, 3.62 m). В качестве длины и ширины приняты внутренние размеры 5.32 m и 3.32 m, так как они соответствуют границам основной зоны кухни.",
+    "Высота потолка не указана на плане.",
+    "Подписи, единицы и координаты предложены моделью и требуют проверки.",
+    "Площадь проёмов необходимо подтвердить вручную; пустой список не означает 0 м²."
+  ],
+  "schemaVersion": "room-plan-draft-v1",
+  "promptVersion": "room-plan-extraction-v1",
+  "model": "gemma4:12b",
+  "image": {
+    "width": 1920,
+    "height": 1358,
+    "sha256": "4f7230de8d6d3f184bd575b4c728b355bf6674626639c4fb903124047dc7ee1e",
+    "preparedSha256": "e92773ee6a55c88a057c4d97999e3be9b0556b1df3686eb31a001de0b2338f7b",
+    "coordinates": "normalized-oriented-image"
+  },
+  "elapsedSeconds": 231.052,
+  "promptSha256": "d906bdea459138363658cfd432141f55f29000c57eb6418dd49da6a745c32abc",
+  "schemaSha256": "4cd8bb16311e01ea765f0bef97f36dfade22f8d26bbe7c0027d0e6fc79da1de4"
+}

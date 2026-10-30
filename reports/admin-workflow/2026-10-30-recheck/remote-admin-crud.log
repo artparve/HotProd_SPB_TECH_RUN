@@ -1,0 +1,11 @@
+
+Running 2 tests using 1 worker
+
+(node:218789) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:36:5 › admin UI creates, searches, versions, handles concurrent editing and logs out (6.0s)
+(node:218999) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [mobile] › reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:36:5 › admin UI creates, searches, versions, handles concurrent editing and logs out (7.4s)
+
+  2 passed (14.5s)

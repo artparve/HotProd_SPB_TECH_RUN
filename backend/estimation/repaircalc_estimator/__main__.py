@@ -1,4 +1,4 @@
-"""Dependency-free CLI and local HTTP service. Run with python -m repaircalc_estimator."""
+"""CLI and local HTTP service. Run with python -m repaircalc_estimator."""
 import argparse
 import json
 import sys
@@ -31,7 +31,8 @@ def make_server(estimator, host="127.0.0.1", port=8010):
                 self.reply(404, {"code": "not_found"})
 
         def do_POST(self):
-            if self.path not in ("/api/v1/materials/estimate", "/api/v1/materials/calculate"):
+            is_plan = self.path == "/api/v1/plans/extract"
+            if self.path not in ("/api/v1/materials/estimate", "/api/v1/materials/calculate") and not is_plan:
                 self.reply(404, {"code": "not_found"})
                 return
             locked = False
@@ -42,18 +43,23 @@ def make_server(estimator, host="127.0.0.1", port=8010):
                     length = int(self.headers.get("Content-Length", "0"))
                 except ValueError:
                     raise ServiceError("invalid_json", "Invalid Content-Length", 400) from None
-                if not 0 < length <= 65536:
-                    raise ServiceError("invalid_body_size", "Expected 1..65536 bytes", 413)
+                limit = 12 * 1024 * 1024 if is_plan else 65536
+                if not 0 < length <= limit:
+                    raise ServiceError("invalid_body_size", f"Expected 1..{limit} bytes", 413)
                 self.connection.settimeout(10)
                 try:
                     request = json.loads(self.rfile.read(length))
                 except (ValueError, UnicodeError, OSError):
                     raise ServiceError("invalid_json", "Expected a complete JSON body", 400) from None
-                if self.path.endswith("/estimate"):
+                if is_plan or self.path.endswith("/estimate"):
                     locked = inference_lock.acquire(blocking=False)
                     if not locked:
                         raise ServiceError("model_busy", "Another inference is running; retry later", 503)
-                    result = estimator.estimate(request)
+                    if is_plan:
+                        from .plans import PlanExtractor
+                        result = PlanExtractor(estimator).extract(request)
+                    else:
+                        result = estimator.estimate(request)
                 else:
                     result = estimator.calculate(request)
                 self.reply(200, result)

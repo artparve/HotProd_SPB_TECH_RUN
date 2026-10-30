@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:230525) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-negative.spec.ts:5:5 › panel rejects old classification after editing a draft with unknown consumption (3.6s)
+
+  1 passed (4.2s)

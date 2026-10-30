@@ -13,6 +13,12 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       strictPort: true,
       proxy: {
+        '/api/v1/plans': {
+          target: env.ESTIMATION_UPSTREAM || 'http://127.0.0.1:8010',
+          changeOrigin: true,
+          timeout: 650_000,
+          proxyTimeout: 650_000,
+        },
         '/api/v1/materials': {
           target: env.ESTIMATION_UPSTREAM || 'http://127.0.0.1:8010',
           changeOrigin: true,

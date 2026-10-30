@@ -1,0 +1,346 @@
+{
+  "config": {
+    "argv": [
+      "/usr/bin/node",
+      "/home/artparve/projects/spb_tech_run_2026/frontend/node_modules/.bin/playwright",
+      "test",
+      "--config",
+      "reports/admin-workflow/2026-10-30-recheck/remote.config.ts",
+      "remote-admin.spec.ts"
+    ],
+    "configFile": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote.config.ts",
+    "rootDir": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck",
+        "testIgnore": [],
+        "testMatch": [
+          "remote*.spec.ts"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck",
+        "testIgnore": [],
+        "testMatch": [
+          "remote*.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck",
+        "snapshotDir": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck",
+        "testIgnore": [],
+        "testMatch": "remote*.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://194.67.95.67",
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile",
+        "testDir": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck",
+        "snapshotDir": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck",
+        "testIgnore": [],
+        "testMatch": "remote*.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://194.67.95.67",
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1",
+          "viewport": {
+            "width": 390,
+            "height": 664
+          },
+          "screen": {
+            "width": 390,
+            "height": 844
+          },
+          "deviceScaleFactor": 3,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "./remote-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "remote-admin.spec.ts",
+      "file": "remote-admin.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "admin UI creates, searches, versions, handles concurrent editing and logs out",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 8797,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Карточка · версия 1', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: 'Карточка · версия 1', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Карточка · версия 1', exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Карточка · версия 1', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: 'Карточка · версия 1', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Карточка · версия 1', exact: true })\u001b[22m\n\n    at createPaint (/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:32:89)\n    at /home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:40:14",
+                    "location": {
+                      "file": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts",
+                      "column": 89,
+                      "line": 32
+                    },
+                    "snippet": "  30 |   await page.getByLabel('Название источника', { exact: true }).fill('Учебная карточка приёмки')\n  31 |   await page.getByRole('button', { name: 'Создать черновик', exact: true }).click()\n> 32 |   await expect(page.getByRole('heading', { name: 'Карточка · версия 1', exact: true })).toBeVisible()\n     |                                                                                         ^\n  33 |   return page.url().split('/').pop()\n  34 | }\n  35 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts",
+                        "column": 89,
+                        "line": 32
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Карточка · версия 1', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: 'Карточка · версия 1', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Карточка · версия 1', exact: true })\u001b[22m\n\n\n  30 |   await page.getByLabel('Название источника', { exact: true }).fill('Учебная карточка приёмки')\n  31 |   await page.getByRole('button', { name: 'Создать черновик', exact: true }).click()\n> 32 |   await expect(page.getByRole('heading', { name: 'Карточка · версия 1', exact: true })).toBeVisible()\n     |                                                                                         ^\n  33 |   return page.url().split('/').pop()\n  34 | }\n  35 |\n    at createPaint (/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:32:89)\n    at /home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:40:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T22:56:42.210Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-results/remote-admin-admin-UI-crea-406a5-urrent-editing-and-logs-out-desktop/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts",
+                    "column": 89,
+                    "line": 32
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "bd8b19e92b3067a87ca2-cf4c7705134cf18bd79b",
+          "file": "remote-admin.spec.ts",
+          "line": 36,
+          "column": 5
+        },
+        {
+          "title": "admin panel performs real classification, human review, publication and Java calculation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 900000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "interrupted",
+                  "duration": 278608,
+                  "error": {
+                    "message": "Error: locator.selectOption: Test ended.\nCall log:\n\u001b[2m  - waiting for locator('.workflow form fieldset').first().getByLabel('Решение', { exact: true })\u001b[22m\n",
+                    "stack": "Error: locator.selectOption: Test ended.\nCall log:\n\u001b[2m  - waiting for locator('.workflow form fieldset').first().getByLabel('Решение', { exact: true })\u001b[22m\n\n    at /home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:88:56",
+                    "location": {
+                      "file": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts",
+                      "column": 56,
+                      "line": 88
+                    },
+                    "snippet": "  86 |     if (legend.startsWith('properties')) {\n  87 |       await row.getByLabel('Решение', { exact: true }).selectOption('correct')\n> 88 |       await row.getByLabel('Значение', { exact: true }).selectOption(legend.includes('interior_suitable') ? 'yes' : 'unknown')\n     |                                                        ^\n  89 |     } else {\n  90 |       await row.getByLabel('Решение', { exact: true }).selectOption('accept')\n  91 |     }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts",
+                        "column": 56,
+                        "line": 88
+                      },
+                      "message": "Error: locator.selectOption: Test ended.\nCall log:\n\u001b[2m  - waiting for locator('.workflow form fieldset').first().getByLabel('Решение', { exact: true })\u001b[22m\n\n\n  86 |     if (legend.startsWith('properties')) {\n  87 |       await row.getByLabel('Решение', { exact: true }).selectOption('correct')\n> 88 |       await row.getByLabel('Значение', { exact: true }).selectOption(legend.includes('interior_suitable') ? 'yes' : 'unknown')\n     |                                                        ^\n  89 |     } else {\n  90 |       await row.getByLabel('Решение', { exact: true }).selectOption('accept')\n  91 |     }\n    at /home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:88:56"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-29T22:56:51.552Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-results/remote-admin-admin-panel-p-1fa3c-cation-and-Java-calculation-desktop/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts",
+                    "column": 56,
+                    "line": 88
+                  }
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "bd8b19e92b3067a87ca2-764b4acec3d60bb1b821",
+          "file": "remote-admin.spec.ts",
+          "line": 69,
+          "column": 5
+        },
+        {
+          "title": "admin UI creates, searches, versions, handles concurrent editing and logs out",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bd8b19e92b3067a87ca2-7417b94f9a26f80b624a",
+          "file": "remote-admin.spec.ts",
+          "line": 36,
+          "column": 5
+        },
+        {
+          "title": "admin panel performs real classification, human review, publication and Java calculation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "bd8b19e92b3067a87ca2-8e0b14d7996b33ce6cbf",
+          "file": "remote-admin.spec.ts",
+          "line": 69,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-29T22:56:41.803Z",
+    "duration": 288472.88600000006,
+    "expected": 0,
+    "skipped": 3,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

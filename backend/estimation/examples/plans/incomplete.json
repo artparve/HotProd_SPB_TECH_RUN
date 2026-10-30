@@ -1,0 +1,32 @@
+{
+  "shape": "unknown",
+  "name": {
+    "state": "unknown",
+    "value": null,
+    "label": null,
+    "bbox": null
+  },
+  "length": {
+    "state": "unknown",
+    "value": null,
+    "unit": null,
+    "label": null,
+    "bbox": null
+  },
+  "width": {
+    "state": "unknown",
+    "value": null,
+    "unit": null,
+    "label": null,
+    "bbox": null
+  },
+  "height": {
+    "state": "unknown",
+    "value": null,
+    "unit": null,
+    "label": null,
+    "bbox": null
+  },
+  "openings": [],
+  "warnings": []
+}

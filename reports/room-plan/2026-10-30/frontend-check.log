@@ -1,0 +1,46 @@
+npm --prefix frontend run format:check
+
+> repaircalc-frontend@0.1.0 format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+npm --prefix frontend run typecheck
+
+> repaircalc-frontend@0.1.0 typecheck
+> vue-tsc --noEmit
+
+"make" test
+make[1]: Entering directory '/home/artparve/projects/spb_tech_run_2026'
+npm --prefix frontend test
+
+> repaircalc-frontend@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /home/artparve/projects/spb_tech_run_2026/frontend
+
+
+ Test Files  7 passed (7)
+      Tests  48 passed (48)
+   Start at  13:51:10
+   Duration  2.06s (environment 66%, tests 19%, import 13%, transform 2%, worker 1%)
+
+make[1]: Leaving directory '/home/artparve/projects/spb_tech_run_2026'
+npm --prefix frontend run build
+
+> repaircalc-frontend@0.1.0 build
+> vue-tsc --noEmit && vite build
+
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 1986 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                       0.73 kB │ gzip:  0.46 kB
+dist/assets/AdminView-wi8o1Hei.css    3.00 kB │ gzip:  0.90 kB
+dist/assets/index-vdbLYpbB.css       35.96 kB │ gzip:  8.62 kB
+dist/assets/AdminView-Dgqlp_tv.js    34.39 kB │ gzip: 10.36 kB
+dist/assets/index-BJ9gqkKs.js       259.89 kB │ gzip: 88.01 kB
+
+✓ built in 2.09s

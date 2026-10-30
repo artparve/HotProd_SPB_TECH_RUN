@@ -1,0 +1,17 @@
+{
+  "model": "gemma4:12b",
+  "created_at": "2026-10-30T10:52:04.30237544Z",
+  "message": {
+    "role": "assistant",
+    "content": "{\"shape\": \"rectangle\", \"name\": {\"state\": \"found\", \"value\": \"Открытая семейная кухня-столовая\", \"label\": \"Открытая семейная кухня-столовая\", \"bbox\": {\"x\": 0.328, \"y\": 0.488, \"width\": 0.312, \"height\": 0.035}}, \"length\": {\"state\": \"found\", \"value\": \"5.32\", \"unit\": \"m\", \"label\": \"5.32 m\", \"bbox\": {\"x\": 0.454, \"y\": 0.041, \"width\": 0.062, \"height\": 0.015}}, \"width\": {\"state\": \"found\", \"value\": \"3.32\", \"unit\": \"m\", \"label\": \"3.32 m\", \"bbox\": {\"x\": 0.122, \"y\": 0.385, \"width\": 0.022, \"height\": 0.285}}, \"height\": {\"state\": \"unknown\", \"value\": null, \"unit\": null, \"label\": null, \"bbox\": null}, \"openings\": [{\"kind\": \"door\", \"width\": {\"state\": \"unknown\", \"value\": null, \"unit\": null, \"label\": null, \"bbox\": null}, \"height\": {\"state\": \"unknown\", \"value\": null, \"unit\": null, \"label\": null, \"bbox\": null}}, {\"kind\": \"window\", \"width\": {\"state\": \"unknown\", \"value\": null, \"unit\": null, \"label\": null, \"bbox\": null}, \"height\": {\"state\": \"unknown\", \"value\": null, \"unit\": null, \"label\": null, \"bbox\": null}}, {\"kind\": \"window\", \"width\": {\"state\": \"unknown\", \"value\": null, \"unit\": null, \"label\": null, \"bbox\": null}, \"height\": {\"state\": \"unknown\", \"value\": null, \"unit\": null, \"label\": null, \"bbox\": null}}, {\"kind\": \"window\", \"width\": {\"state\": \"unknown\", \"value\": null, \"unit\": null, \"label\": null, \"bbox\": null}, \"height\": {\"state\": \"unknown\", \"value\": null, \"unit\": null, \"label\": null, \"bbox\": null}}, {\"kind\": \"window\", \"width\": {\"state\": \"unknown\", \"value\": null, \"unit\": null, \"label\": null, \"bbox\": null}, \"height\": {\"state\": \"unknown\", \"value\": null, \"unit\": null, \"label\": null, \"bbox\": null}}], \"warnings\": [\"На плане присутствуют несколько размеров по горизонтали (5.32 m, 5.62 m) и вертикали (3.32 m, 3.62 m). В качестве длины и ширины приняты внутренние размеры 5.32 m и 3.32 m, так как они соответствуют границам основной зоны кухни.\", \"Высота потолка не указана на плане.\"]}"
+  },
+  "done": true,
+  "done_reason": "stop",
+  "total_duration": 230929542705,
+  "load_duration": 22995767386,
+  "prompt_eval_count": 3263,
+  "prompt_eval_cached_count": 0,
+  "prompt_eval_duration": 101234097000,
+  "eval_count": 692,
+  "eval_duration": 106549174000
+}

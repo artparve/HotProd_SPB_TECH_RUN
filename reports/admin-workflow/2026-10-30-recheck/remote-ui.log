@@ -1,0 +1,15 @@
+
+Running 6 tests using 1 worker
+
+(node:210835) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-public.spec.ts:3:5 › public server uses API and calculates original paint without LLM (1.4s)
+  ✓  2 [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-public.spec.ts:28:5 › public server refuses unknown consumption and recovers invalid product link (2.8s)
+  ✓  3 [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-public.spec.ts:43:5 › public layout, navigation and invalid geometry (927ms)
+(node:211083) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  4 [mobile] › reports/admin-workflow/2026-10-30-recheck/remote-public.spec.ts:3:5 › public server uses API and calculates original paint without LLM (1.7s)
+  ✓  5 [mobile] › reports/admin-workflow/2026-10-30-recheck/remote-public.spec.ts:28:5 › public server refuses unknown consumption and recovers invalid product link (1.6s)
+  ✓  6 [mobile] › reports/admin-workflow/2026-10-30-recheck/remote-public.spec.ts:43:5 › public layout, navigation and invalid geometry (662ms)
+
+  6 passed (10.2s)

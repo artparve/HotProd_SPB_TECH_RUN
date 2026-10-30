@@ -1,0 +1,15 @@
+{
+  "files": {
+    "frontend/src/components/RoomPlanImport.vue": "49f0c9390644fa95ce6028e7da364ec9541089fda58633b92e9eb458e14a7d1e",
+    "frontend/src/components/RoomEditor.vue": "9bd9f70ffcb5a60fd5f913616c124248e4f3d57663fb9b7aa499d27bc9983ab7",
+    "frontend/src/domain/plans.ts": "db9ec43b3deaf5eaa5474f2a7edc4524bb1fc3e71efc1418441df7667c76de5f",
+    "frontend/src/domain/plans.test.ts": "30140024bfc126191cceb80f2b5fb3122ae3de15c8ed84cabe4cf1a0d6ea79c6",
+    "frontend/src/components/RoomPlanImport.test.ts": "5ff7b497f673b9bf6b4489dd3dec804bea047f21ca144280dedddb9e8e1105ef",
+    "frontend/src/services/api.ts": "65793a6c7b4e10ff4a779e48e1bf0f8f9af9caa756431d4cf142437facf1d782",
+    "frontend/src/services/api.test.ts": "3d01083dd89c32cd5cc0d9cd454fc8043e5502997e548d3a8b2d528f5e869323"
+  },
+  "catalogMode": "demo",
+  "recognition": "real Docker Gemma via localhost estimator, no replay",
+  "site": "http://127.0.0.1:5174",
+  "estimatorImage": "repaircalc-estimator:room-plan-v1"
+}

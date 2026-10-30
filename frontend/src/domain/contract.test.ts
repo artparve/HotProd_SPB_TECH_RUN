@@ -63,6 +63,7 @@ describe('OpenAPI contract', () => {
       '/estimate',
       '/materials/calculate',
       '/materials/estimate',
+      '/plans/extract',
       '/product/{id}/calc',
       '/products',
       '/recommendations',

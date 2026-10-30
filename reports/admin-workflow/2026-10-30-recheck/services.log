@@ -1,0 +1,12 @@
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=2 -Xmx512m
+..........................Classification failed for job a9f70baa-3a15-4c77-a956-f5c7c2ebe4b8 attempt 1
+Classification failed for job a9f70baa-3a15-4c77-a956-f5c7c2ebe4b8 attempt 2
+Classification failed for job a9f70baa-3a15-4c77-a956-f5c7c2ebe4b8 attempt 3
+..
+----------------------------------------------------------------------
+Ran 28 tests in 0.373s
+
+OK
+91028bb5ff485c60316f1a9e93902e615d5067a7957e118a69c335228aeceff5
+

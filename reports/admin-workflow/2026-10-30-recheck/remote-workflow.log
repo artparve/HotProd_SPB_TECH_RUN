@@ -1,0 +1,30 @@
+
+Running 1 test using 1 worker
+
+(node:222268) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:71:5 › admin panel performs real classification, human review, publication and Java calculation (2.4m)
+
+
+  1) [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:71:5 › admin panel performs real classification, human review, publication and Java calculation 
+
+    Test was interrupted.
+
+    Error: locator.selectOption: Test ended.
+    Call log:
+      - waiting for locator('.workflow form fieldset').first().getByLabel('Решение', { exact: true })
+
+
+      92 |       await row.getByRole('combobox', { name: 'Значение', exact: true }).selectOption(legend.includes('interior_suitable') ? 'yes' : 'unknown')
+      93 |     } else {
+    > 94 |       await row.getByRole('combobox', { name: 'Решение', exact: true }).selectOption('accept')
+         |                                                        ^
+      95 |     }
+      96 |     await row.getByLabel('Основание решения', { exact: true }).fill('Проверено по учебной карточке: внутренние стены, бетон/штукатурка. Остальные свойства не подтверждены.')
+      97 |   }
+        at /home/artparve/projects/spb_tech_run_2026/reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:94:56
+
+    Error Context: reports/admin-workflow/2026-10-30-recheck/workflow-results/remote-admin-admin-panel-p-1fa3c-cation-and-Java-calculation-desktop/error-context.md
+
+  1 interrupted
+    [desktop] › reports/admin-workflow/2026-10-30-recheck/remote-admin.spec.ts:71:5 › admin panel performs real classification, human review, publication and Java calculation 

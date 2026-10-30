@@ -1,0 +1,17 @@
+{
+  "model": "gemma4:12b",
+  "created_at": "2026-10-30T10:56:46.94705787Z",
+  "message": {
+    "role": "assistant",
+    "content": "{\n  \"shape\": \"non_rectangular\",\n  \"name\": {\n    \"state\": \"found\",\n    \"value\": \"детской комнаты\",\n    \"label\": \"План детской комнаты\",\n    \"bbox\": {\n      \"x\": 0.388,\n      \"y\": 0.035,\n      \"width\": 0.235,\n      \"height\": 0.045\n    }\n  },\n  \"length\": {\n    \"state\": \"conflict\",\n    \"value\": null,\n    \"unit\": \"mm\",\n    \"label\": \"2850 / 1150+1780+550+400+400+30\",\n    \"bbox\": null\n  },\n  \"width\": {\n    \"state\": \"conflict\",\n    \"value\": null,\n    \"unit\": \"mm\",\n    \"label\": \"2100 / 1940\",\n    \"bbox\": null\n  },\n  \"height\": {\n    \"state\": \"unknown\",\n    \"value\": null,\n    \"unit\": null,\n    \"label\": null,\n    \"bbox\": null\n  },\n  \"openings\": [\n    {\n      \"kind\": \"door\",\n      \"width\": {\n        \"state\": \"found\",\n        \"value\": \"700\",\n        \"unit\": \"mm\",\n        \"label\": \"700\",\n        \"bbox\": {\n          \"x\": 0.245,\n          \"y\": 0.835,\n          \"width\": 0.035,\n          \"height\": 0.015\n        }\n      },\n      \"height\": {\n        \"state\": \"unknown\",\n        \"value\": null,\n        \"unit\": null,\n        \"label\": null,\n        \"bbox\": null\n      }\n    }\n  ],\n  \"warnings\": [\n    \"Форма комнаты не прямоугольная (L-образная или с выступом).\",\n    \"Длина и ширина противоречивы: общая ширина сверху 2850, а сумма боковых сегментов не совпадает с общей высотой плана.\",\n    \"Единицы измерения (мм) приняты исходя из контекста типовых размеров мебели, так как явной общей подписи нет.\",\n    \"Высота потолка не указана.\"\n  ]\n}"
+  },
+  "done": true,
+  "done_reason": "stop",
+  "total_duration": 197735538138,
+  "load_duration": 15445547286,
+  "prompt_eval_count": 3143,
+  "prompt_eval_cached_count": 0,
+  "prompt_eval_duration": 96037432000,
+  "eval_count": 560,
+  "eval_duration": 86156338000
+}

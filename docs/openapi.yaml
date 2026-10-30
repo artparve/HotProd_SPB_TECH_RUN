@@ -19,6 +19,47 @@ tags:
   - name: Estimates
   - name: Recommendations
 paths:
+  /plans/extract:
+    post:
+      operationId: extractRoomPlan
+      tags: [Estimates]
+      summary: Извлечь черновик параметров одной комнаты из изображения через Ollama
+      description: |
+        Python estimator. JSON с imageBase64, до 12 MiB тела, до 8 MiB файла,
+        до 12 млн пикселей; PNG/JPEG/WebP проверяются по содержимому.
+        Один вызов Gemma (socket timeout по умолчанию 600 с). Общая блокировка
+        с materials/estimate; занятый сервис возвращает 503 model_busy.
+        Результат требует подтверждения. Координаты относительно изображения после
+        EXIF-ориентации. Размеры нормализованы в метры, неизвестное остаётся null.
+        dimensionsMetres.length/width=null для неподдерживаемой формы/нескольких комнат.
+        Площадь, периметр и нулевая площадь проёмов автоматически не назначаются.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './room-plan-api.json#/components/schemas/PlanExtractRequest'
+      responses:
+        '200':
+          description: Черновик модели, единицы, координаты и сведения о воспроизводимости
+          content:
+            application/json:
+              schema:
+                $ref: './room-plan-api.json#/components/schemas/PlanExtractResult'
+        '400':
+          description: Некорректный JSON или Content-Length
+        '413':
+          description: Превышен размер тела, файла, подготовленного PNG или число пикселей
+        '415':
+          description: Неподдерживаемый Content-Type или формат изображения
+        '422':
+          description: Некорректный запрос, base64 или повреждённое изображение
+        '502':
+          description: Незавершённый ответ модели, нарушение схемы, единиц или границ
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        default:
+          $ref: '#/components/responses/Error'
   /admin/session:
     $ref: './admin-catalog-api.json#/paths/~1session'
   /admin/login:
