@@ -1,5 +1,6 @@
 mvnw text eol=lf
 mvnw.cmd text eol=crlf
+run-local.cmd text eol=crlf
 *.java text eol=lf
 *.xml text eol=lf
 *.yml text eol=lf
