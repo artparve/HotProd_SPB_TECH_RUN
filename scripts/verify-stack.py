@@ -25,6 +25,8 @@ import struct
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from scripts.mongo_runtime import image_reference
 
 
 def png():
@@ -41,6 +43,7 @@ def main():
     parser.add_argument("--base-only", action="store_true", help="Verify the empty production feed and baseline without Python/Ollama/token")
     parser.add_argument("--maven-repository", default="https://repo.maven.apache.org/maven2", help="Public Maven Central endpoint or mirror for Docker build")
     args = parser.parse_args()
+    mongo_image = image_reference()
     project = "repaircalc_verify_" + uuid.uuid4().hex[:10]
     with socket.socket() as bound:
         bound.bind(("127.0.0.1", 0))
@@ -61,7 +64,7 @@ def main():
         public = temporary / "public.env"
         if any(char in args.maven_repository for char in "\r\n"):
             raise ValueError("Maven repository must be a single-line URL")
-        public.write_text("MAVEN_CENTRAL_URL=" + args.maven_repository + "\nFRONTEND_PUBLIC_PORT=" + str(port) + "\nFRONTEND_BIND_ADDRESS=127.0.0.1\nADMIN_COOKIE_SECURE=false\nADMIN_USERNAME=smoke-admin\nCLASSIFICATION_POLL_MS=250\nHEALTH_INTERVAL=2s\nHEALTH_RETRIES=60\n", encoding="utf-8")
+        public.write_text("MONGO_IMAGE_TAG=" + mongo_image.removeprefix("mongo:") + "\nMAVEN_CENTRAL_URL=" + args.maven_repository + "\nFRONTEND_PUBLIC_PORT=" + str(port) + "\nFRONTEND_BIND_ADDRESS=127.0.0.1\nADMIN_COOKIE_SECURE=false\nADMIN_USERNAME=smoke-admin\nCLASSIFICATION_POLL_MS=250\nHEALTH_INTERVAL=2s\nHEALTH_RETRIES=60\n", encoding="utf-8")
         secret = temporary / "secret.env"
         secret.write_text("\n".join(key + "='" + value + "'" for key, value in {
             "MONGO_ROOT_PASSWORD": secrets.token_hex(24), "MONGO_PASSWORD": secrets.token_hex(24),

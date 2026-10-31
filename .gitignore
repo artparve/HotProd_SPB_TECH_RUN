@@ -30,4 +30,5 @@ frontend/test-results/
 # Local verification tools and artifacts.
 /.venv/
 /.build-*.log
+/.build-*.json
 /.maven-verify-settings.xml

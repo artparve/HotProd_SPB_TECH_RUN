@@ -31,7 +31,25 @@ import tools.jackson.databind.node.ObjectNode;
 @Testcontainers
 class MongoWorkflowIT {
   @Container
-  static final MongoDBContainer mongo = new MongoDBContainer("mongo:8.0").withReplicaSet();
+  static final MongoDBContainer mongo = new MongoDBContainer(mongoImage()).withReplicaSet();
+
+  private static String mongoImage() {
+    String tag = System.getenv("MONGO_IMAGE_TAG");
+    if (tag == null || tag.isBlank()) {
+      var defaults = new Properties();
+      try (var reader = Files.newBufferedReader(Path.of("../env/.env.example"))) {
+        defaults.load(reader);
+        tag = defaults.getProperty("MONGO_IMAGE_TAG");
+      } catch (java.io.IOException failure) {
+        throw new IllegalStateException("Cannot read tracked Mongo image defaults", failure);
+      }
+    }
+    if (tag == null || !tag.matches("[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}(@sha256:[0-9a-f]{64})?"))
+      throw new IllegalArgumentException("Invalid MONGO_IMAGE_TAG");
+    // Testcontainers parses name@digest correctly; name:tag@digest is ambiguous.
+    int digest = tag.indexOf('@');
+    return digest >= 0 ? "mongo" + tag.substring(digest) : "mongo:" + tag;
+  }
 
   @DynamicPropertySource
   static void mongo(DynamicPropertyRegistry r) {

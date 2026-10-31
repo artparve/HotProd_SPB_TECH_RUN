@@ -66,7 +66,7 @@ x-java: &java
 
 services:
   mongo:
-    image: mongo:${MONGO_IMAGE_TAG:-8.0}
+    image: mongo:${MONGO_IMAGE_TAG:-8.0.34@sha256:b9924c330a8bbc5800fe9c69f04a84e221eca7b28fd049a0354147d9908fa142}
     entrypoint: [sh, /opt/repaircalc/start.sh]
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-root}
@@ -96,7 +96,7 @@ services:
     logging: *logging
 
   mongo-init:
-    image: mongo:${MONGO_IMAGE_TAG:-8.0}
+    image: mongo:${MONGO_IMAGE_TAG:-8.0.34@sha256:b9924c330a8bbc5800fe9c69f04a84e221eca7b28fd049a0354147d9908fa142}
     environment:
       MONGO_ROOT_USER: ${MONGO_ROOT_USER:-root}
       MONGO_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Set MONGO_ROOT_PASSWORD}
