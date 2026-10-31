@@ -129,7 +129,8 @@ def configuration(args, environ):
         "ansible_port": port,
         "ansible_ssh_private_key_file": key,
         "ansible_ssh_common_args": (
-            '-o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes -o BatchMode=yes'
+            '-o StrictHostKeyChecking=accept-new -o IdentitiesOnly=yes -o BatchMode=yes '
+            '-o ServerAliveInterval=30 -o ServerAliveCountMax=10'
         ),
         "ansible_python_interpreter": "/usr/bin/python3",
     }}}}
