@@ -156,6 +156,52 @@ class MongoWorkflowIT {
   }
 
   @Test
+  void bundledPhotosImportIdempotentlyAndServeTheirOriginalsAndPreviews() throws Exception {
+    Path assets = Path.of("../data/inspirations");
+    var service =
+        new ru.repaircalc.inspirations.InspirationService(
+            store,
+            org.mockito.Mockito.mock(ru.repaircalc.llm.LlmClient.class),
+            snapshots,
+            projects,
+            json,
+            assets.toString(),
+            8388608,
+            12000000,
+            480,
+            24);
+    var entries = json.readTree(Files.readString(assets.resolve("manifest.json")));
+    assertThat(entries.size()).isGreaterThan(0);
+    assertThat(service.importManifest(assets.resolve("manifest.json"))).isEqualTo(entries.size());
+    assertThat(service.importManifest(assets.resolve("manifest.json"))).isEqualTo(entries.size());
+    assertThat(service.feed(null, 24).items()).hasSize(entries.size());
+    var visited = new HashSet<String>();
+    String cursor = null;
+    do {
+      var page = service.feed(cursor, 1);
+      assertThat(page.items()).hasSize(1);
+      assertThat(visited.add(page.items().getFirst().id())).isTrue();
+      cursor = page.nextCursor();
+    } while (cursor != null);
+    assertThat(visited).hasSize(entries.size());
+    for (var entry : entries) {
+      String id = entry.path("id").asText();
+      assertThat(service.image(id, false))
+          .isEqualTo(Files.readAllBytes(assets.resolve(entry.path("file").asText())));
+      var preview =
+          javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(service.image(id, true)));
+      assertThat(Math.max(preview.getWidth(), preview.getHeight())).isLessThanOrEqualTo(480);
+      assertThat(
+              service.feed(null, 24).items().stream()
+                  .filter(item -> item.id().equals(id))
+                  .findFirst()
+                  .orElseThrow()
+                  .sourceUrl())
+          .isEqualTo(entry.path("sourceUrl").asText());
+    }
+  }
+
+  @Test
   void imageImportIsAtomicAndFilesCannotEscapeThePreparedRoot(
       @org.junit.jupiter.api.io.TempDir Path directory) throws Exception {
     Path assets = Files.createDirectory(directory.resolve("assets"));
@@ -181,6 +227,18 @@ class MongoWorkflowIT {
     Files.writeString(manifest, "[" + valid + "]");
     assertThat(service.importManifest(manifest)).isEqualTo(1);
     assertThat(service.image("prepared", true)).startsWith((byte) 0x89, (byte) 0x50);
+    for (String source :
+        List.of(
+            "http://www.pexels.com/photo/123/",
+            "https://www.pexels.com.evil.example/photo/123/",
+            "https://user@www.pexels.com/photo/123/",
+            "https://www.pexels.com:8443/photo/123/")) {
+      Files.writeString(
+          manifest, "[" + valid.replace("https://www.pinterest.com/pin/000/", source) + "]");
+      assertThatThrownBy(() -> service.importManifest(manifest))
+          .isInstanceOf(IllegalArgumentException.class);
+      assertThat(service.feed(null, 24).items().getFirst().sourceUrl()).contains("pinterest.com");
+    }
     Files.writeString(
         manifest,
         "["
@@ -199,6 +257,9 @@ class MongoWorkflowIT {
     Files.write(assets.resolve("valid.png"), new byte[] {1, 2, 3});
     assertThatThrownBy(() -> service.image("prepared", false))
         .isInstanceOf(ru.repaircalc.common.web.ApiStatusException.class);
+    Files.writeString(manifest, "[]");
+    assertThat(service.importManifest(manifest)).isZero();
+    assertThat(service.feed(null, 24).items()).isEmpty();
   }
 
   @Test

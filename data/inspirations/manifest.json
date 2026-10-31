@@ -1,1 +1,34 @@
-[]
+[
+  {
+    "id": "living-room-1571460",
+    "title": "Светлая гостиная",
+    "description": "Гостиная со светлыми стенами, серым диваном и полом с древесным рисунком. Фото: Viaceslav Kat / Pexels.",
+    "alt": "Светлая гостиная с серым диваном, круглым столиком и деревянной лестницей",
+    "file": "living-room-1571460.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-design-of-a-house-1571460/"
+  },
+  {
+    "id": "bedroom-8089163",
+    "title": "Спальня в тёплых тонах",
+    "description": "Спальня с нейтральными стенами, деревянными акцентами и естественным освещением. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Спальня с большой кроватью, серой стеной, окном и полом с древесным рисунком",
+    "file": "bedroom-8089163.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/modern-bedroom-interior-8089163/"
+  },
+  {
+    "id": "kitchen-10450057",
+    "title": "Кухня с обеденной зоной",
+    "description": "Кухня со светлыми фасадами, плиточным полом и обеденной зоной у окна. Фото: Get Lost Mike / Pexels.",
+    "alt": "Кухня с белыми шкафами, плиткой на полу и тёмным обеденным столом",
+    "file": "kitchen-10450057.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/tidy-kitchen-and-dining-area-10450057/"
+  },
+  {
+    "id": "bathroom-7045922",
+    "title": "Ванная с крупной плиткой",
+    "description": "Ванная с каменным рисунком отделки, большим зеркалом и деревянной тумбой. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Ванная с крупной светлой плиткой, зеркальной стеной и двумя раковинами",
+    "file": "bathroom-7045922.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-luxury-bathroom-in-modern-apartment-7045922/"
+  }
+]

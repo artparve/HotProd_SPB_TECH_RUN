@@ -26,6 +26,13 @@ let alive = true
 let feedController: AbortController | undefined
 let selectionController: AbortController | undefined
 
+function sourceLabel(url: string) {
+  const host = new URL(url).hostname
+  if (host === 'pexels.com' || host === 'www.pexels.com') return 'Pexels'
+  if (['pinterest.com', 'www.pinterest.com', 'pin.it'].includes(host)) return 'Pinterest'
+  return 'Оригинал'
+}
+
 async function load(more = false) {
   if (loading.value) return
   loading.value = true
@@ -169,7 +176,7 @@ onBeforeUnmount(() => {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Источник: Pinterest
+            Источник: {{ sourceLabel(image.sourceUrl) }}
           </a>
           <button
             type="button"

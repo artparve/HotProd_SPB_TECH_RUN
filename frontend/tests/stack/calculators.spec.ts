@@ -33,6 +33,14 @@ test('real product calculation and Python explanation preserve the Java total', 
 
 test('image from real feed goes through Python and keeps room dimensions', async ({ page }) => {
   await page.goto('/room')
+  await expect(page.getByRole('link', { name: 'Источник: Pexels' })).toBeVisible()
+  await expect
+    .poll(() =>
+      page
+        .locator('.inspiration-card img')
+        .evaluate((image) => (image as HTMLImageElement).naturalWidth),
+    )
+    .toBeGreaterThan(0)
   const length = await page.getByRole('spinbutton', { name: 'Длина м', exact: true }).inputValue()
   const response = page.waitForResponse((value) => value.url().endsWith('/test-interior/analyze'))
   await page.locator('.inspiration-card-body button').click()

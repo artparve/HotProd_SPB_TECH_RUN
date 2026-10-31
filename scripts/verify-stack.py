@@ -40,7 +40,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--playwright", action="store_true", help="Also run real browser API-mode scenarios")
     parser.add_argument("--no-build", action="store_true", help="Use existing local application images")
-    parser.add_argument("--base-only", action="store_true", help="Verify the empty production feed and baseline without Python/Ollama/token")
+    parser.add_argument("--base-only", action="store_true", help="Verify bundled production photos and baseline without Python/Ollama/token")
     parser.add_argument("--maven-repository", default="https://repo.maven.apache.org/maven2", help="Public Maven Central endpoint or mirror for Docker build")
     args = parser.parse_args()
     mongo_image = image_reference()
@@ -59,10 +59,11 @@ def main():
         temporary = Path(directory)
         assets = temporary / "inspirations"
         assets.mkdir()
-        (assets / "image.png").write_bytes(png())
+        prepared_photo = json.loads((ROOT / "data/inspirations/manifest.json").read_text(encoding="utf-8"))[0]
+        (assets / "image.jpg").write_bytes((ROOT / "data/inspirations" / prepared_photo["file"]).read_bytes())
         (assets / "manifest.json").write_text(json.dumps([{
             "id": "test-interior", "title": "Тестовый интерьер", "description": "Только фикстура сквозного теста",
-            "file": "image.png", "sourceUrl": "https://www.pinterest.com/pin/000000000000000000/"
+            "file": "image.jpg", "sourceUrl": prepared_photo["sourceUrl"]
         }], ensure_ascii=False), encoding="utf-8")
         password = secrets.token_hex(24)
         salt = secrets.token_bytes(16)
@@ -182,11 +183,23 @@ def main():
             inputs = {"area": 20, "perimeter": 18, "height": 2.7, "reserve": 10, "layers": 2, "quantity": 6}
             if args.base_only:
                 feed, _ = request("/api/v1/room-inspirations")
-                assert feed["items"] == [] and feed["status"] == "ok"
+                prepared = json.loads((ROOT / "data/inspirations/manifest.json").read_text(encoding="utf-8"))
+                assert prepared and feed["status"] == "ok"
+                assert {item["id"] for item in feed["items"]} == {item["id"] for item in prepared}
+                for entry in prepared:
+                    item = next(item for item in feed["items"] if item["id"] == entry["id"])
+                    assert item["sourceUrl"] == entry["sourceUrl"]
+                    original, _ = request(item["imageUrl"])
+                    assert original == (ROOT / "data/inspirations" / entry["file"]).read_bytes()
+                    preview, _ = request(item["thumbnailUrl"])
+                    assert preview.startswith(b"\x89PNG")
+                unavailable, _ = request("/api/v1/room-inspirations/" + prepared[0]["id"] + "/analyze", {"project": project_body})
+                assert unavailable["status"] == "unavailable" and unavailable["selections"] == {}
+                assert unavailable["project"] == project_body
                 result, _ = request("/api/v1/materials/estimate", {"productId": tile, "input": inputs})
                 assert result["explanationStatus"] == "unavailable" and result["estimate"]["total"] == "34560.00"
                 request("/")
-                print("PASS base stack without Python, Ollama or token; production feed is empty", flush=True)
+                print("PASS bundled production photos, previews and unavailable analysis without Python, Ollama or token", flush=True)
                 return
             estimate, _ = request("/api/v1/estimate", {"project": project_body, "selections": {"room-a:covering": tile}})
             assert estimate["mode"] == "api" and len(estimate["lines"]) == 4 and estimate["labor"] == "33295.00"

@@ -3,7 +3,7 @@ info:
   title: RepairCalc Frontend API
   version: 1.0.0
   description: Java — публичный API, MongoDB — версионированные данные, Python — внутренний сервис LLM. Денежные
-    суммы передаются десятичными строками RUB. Подборка Pinterest импортируется из локального manifest; пустая лента
+    суммы передаются десятичными строками RUB. Подборка интерьеров Pexels/Pinterest импортируется из локального manifest; пустая лента
     допустима. При недоступности зависимостей чтение возвращает типизированные пустые результаты с признаком деградации;
     расчёт и запись возвращают явные ошибки. Учебные данные не являются коммерческим предложением.
 servers:
@@ -503,7 +503,7 @@ components:
           type: string
           format: uri
           pattern: ^https://
-          description: Ссылка на исходный Pinterest pin.
+          description: HTTPS-ссылка на исходную страницу фотографии Pexels или Pinterest pin; файлы выдаются локально.
     InspirationImageUrl:
       type: string
       maxLength: 2048

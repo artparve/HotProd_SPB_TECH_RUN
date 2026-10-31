@@ -52,6 +52,23 @@ afterEach(() => {
 })
 
 describe('RoomInspirationGallery', () => {
+  it('credits the actual photo source and keeps its original link', async () => {
+    const sourceUrl = 'https://www.pexels.com/photo/modern-bedroom-interior-8089163/'
+    vi.mocked(service.roomInspirations).mockResolvedValueOnce({
+      items: [{ ...image, sourceUrl, description: 'Фото: Max Vakhtbovych / Pexels.' }],
+      nextCursor: null,
+      status: 'ok',
+      warnings: [],
+    })
+    const wrapper = await render()
+    const source = wrapper.get('.inspiration-card-body a')
+    expect(source.text()).toBe('Источник: Pexels')
+    expect(source.attributes('href')).toBe(sourceUrl)
+    expect(source.attributes('rel')).toContain('noopener')
+    expect(wrapper.text()).toContain('Max Vakhtbovych')
+    expect(wrapper.text()).not.toContain('Источник: Pinterest')
+  })
+
   it.each(['unavailable', 'no_matches'] as const)(
     'keeps input and skips calculation for %s',
     async (status) => {

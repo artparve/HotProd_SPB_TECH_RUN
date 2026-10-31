@@ -83,8 +83,10 @@ public class InspirationService {
       URI uri = URI.create(source);
       if (!"https".equals(uri.getScheme())
           || uri.getUserInfo() != null
-          || !Set.of("pinterest.com", "www.pinterest.com", "pin.it").contains(uri.getHost()))
-        throw new IllegalArgumentException("Expected HTTPS Pinterest source URL");
+          || uri.getPort() != -1
+          || !Set.of("pinterest.com", "www.pinterest.com", "pin.it", "pexels.com", "www.pexels.com")
+              .contains(uri.getHost()))
+        throw new IllegalArgumentException("Expected HTTPS Pinterest or Pexels source URL");
       byte[] image = read(file);
       decode(image); // Validate the entire batch before replacing metadata.
       docs.add(
