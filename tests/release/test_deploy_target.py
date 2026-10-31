@@ -1,6 +1,7 @@
 import argparse
 from copy import deepcopy
 import json
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -43,8 +44,25 @@ class DeploymentTargetTests(unittest.TestCase):
             if "volume" in argv:
                 return ""
             raise AssertionError("Unexpected mutation in read-only preflight")
-        with patch.object(target, "command", side_effect=run), patch.object(target, "query", return_value=self.state), patch.object(target.socket, "socket"):
+        with patch.object(target, "command", side_effect=run), patch.object(target, "query", return_value=self.state), patch.object(target.socket, "socket"), patch.object(target, "runtime_check", return_value={"status": "ok", "daemon": {"kernel": "6.8.0"}, "probe_performed": False}):
             return target.plan(self.args)
+
+    def test_compatibility_failure_is_safe_and_uses_the_selected_image(self):
+        result = subprocess.CompletedProcess([], 1, json.dumps({'status': 'error', 'error_code': 'mongodb_kernel_incompatible'}), 'private-password')
+        with patch.object(target.subprocess, 'run', return_value=result) as run:
+            with self.assertRaisesRegex(target.PreflightError, 'mongodb_kernel_incompatible') as caught:
+                target.runtime_check(self.args.path, self.config)
+        self.assertNotIn('private-', str(caught.exception))
+        argv = run.call_args.args[0]
+        self.assertEqual(argv[argv.index('--image') + 1], self.config['services']['mongo']['image'])
+        self.assertNotIn('private-', ' '.join(argv))
+
+    def test_invalid_compatibility_report_does_not_pass(self):
+        for response in ('not-json', '[]', '{"status":"error","error_code":"private-password"}'):
+            with patch.object(target.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, response, '')):
+                with self.assertRaises(target.PreflightError) as caught:
+                    target.runtime_check(self.args.path, self.config)
+                self.assertNotIn('private-', str(caught.exception))
 
     def test_adopts_existing_healthy_mongo_without_switching_volume(self):
         result = self.run_plan()

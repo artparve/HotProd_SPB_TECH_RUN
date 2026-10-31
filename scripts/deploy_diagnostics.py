@@ -79,8 +79,12 @@ def collect(path, project):
         containers.append({"service": service, "state": status, "health": health,
                            "exit_code": exit_code if type(exit_code) is int else None,
                            "oom_killed": state.get("OOMKilled") is True})
+    try:
+        compatibility = json.loads((path / "mongo-compatibility.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        compatibility = {}
     # Raw messages can contain arbitrary application secrets. Classify, never print them.
-    messages = json.dumps({"failure": failure, "logs": logs, "states": private_states}).lower()
+    messages = json.dumps({"failure": failure, "logs": logs, "states": private_states, "mongo_compatibility": compatibility}).lower()
     signals = []
     for signal, phrases in {
         "port_conflict": ("address already in use", "port is already allocated"),
@@ -88,6 +92,7 @@ def collect(path, project):
         "insufficient_disk_space": ("no space left on device",),
         "database_authentication_failed": ("authentication failed", "authenticationfailed"),
         "database_configuration_error": ("replicasetnoprimary", "notyetinitialized", "replica set configuration"),
+        "mongodb_kernel_incompatible": ("12257600", "mongodb_kernel_incompatible", "mongodb cannot start: linux kernel"),
         "unhealthy_container": ("unhealthy",),
         "wait_timeout": ("timed out", "timeout exceeded"),
     }.items():
@@ -98,7 +103,7 @@ def collect(path, project):
     if any(item["service"] == "init-data" and item["exit_code"] not in (None, 0) for item in containers):
         signals.append("bootstrap_failed")
     report_path = path / "deployment-diagnostics.json"
-    report = {"failure": failure, "ps": ps, "logs": logs, "states": private_states}
+    report = {"failure": failure, "ps": ps, "logs": logs, "states": private_states, "mongo_compatibility": compatibility}
     # Private file only: never upload this automatically to Actions artifacts/logs.
     with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path, prefix=".diagnostics-", delete=False) as file:
         temporary = Path(file.name)

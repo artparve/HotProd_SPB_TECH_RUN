@@ -26,7 +26,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from scripts.mongo_runtime import image_reference
+from scripts.mongo_runtime import image_reference, check as check_mongo, write_report
 
 
 def png():
@@ -44,6 +44,13 @@ def main():
     parser.add_argument("--maven-repository", default="https://repo.maven.apache.org/maven2", help="Public Maven Central endpoint or mirror for Docker build")
     args = parser.parse_args()
     mongo_image = image_reference()
+    compatibility = check_mongo(mongo_image,
+                                seconds=int(os.environ.get("MONGO_COMPAT_SECONDS", "95")),
+                                startup_timeout=int(os.environ.get("MONGO_COMPAT_START_TIMEOUT_SECONDS", "60")))
+    write_report(ROOT / (".build-mongo-compat-base.json" if args.base_only else ".build-mongo-compat-stack.json"), compatibility)
+    if compatibility["status"] != "ok":
+        raise RuntimeError("Mongo compatibility failed: " + compatibility["error_code"])
+    print("PASS isolated Mongo startup, transaction and " + str(compatibility["stable_seconds"]) + "s CRUD stability", flush=True)
     project = "repaircalc_verify_" + uuid.uuid4().hex[:10]
     with socket.socket() as bound:
         bound.bind(("127.0.0.1", 0))
@@ -150,6 +157,8 @@ def main():
             release = temporary / "preflight"
             (release / "docker").mkdir(parents=True)
             (release / "env").mkdir()
+            (release / "scripts").mkdir()
+            shutil.copyfile(ROOT / "scripts/mongo_runtime.py", release / "scripts/mongo_runtime.py")
             for filename in ("docker-compose.yml", "docker-compose.release.yml"):
                 shutil.copyfile(ROOT / "docker" / filename, release / "docker" / filename)
             shutil.copyfile(public, release / "env/.env")

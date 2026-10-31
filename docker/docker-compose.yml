@@ -74,6 +74,8 @@ services:
       MONGO_KEYFILE_SECRET: ${MONGO_KEYFILE_SECRET:?Set MONGO_KEYFILE_SECRET in env/secret.env}
       MONGO_REPLICA_SET: ${MONGO_REPLICA_SET:-rs0}
       MONGO_PORT: ${MONGO_PORT:-27017}
+      MONGO_COMPAT_SECONDS: ${MONGO_COMPAT_SECONDS:-95}
+      MONGO_COMPAT_START_TIMEOUT_SECONDS: ${MONGO_COMPAT_START_TIMEOUT_SECONDS:-60}
     volumes:
       - mongo-data:/data/db
       - ./mongo/start.sh:/opt/repaircalc/start.sh:ro

@@ -22,7 +22,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: make init-config
@@ -50,8 +50,15 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: maven
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Diagnose Docker host and Mongo image
+        run: python scripts/mongo_runtime.py diagnose --report .build-mongo-environment-backend.json
+      - name: Verify Mongo stability and replica-set transactions before Maven
+        run: python scripts/mongo_runtime.py probe --report .build-mongo-compat-backend.json
       # GitHub hosted Linux runner supplies Docker for Testcontainers.
       - run: bash ./mvnw -B verify
         working-directory: backend
@@ -59,9 +66,11 @@ jobs:
         if: failure()
         with:
           name: java-test-failure
+          include-hidden-files: true
           path: |
             backend/target/surefire-reports/
             backend/target/failsafe-reports/
+            .build-mongo-*.json
           retention-days: 7
 
   python-and-deploy:
@@ -73,7 +82,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - run: python -m pip install -r docker/ansible/requirements.txt -r llm/requirements.txt
       - run: python -m unittest discover -s llm/estimation/tests
         env:
@@ -99,12 +108,14 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
+      - name: Diagnose Docker host before application builds
+        run: python scripts/mongo_runtime.py diagnose --report .build-mongo-environment-stack.json
       - run: npm --prefix frontend ci --no-fund
       - run: npm --prefix frontend exec -- playwright install --with-deps chromium
       - run: python scripts/verify-stack.py --playwright
@@ -113,9 +124,11 @@ jobs:
         if: failure()
         with:
           name: real-stack-failure
+          include-hidden-files: true
           path: |
             frontend/playwright-report/
             frontend/test-results/
+            .build-mongo-*.json
           retention-days: 7
 
   images:

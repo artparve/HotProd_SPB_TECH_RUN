@@ -58,11 +58,12 @@
           docker-compose.preserve-data.yml,
         ]
 
-    - name: Install the portable Mongo backup utility
+    - name: Install portable Mongo backup and compatibility utilities
       ansible.builtin.copy:
-        src: "{{ playbook_dir }}/../../scripts/mongo-backup.py"
-        dest: "{{ release_path }}/scripts/mongo-backup.py"
+        src: "{{ playbook_dir }}/../../scripts/{{ item }}"
+        dest: "{{ release_path }}/scripts/{{ item }}"
         mode: "0600"
+      loop: [mongo-backup.py, mongo_runtime.py]
 
     - name: Install non-secret environment settings for this release
       ansible.builtin.copy:

@@ -30,6 +30,12 @@ class MongoImageConfigurationTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[2]
         ci = yaml.safe_load((root / '.github/workflows/ci.yml').read_text())
         self.assertTrue(all(ci['jobs'][name]['runs-on'] == 'ubuntu-22.04' for name in ('backend', 'stack')))
+        for name in ('backend', 'stack'):
+            artifact = next(s for s in ci['jobs'][name]['steps'] if s.get('uses') == 'actions/upload-artifact@v4')['with']
+            self.assertIn('.build-mongo-*.json', artifact['path'])
+            self.assertTrue(artifact['include-hidden-files'])
+        commands = [s.get('run', '') for s in ci['jobs']['backend']['steps']]
+        self.assertLess(next(i for i, c in enumerate(commands) if 'mongo_runtime.py probe' in c), next(i for i, c in enumerate(commands) if 'mvnw' in c))
         cd = yaml.safe_load((root / '.github/workflows/cd.yml').read_text())
         self.assertEqual(cd['jobs']['deploy']['if'], "github.ref == 'refs/heads/main'")
 
@@ -95,6 +101,7 @@ class ProbeTests(unittest.TestCase):
         report = self.exercise('foreign-owner')
         self.assertEqual(report['error_code'], 'mongodb_probe_cleanup_unverified')
         self.assertFalse(any(c[:2] == ['docker', 'rm'] for c in self.calls))
+        self.assertFalse(any(c[:2] == ['docker', 'logs'] for c in self.calls))
 
     def test_remote_check_uses_daemon_kernel_and_probes_suspect_kernels(self):
         report = self.exercise(remote=True, kernel='6.8.0-azure')

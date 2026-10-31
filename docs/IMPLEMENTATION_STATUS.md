@@ -22,7 +22,7 @@
 - `make check`: форматирование, lint, TypeScript, 107 unit-тестов и production-сборка frontend.
 - Playwright: 14 demo-сценариев и 22 сценария с API-моками на desktop/mobile.
 - 32 теста estimator, 24 классификатора, 7 нового Python gateway.
-- 7 тестов общего конфигуратора, 8 smoke-протокола и 53 release-теста после слияния `main`. Семь Ansible-тестов, пропускаемые на Windows, отдельно успешно выполнены в Linux-контейнере с настоящим Ansible 2.19.4 и имитацией Docker CLI.
+- 7 тестов общего конфигуратора, 8 smoke-протокола и 67 release/runtime-тестов после исправления CI. Восемь Ansible-тестов, пропускаемые на Windows, отдельно успешно выполнены в Linux-контейнере с настоящим Ansible 2.19.4 и имитацией Docker CLI.
 - Настоящие Java/Mongo/Python/nginx в изолированном Compose: 3 браузерных сценария, каталог, рекомендации, расчёты, планы, изображения и пояснение. Подменён только транспорт Ollama.
 - Admin login/CSRF/ETag, очередь Java → Python, human review, публикация и повторный seed без отката активного релиза.
 - Backup и восстановление архива в отдельную новую БД, рестарт с сохранением опубликованных данных.
@@ -38,6 +38,12 @@ Preflight дополнительно проверен на настоящем Mo
 `scripts/verify-stack.py --no-build --playwright` завершился с кодом 0 на собранных итоговых образах. В одном прогоне прошли три пользовательских сценария и четыре браузерные проверки отдельных отказов Ollama/Python/Mongo/Java, административный процесс, повторный seed, backup/restore и восстановление данных после рестарта. Вместе с отдельными demo/API-mode наборами подтверждены 43 Playwright-проверки.
 
 Этот прогон выявил и помог исправить отклонение настоящего Java fallback-ответа frontend-клиентом: `model=not-used` теперь допустим при `explanationStatus=unavailable`, а принадлежность сметы выбранному товару проверяется всегда. При отказе модели UI сохраняет смету, при отказе Mongo/Java показывает пустой каталог и явную ошибку расчёта, без кнопки сохранения отсутствующего результата.
+
+## Исправление CI 31 октября
+
+Mongo-задания переведены на `ubuntu-22.04` (`85b597d`), default Mongo закреплён 8.0.34 и digest (`3241840`). [Push CI 41172067509](https://github.com/artparve/HotProd_SPB_TECH_RUN/actions/runs/41172067509) успешно завершил backend/frontend/Python/stack и публикацию трёх образов после изменения runner.
+
+С закреплённым digest локально повторно прошли 83 Java unit + 12 Mongo integration. Настоящий изолированный compatibility probe подтвердил replica set, транзакцию и 95 секунд CRUD без рестартов на Docker kernel `6.18.54.1-microsoft-standard-WSL2`. Добавлены безопасные kernel/image отчёты CI и удалённый preflight до изменения сервисов. Описание: [CI_RUNTIME.md](CI_RUNTIME.md); исходный анализ: [CI_CD_FIX_PLAN.md](CI_CD_FIX_PLAN.md).
 
 ## Оставшиеся внешние входы и границы
 

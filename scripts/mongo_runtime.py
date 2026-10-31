@@ -103,6 +103,7 @@ def check(image, *, remote=False, seconds=95, startup_timeout=60, memory="1g", c
     token = uuid.uuid4().hex
     name = "repaircalc_mongo_compat_" + token
     report["probe_performed"] = True
+    report["probe_container"] = name
     started = False
     began = time.monotonic()
 
@@ -165,16 +166,15 @@ def check(image, *, remote=False, seconds=95, startup_timeout=60, memory="1g", c
         report["error_code"] = failure.code
     finally:
         if started:
-            if not healthy() and report["status"] == "ok":
-                report.update(status="error", error_code="mongodb_runtime_failure")
-            if report["status"] != "ok":
-                logs = run(["docker", "logs", "--tail", "80", name])
-                # Only a new, isolated probe container is logged, never a live DB.
-                report["container_logs"] = (logs.stdout + logs.stderr)[-32768:]
-                if "12257600" in report["container_logs"] or "mongodb cannot start" in report["container_logs"].lower():
-                    report["error_code"] = classify_failure(report["container_logs"])
             owner = run(["docker", "inspect", "--format", '{{index .Config.Labels "repaircalc.compatibility-probe"}}', name])
             if owner.returncode == 0 and owner.stdout.strip() == token:
+                if not healthy() and report["status"] == "ok":
+                    report.update(status="error", error_code="mongodb_runtime_failure")
+                if report["status"] != "ok":
+                    logs = run(["docker", "logs", "--tail", "80", name])
+                    report["container_logs"] = (logs.stdout + logs.stderr)[-32768:]
+                    if "12257600" in report["container_logs"] or "mongodb cannot start" in report["container_logs"].lower():
+                        report["error_code"] = classify_failure(report["container_logs"])
                 removed = run(["docker", "rm", "--force", "--volumes", name])
                 if removed.returncode:
                     report.update(status="error", error_code="mongodb_probe_cleanup_failed")

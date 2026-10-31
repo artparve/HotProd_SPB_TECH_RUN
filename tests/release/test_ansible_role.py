@@ -71,7 +71,9 @@ def legacy(service):
             "NetworkSettings": {"Networks": {"repaircalc_default": {"IPAddress": "172.18.0.2"}}},
             "Mounts": [{"Type": "volume", "Name": "repaircalc_mongo-data", "Destination": "/data/db"}] if service == "mongo" else []}
 if args[0] == "info":
-    print("28.0.0")
+    if any('KernelVersion' in a for a in args):
+        print(json.dumps({'kernel': '7.0.0-test' if os.environ.get('FAKE_KERNEL_FAIL') == '1' else '6.8.0-test', 'architecture': 'amd64', 'version': '28.0.0'}))
+    else: print("28.0.0")
 elif args[:2] == ["compose", "version"]:
     print("2.20.0")
 elif args[0] == "login":
@@ -100,9 +102,14 @@ elif "ps" in args:
     if "--services" in args: print("backend")
     else: print(json.dumps([{"ID": "b" * 64, "Service": "init-data", "State": "exited", "ExitCode": 1}]))
 elif args[0] == "inspect":
-    print(json.dumps({"Status": "exited", "ExitCode": 1, "OOMKilled": False, "Health": None}))
+    owner = pathlib.Path(os.environ["FAKE_DOCKER_LOG"]).with_name('probe-owner')
+    if any('compatibility-probe' in a for a in args) and owner.exists(): print(owner.read_text())
+    else: print(json.dumps({"Status": "exited", "ExitCode": 1, "OOMKilled": False, "Health": None}))
 elif "logs" in args:
-    print("ReplicaSetNoPrimary private-test-db-password private-test-registry-password")
+    print(("MongoDB cannot start: Linux kernel 12257600" if os.environ.get('FAKE_KERNEL_FAIL') == '1' else "ReplicaSetNoPrimary") + " private-test-db-password private-test-registry-password")
+elif args[0] == 'run' and os.environ.get('FAKE_KERNEL_FAIL') == '1':
+    pathlib.Path(os.environ["FAKE_DOCKER_LOG"]).with_name('probe-owner').write_text(args[args.index('--label')+1].split('=',1)[1])
+    sys.exit(1)
 elif "up" in args and os.environ.get("FAKE_DOCKER_FAIL") == "1":
     print("private-test-registry-password", file=sys.stderr)
     sys.exit(23)
@@ -315,6 +322,18 @@ elif "up" in args:
         self.assertFalse(any("up" in item["args"] or "rm" in item["args"] or "pull" in item["args"] for item in commands))
         self.assertFalse((self.directory / "stand/compose-project.json").exists())
         self.assertFalse((self.directory / "stand/current").exists())
+
+    def test_incompatible_kernel_blocks_release_before_login_or_application_restart(self):
+        self.environ['FAKE_KERNEL_FAIL'] = '1'
+        result = self.deploy()
+        self.assertNotEqual(result.returncode, 0)
+        commands = self.assert_cleaned(expect_login=False)
+        self.assertIn('mongodb_kernel_incompatible', result.stdout)
+        self.assertNotIn('private-test', result.stdout + result.stderr)
+        self.assertFalse(any('up' in item['args'] or 'stop' in item['args'] or 'down' in item['args'] for item in commands))
+        self.assertFalse(any('rm' in item['args'] and 'init-data' in item['args'] for item in commands))
+        self.assertFalse((self.directory / 'stand/current').exists())
+        self.assertFalse((self.directory / 'stand/compose-project.json').exists())
 
 
 if __name__ == "__main__":

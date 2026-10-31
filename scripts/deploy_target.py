@@ -143,6 +143,29 @@ def query(mongo, settings, operation):
         raise PreflightError("Cannot query existing MongoDB over the Docker network with deployment credentials; verify Mongo credentials. No services were restarted") from None
 
 
+def runtime_check(path, config):
+    mongo = config["services"]["mongo"]
+    settings = mongo["environment"]
+    argv = [sys.executable, str(path / "scripts/mongo_runtime.py"), "remote-check",
+            "--image", mongo["image"], "--report", str(path / "mongo-compatibility.json"),
+            "--seconds", str(settings.get("MONGO_COMPAT_SECONDS", "95")),
+            "--startup-timeout", str(settings.get("MONGO_COMPAT_START_TIMEOUT_SECONDS", "60")),
+            "--memory", str(mongo.get("mem_limit", "1g")), "--cpus", str(mongo.get("cpus", "1.0"))]
+    try:
+        result = subprocess.run(argv, capture_output=True, text=True, timeout=750, check=False)
+        report = json.loads(result.stdout)
+        if not isinstance(report, dict):
+            raise ValueError("Invalid compatibility report")
+        if result.returncode == 0 and report.get("status") == "ok":
+            return report
+        code = report.get("error_code", "mongodb_compatibility_failed")
+        if not isinstance(code, str) or not re.fullmatch(r"(?:mongodb|docker)_[a-z_]+", code):
+            code = "mongodb_compatibility_failed"
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        code = "mongodb_compatibility_failed"
+    raise PreflightError("Mongo compatibility failed (" + code + "); running services were not restarted")
+
+
 def plan(args):
     ids = command(["docker", "ps", "-aq"]).split()
     containers = json.loads(command(["docker", "inspect"] + ids)) if ids else []
@@ -201,9 +224,12 @@ def plan(args):
             raise PreflightError("Existing database container is missing; refusing to start against an unverified volume")
     if pinned and pinned.get("volume") != volume:
         raise PreflightError("Database volume changed since the previous deployment; automatic switch refused")
+    compatibility = runtime_check(args.path, config)
     return {"project": selected, "volume": volume, "adopted_legacy": adopted,
             "existing_database": bool(mongo), "preserve_catalog": preserve, "database": database,
-            "mongo_id": mongo["Id"] if mongo else None}
+            "mongo_id": mongo["Id"] if mongo else None, "mongo_runtime": {
+                "status": compatibility["status"], "daemon": compatibility.get("daemon"),
+                "probe_performed": compatibility.get("probe_performed", False)}}
 
 
 def backup(args):
