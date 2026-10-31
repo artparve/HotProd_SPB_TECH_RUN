@@ -40,7 +40,8 @@ jobs:
           retention-days: 7
 
   backend:
-    runs-on: ubuntu-24.04
+    # MongoDB 8.0 currently rejects kernels on the newer Ubuntu 24.04 runner images.
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -90,7 +91,7 @@ jobs:
 
   stack:
     needs: [frontend, backend, python-and-deploy]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
