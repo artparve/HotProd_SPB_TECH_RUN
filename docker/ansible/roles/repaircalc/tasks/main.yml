@@ -52,6 +52,7 @@
         [
           docker-compose.yml,
           docker-compose.release.yml,
+          docker-compose.gpu.yml,
           mongo/start.sh,
           mongo/init.js,
           mongo/health.js,
@@ -64,6 +65,14 @@
         dest: "{{ release_path }}/scripts/{{ item }}"
         mode: "0600"
       loop: [mongo-backup.py, mongo_runtime.py]
+
+    - name: Enable NVIDIA access for an explicitly configured local Ollama
+      ansible.builtin.set_fact:
+        release_compose: "{{ release_compose + ['-f', release_path ~ '/docker/docker-compose.gpu.yml'] }}"
+      when:
+        - release_llm_enabled | default(false) | bool
+        - release_local_ollama | default(true) | bool
+        - release_ollama_gpu | default(false) | bool
 
     - name: Install non-secret environment settings for this release
       ansible.builtin.copy:
@@ -210,6 +219,16 @@
           until: frontend_health.status | default(0) == 200
           retries: 6
           delay: 5
+
+        # /health and `ollama list` prove only process liveness. Run from Python's
+        # network namespace to check its actual model URL, storage and loadability.
+        - name: Ensure the configured model exists and can load before accepting an AI release
+          ansible.builtin.command:
+            argv: "{{ release_compose + ['exec', '-T', 'llm', 'python', '-', '--pull' if release_local_ollama | default(true) | bool else '--check-only'] }}"
+            stdin: "{{ lookup('ansible.builtin.file', playbook_dir ~ '/../../scripts/ensure_model.py') }}"
+          when: release_llm_enabled | default(false) | bool
+          changed_when: false
+          no_log: true
 
         - name: Check Java catalog through the frontend API proxy
           ansible.builtin.uri:

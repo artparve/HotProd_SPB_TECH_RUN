@@ -117,7 +117,10 @@ def configuration(args, environ):
         "release_become": not args.no_become,
         "release_llm_enabled": boolean(environ, "DEPLOY_LLM_ENABLED", "false"),
         "release_local_ollama": boolean(environ, "DEPLOY_LOCAL_OLLAMA", "true"),
+        "release_ollama_gpu": boolean(environ, "DEPLOY_OLLAMA_GPU", "false"),
     }
+    if variables["release_llm_enabled"] and len(environ.get("INTERNAL_SERVICE_TOKEN", "")) < 32:
+        raise ValueError("LLM deployment requires INTERNAL_SERVICE_TOKEN of at least 32 characters")
     if bool(environ.get("REGISTRY_USERNAME")) != bool(environ.get("REGISTRY_PASSWORD")):
         raise ValueError("Set both REGISTRY_USERNAME and REGISTRY_PASSWORD, or neither for public images")
     inventory = {"all": {"hosts": {"stand": {

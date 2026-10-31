@@ -87,7 +87,10 @@ elif args[0] == "inspect" and "--format" not in args:
 elif "config" in args and "--format" in args:
     print(json.dumps({"services": {"mongo": {"image": "mongo:8.0", "environment": {"MONGO_INITDB_ROOT_USERNAME": "root", "MONGO_INITDB_ROOT_PASSWORD": "private-root", "MONGO_PORT": "27017", "MONGO_REPLICA_SET": "rs0"}}, "backend": {"environment": {"MONGO_USER": "repaircalc", "MONGO_URI": "mongodb://mongo:27017/repaircalc", "MONGO_PASSWORD": "private-test-db-password"}}}}))
 elif "exec" in args:
-    if "--eval" in args:
+    if "python" in args and "--pull" in args:
+        sys.stdin.read()
+        if os.environ.get("FAKE_MODEL_FAIL") == "1": sys.exit(1)
+    elif "--eval" in args:
         sys.stdin.read()
         if os.environ.get("FAKE_NETWORK_AUTH_FAIL") == "1":
             print("AuthenticationFailed: private-test-db-password", file=sys.stderr)
@@ -227,6 +230,29 @@ elif "up" in args:
 
     def test_success_waits_without_building_and_marks_current(self):
         self.assert_successful_install()
+
+    def test_ai_release_checks_model_and_applies_gpu_override(self):
+        self.variables.update(release_llm_enabled=True, release_ollama_gpu=True)
+        (self.directory / "vars.json").write_text(json.dumps(self.variables))
+        result = self.deploy()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        commands = self.assert_cleaned()
+        up = next(item for item in commands if "up" in item["args"])
+        self.assertEqual(up["profiles"], "llm")
+        self.assertIn("ollama", up["args"])
+        self.assertTrue(any(arg.endswith("docker-compose.gpu.yml") for arg in up["args"]))
+        model = next(item for item in commands if "--pull" in item["args"] and "exec" in item["args"])
+        self.assertEqual(model["args"][-4:], ["llm", "python", "-", "--pull"])
+        self.assertTrue((self.directory / "stand/current").is_symlink())
+
+    def test_missing_or_unloadable_model_does_not_accept_ai_release(self):
+        self.variables["release_llm_enabled"] = True
+        (self.directory / "vars.json").write_text(json.dumps(self.variables))
+        self.environ["FAKE_MODEL_FAIL"] = "1"
+        result = self.deploy()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.directory / "stand/current").exists())
+        self.assert_cleaned()
 
     def test_fresh_loopback_install_starts_http_only_after_preflight(self):
         # Same-address conflicts are caught even on WSL, unlike wildcard/loopback overlap.

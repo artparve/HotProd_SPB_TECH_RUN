@@ -1,0 +1,9 @@
+NAME          ID              SIZE      PROCESSOR    CONTEXT    RUNNER      UNTIL               
+gemma4:12b    6114515d63c1    1.5 GB    100% GPU     16384      llamacpp    42 seconds from now    
+repaircalc_prod-llm-1	Up 46 seconds (healthy)
+repaircalc_prod-backend-1	Up 36 minutes (healthy)
+repaircalc_prod-mongo-1	Up 37 minutes (healthy)
+repaircalc_prod-frontend-1	Up 37 minutes (healthy)
+repaircalc-ollama-1	Up 5 hours (healthy)
+OLLAMA_URL=http://repaircalc-ollama-1:11434
+ok

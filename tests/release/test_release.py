@@ -95,6 +95,15 @@ class ReleaseTests(unittest.TestCase):
         run.assert_not_called()
         self.assertNotIn("private-", output.getvalue())
 
+    def test_ai_release_requires_token_before_connecting_and_supports_gpu(self):
+        self.environ.update(DEPLOY_LLM_ENABLED="true", DEPLOY_OLLAMA_GPU="true")
+        _, variables = self.config()
+        self.assertTrue(variables["release_llm_enabled"])
+        self.assertTrue(variables["release_ollama_gpu"])
+        self.environ["INTERNAL_SERVICE_TOKEN"] = "short"
+        with self.assertRaisesRegex(ValueError, "INTERNAL_SERVICE_TOKEN"):
+            self.config()
+
     def test_passes_inventory_as_json_and_preserves_ansible_exit_code(self):
         seen = []
 

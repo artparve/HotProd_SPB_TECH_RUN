@@ -29,7 +29,7 @@ jobs:
   deploy:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 60
     environment:
       name: ${{ inputs.environment }}
     # GitHub exposes selected Environment variables through the vars context.
@@ -134,8 +134,9 @@ jobs:
       OLLAMA_KEEP_ALIVE: ${{ vars.OLLAMA_KEEP_ALIVE || '60s' }}
       OLLAMA_CACHE_RAM: ${{ vars.OLLAMA_CACHE_RAM || '0' }}
       OLLAMA_CTX_CHECKPOINTS: ${{ vars.OLLAMA_CTX_CHECKPOINTS || '0' }}
-      DEPLOY_LLM_ENABLED: ${{ vars.DEPLOY_LLM_ENABLED || 'false' }}
+      DEPLOY_LLM_ENABLED: ${{ vars.DEPLOY_LLM_ENABLED || 'true' }}
       DEPLOY_LOCAL_OLLAMA: ${{ vars.DEPLOY_LOCAL_OLLAMA || 'true' }}
+      DEPLOY_OLLAMA_GPU: ${{ vars.DEPLOY_OLLAMA_GPU || 'false' }}
     steps:
       - uses: actions/checkout@v4
         with:

@@ -8,7 +8,11 @@ Workflow `CD` (`.github/workflows/cd.yml`) запускается вручную
 
 Задайте DEPLOY_HOST, DEPLOY_USER, DEPLOY_PORT, DEPLOY_FRONTEND_HOST/PORT, SSH private key в DEPLOY_SSH_PRIVATE_KEY и Mongo secrets MONGO_ROOT_PASSWORD/MONGO_PASSWORD/MONGO_KEYFILE_SECRET. Для admin нужны ADMIN_USERNAME/ADMIN_PASSWORD_HASH. Обычные runtime-настройки экспортируются из GitHub vars; значения по умолчанию совпадают с env/.env.example.
 
-DEPLOY_LLM_ENABLED=false оставляет только базовый стек. true добавляет Python; DEPLOY_LOCAL_OLLAMA=true дополнительно запускает контейнер Ollama. При false задайте внешний OLLAMA_URL. В обоих случаях LLM требует INTERNAL_SERVICE_TOKEN. Модели не скачиваются автоматически.
+CD по умолчанию включает ИИ: `DEPLOY_LLM_ENABLED=true`. Для базового стенда явно задайте `DEPLOY_LLM_ENABLED=false`. Ручной `scripts/release.py` по-прежнему оставляет ИИ выключенным без этой настройки. Включение требует `INTERNAL_SERVICE_TOKEN` длиной от 32 символов; отсутствие токена блокирует запуск до SSH.
+
+`DEPLOY_LOCAL_OLLAMA=true` запускает Ollama в сети текущего Compose project. CD проверяет `OLLAMA_MODEL` через фактический `OLLAMA_URL` Python-сервиса, скачивает отсутствующую модель и проверяет загрузку весов с настроенным контекстом. Установленная модель повторно не скачивается. Загрузка хранится в постоянном `ollama-data` volume выбранного project; модель старого project автоматически не переносится. Ошибка скачивания или загрузки блокирует обновление `current`, даже если процессы healthy. На первоначальную загрузку workflow отводит до 60 минут.
+
+На NVIDIA-стенде задайте `DEPLOY_OLLAMA_GPU=true` (нужен NVIDIA Container Toolkit); роль подключит `docker-compose.gpu.yml`. Для внешней Ollama задайте `DEPLOY_LOCAL_OLLAMA=false` и доступный из LLM-контейнера `OLLAMA_URL`: CD проверит установленную модель и загрузку весов, но скачивать её на внешнем сервисе не будет. Контейнер из старого Compose project не становится доступен в новой сети автоматически.
 
 Роль создаёт отдельный Compose project на environment, копирует только manifests/init scripts и env, подтягивает готовые образы, повторяет bootstrap и ждёт healthchecks. Frontend проверяется отдельно от Java; деградировавший пустой каталог не считается успешным релизом. Указатель current меняется после проверок. Registry credentials и deploy lock удаляются в always, env-файлы имеют mode 600. Обновление приложения сохраняет Mongo volume и не трогает старый PostgreSQL volume.
 

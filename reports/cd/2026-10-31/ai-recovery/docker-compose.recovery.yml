@@ -1,0 +1,6 @@
+# Current release only: keep the pre-existing GPU/model volume in service.
+# Unique DNS name avoids conflicting with a future project-local `ollama` service.
+services:
+  llm:
+    environment:
+      OLLAMA_URL: http://repaircalc-ollama-1:11434
