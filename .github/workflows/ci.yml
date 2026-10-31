@@ -119,7 +119,9 @@ jobs:
       - run: npm --prefix frontend ci --no-fund
       - run: npm --prefix frontend exec -- playwright install --with-deps chromium
       - run: python scripts/verify-stack.py --playwright
-      - run: python scripts/verify-stack.py --base-only --no-build
+      - run: python scripts/verify-stack.py --base-only --no-build --playwright
+      - name: Verify the full profile with official Ollama and no model download
+        run: python scripts/verify-stack.py --runtime-only --no-build
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

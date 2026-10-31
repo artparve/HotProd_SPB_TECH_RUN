@@ -52,6 +52,36 @@ afterEach(() => {
 })
 
 describe('RoomInspirationGallery', () => {
+  it('filters the loaded gallery by category without changing the project', async () => {
+    const input = project()
+    const original = structuredClone(input)
+    vi.mocked(service.roomInspirations).mockResolvedValueOnce({
+      items: [
+        { ...image, id: 'kitchen-1', title: 'Кухня 1', category: 'kitchen' },
+        { ...image, id: 'kitchen-2', title: 'Кухня 2', category: 'kitchen' },
+        { ...image, id: 'bedroom-1', title: 'Спальня 1', category: 'bedroom' },
+      ],
+      nextCursor: null,
+      status: 'ok',
+      warnings: [],
+    })
+    const wrapper = await render(input)
+    const group = wrapper.get('[aria-label="Категории интерьеров"]')
+    const select = (label: string) =>
+      group.findAll('button').find((button) => button.text() === label)!
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)
+    await select('Кухни').trigger('click')
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(2)
+    expect(select('Кухни').attributes('aria-pressed')).toBe('true')
+    await select('Спальни').trigger('click')
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(1)
+    expect(wrapper.get('.inspiration-card').text()).toContain('Спальня 1')
+    await select('Все').trigger('click')
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)
+    expect(input).toEqual(original)
+    expect(service.analyzeRoomInspiration).not.toHaveBeenCalled()
+  })
+
   it('credits the actual photo source and keeps its original link', async () => {
     const sourceUrl = 'https://www.pexels.com/photo/modern-bedroom-interior-8089163/'
     vi.mocked(service.roomInspirations).mockResolvedValueOnce({

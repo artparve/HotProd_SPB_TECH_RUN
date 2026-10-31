@@ -15,6 +15,7 @@ export const roomInspirationSchema = z.object({
   imageUrl: inspirationImageUrlSchema,
   alt: z.string().min(1).max(300),
   sourceUrl: z.string().url().startsWith('https://').optional(),
+  category: z.enum(['living', 'bedroom', 'kitchen', 'bathroom', 'other']).optional(),
 })
 export const roomInspirationFeedSchema = z.object({
   status: z.enum(['ok', 'unavailable']).default('ok'),

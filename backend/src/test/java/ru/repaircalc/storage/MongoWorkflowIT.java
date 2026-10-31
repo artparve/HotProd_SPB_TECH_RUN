@@ -171,10 +171,19 @@ class MongoWorkflowIT {
             480,
             24);
     var entries = json.readTree(Files.readString(assets.resolve("manifest.json")));
-    assertThat(entries.size()).isGreaterThan(0);
+    assertThat(entries.size()).isEqualTo(20);
     assertThat(service.importManifest(assets.resolve("manifest.json"))).isEqualTo(entries.size());
     assertThat(service.importManifest(assets.resolve("manifest.json"))).isEqualTo(entries.size());
     assertThat(service.feed(null, 24).items()).hasSize(entries.size());
+    assertThat(service.feed(null, 24).items().stream()
+            .collect(java.util.stream.Collectors.groupingBy(
+                ru.repaircalc.inspirations.InspirationService.Image::category,
+                java.util.stream.Collectors.counting())))
+        .containsExactlyInAnyOrderEntriesOf(
+            Map.of("living", 5L, "bedroom", 5L, "kitchen", 5L, "bathroom", 5L));
+    assertThat(service.feed(null, 24).items().stream()
+            .map(item -> MongoStore.sha(service.image(item.id(), false))))
+        .doesNotHaveDuplicates();
     var visited = new HashSet<String>();
     String cursor = null;
     do {

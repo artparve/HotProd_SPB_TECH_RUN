@@ -71,8 +71,10 @@ public class InspirationService {
           title = entry.path("title").asText(),
           source = entry.path("sourceUrl").asText();
       String alt = entry.path("alt").asText(title);
+      String category = entry.path("category").asText("other");
       if (!id.matches("[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
           || !ids.add(id)
+          || !Set.of("living", "bedroom", "kitchen", "bathroom", "other").contains(category)
           || title.isBlank()
           || title.length() > 120
           || alt.isBlank()
@@ -93,6 +95,7 @@ public class InspirationService {
           new Document("_id", id)
               .append("id", id)
               .append("title", title)
+              .append("category", category)
               .append("description", entry.path("description").asText(""))
               .append("alt", entry.path("alt").asText(title))
               .append("file", file)
@@ -129,7 +132,8 @@ public class InspirationService {
         "/api/v1/room-inspirations/" + id + "/thumbnail",
         "/api/v1/room-inspirations/" + id + "/image",
         d.getString("alt"),
-        d.getString("sourceUrl"));
+        d.getString("sourceUrl"),
+        d.getString("category") == null ? "other" : d.getString("category"));
   }
 
   private Document find(String id) {
@@ -312,7 +316,8 @@ public class InspirationService {
       String thumbnailUrl,
       String imageUrl,
       String alt,
-      String sourceUrl) {}
+      String sourceUrl,
+      String category) {}
 
   public record Feed(List<Image> items, String nextCursor, String status, List<String> warnings) {}
 

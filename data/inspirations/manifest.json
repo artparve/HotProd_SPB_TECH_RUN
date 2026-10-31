@@ -5,7 +5,8 @@
     "description": "Гостиная со светлыми стенами, серым диваном и полом с древесным рисунком. Фото: Viaceslav Kat / Pexels.",
     "alt": "Светлая гостиная с серым диваном, круглым столиком и деревянной лестницей",
     "file": "living-room-1571460.jpg",
-    "sourceUrl": "https://www.pexels.com/photo/interior-design-of-a-house-1571460/"
+    "sourceUrl": "https://www.pexels.com/photo/interior-design-of-a-house-1571460/",
+    "category": "living"
   },
   {
     "id": "bedroom-8089163",
@@ -13,7 +14,8 @@
     "description": "Спальня с нейтральными стенами, деревянными акцентами и естественным освещением. Фото: Max Vakhtbovych / Pexels.",
     "alt": "Спальня с большой кроватью, серой стеной, окном и полом с древесным рисунком",
     "file": "bedroom-8089163.jpg",
-    "sourceUrl": "https://www.pexels.com/photo/modern-bedroom-interior-8089163/"
+    "sourceUrl": "https://www.pexels.com/photo/modern-bedroom-interior-8089163/",
+    "category": "bedroom"
   },
   {
     "id": "kitchen-10450057",
@@ -21,7 +23,8 @@
     "description": "Кухня со светлыми фасадами, плиточным полом и обеденной зоной у окна. Фото: Get Lost Mike / Pexels.",
     "alt": "Кухня с белыми шкафами, плиткой на полу и тёмным обеденным столом",
     "file": "kitchen-10450057.jpg",
-    "sourceUrl": "https://www.pexels.com/photo/tidy-kitchen-and-dining-area-10450057/"
+    "sourceUrl": "https://www.pexels.com/photo/tidy-kitchen-and-dining-area-10450057/",
+    "category": "kitchen"
   },
   {
     "id": "bathroom-7045922",
@@ -29,6 +32,151 @@
     "description": "Ванная с каменным рисунком отделки, большим зеркалом и деревянной тумбой. Фото: Max Vakhtbovych / Pexels.",
     "alt": "Ванная с крупной светлой плиткой, зеркальной стеной и двумя раковинами",
     "file": "bathroom-7045922.jpg",
-    "sourceUrl": "https://www.pexels.com/photo/interior-of-luxury-bathroom-in-modern-apartment-7045922/"
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-luxury-bathroom-in-modern-apartment-7045922/",
+    "category": "bathroom"
+  },
+  {
+    "id": "living-room-7545494",
+    "category": "living",
+    "title": "Гостиная с графичными обоями",
+    "description": "Серая гостиная с узорчатыми стенами, светлым полом и мягким диваном. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Гостиная с серыми обоями, телевизором и мраморным рисунком пола",
+    "file": "living-room-7545494.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-spacious-living-room-in-modern-apartment-7545494/"
+  },
+  {
+    "id": "living-room-11701155",
+    "category": "living",
+    "title": "Гостиная с синими акцентами",
+    "description": "Светлая гостиная с синими шторами и полом с древесным рисунком. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Вид из коридора на гостиную с синими шторами, белым диваном и деревянным полом",
+    "file": "living-room-11701155.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/mirror-and-living-room-11701155/"
+  },
+  {
+    "id": "living-room-7061426",
+    "category": "living",
+    "title": "Гостиная с большими окнами",
+    "description": "Гостиная с деревянной отделкой, тёмным диваном и большими окнами. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Гостиная с панорамными окнами, серым диваном, креслом и круглым столом",
+    "file": "living-room-7061426.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-stylish-living-room-with-big-windows-7061426/"
+  },
+  {
+    "id": "living-room-5998040",
+    "category": "living",
+    "title": "Гостиная в стиле лофт",
+    "description": "Гостиная с кирпичной стеной, деревянным полом и стеклянным журнальным столом. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Гостиная с кирпичной стеной, коричневым диваном и стеклянным столиком",
+    "file": "living-room-5998040.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/cozy-living-room-with-sofa-and-table-5998040/"
+  },
+  {
+    "id": "bedroom-7722151",
+    "category": "bedroom",
+    "title": "Спальня с панорамными окнами",
+    "description": "Спальня со светло-зелёными стенами, мягким покрытием пола и большими окнами. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Спальня с большой кроватью, зелёными стенами и окнами с жалюзи",
+    "file": "bedroom-7722151.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/an-interior-of-a-bedroom-7722151/"
+  },
+  {
+    "id": "bedroom-7745979",
+    "category": "bedroom",
+    "title": "Спальня с деревянной отделкой",
+    "description": "Спальня с белыми деревянными панелями, бежевыми стенами и тёплыми акцентами. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Спальня с белыми панелями, двуспальной кроватью и медным подвесным светильником",
+    "file": "bedroom-7745979.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/an-interior-of-a-bedroom-7745979/"
+  },
+  {
+    "id": "bedroom-7214167",
+    "category": "bedroom",
+    "title": "Спальня с контрастной отделкой",
+    "description": "Спальня с тёмной акцентной стеной, светлой кроватью и полом с древесным рисунком. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Спальня с тёмной стеной, мягким изголовьем, синим креслом и большими окнами",
+    "file": "bedroom-7214167.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-bedroom-in-modern-apartment-7214167/"
+  },
+  {
+    "id": "bedroom-7060826",
+    "category": "bedroom",
+    "title": "Спальня с открытой планировкой",
+    "description": "Спальня в нейтральных тонах с деревянными акцентами и остеклённой ванной зоной. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Спальня с белым шкафом, кроватью и стеклянной перегородкой ванной комнаты",
+    "file": "bedroom-7060826.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-modern-bedroom-with-bathroom-7060826/"
+  },
+  {
+    "id": "kitchen-6908569",
+    "category": "kitchen",
+    "title": "Кухня с деревянными фасадами",
+    "description": "Кухня с деревянными фасадами, серой столешницей и встроенной техникой. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Кухонная рабочая зона с деревянными шкафами, варочной панелью и серой столешницей",
+    "file": "kitchen-6908569.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-a-kitchen-6908569/"
+  },
+  {
+    "id": "kitchen-7045917",
+    "category": "kitchen",
+    "title": "Кухня с островом и высокими окнами",
+    "description": "Кухня с островом, деревянными шкафами и большими окнами в стиле лофт. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Просторная кухня с белым островом, деревянными шкафами и металлической вытяжкой",
+    "file": "kitchen-7045917.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-modern-kitchen-zone-7045917/"
+  },
+  {
+    "id": "kitchen-6969875",
+    "category": "kitchen",
+    "title": "Чёрно-белая кухня",
+    "description": "Кухня со светлыми фасадами, тёмной столешницей и крупным островом. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Белая кухня с чёрной столешницей, островом и зелёными барными стульями",
+    "file": "kitchen-6969875.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/white-and-black-kitchen-counter-6969875/"
+  },
+  {
+    "id": "kitchen-8089196",
+    "category": "kitchen",
+    "title": "Кухня-гостиная с обеденным столом",
+    "description": "Светлая кухня с островом, обеденной зоной и крупной плиткой на полу. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Кухня с белыми фасадами, островом, деревянным столом и комнатными растениями",
+    "file": "kitchen-8089196.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/room-with-kitchen-8089196/"
+  },
+  {
+    "id": "bathroom-7534564",
+    "category": "bathroom",
+    "title": "Ванная в тёплых каменных оттенках",
+    "description": "Компактная ванная с тёплым каменным рисунком, большим зеркалом и акцентной раковиной. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Ванная с бежевой отделкой, зеркалом, тёмной раковиной и подвесным унитазом",
+    "file": "bathroom-7534564.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-modern-bathroom-in-apartment-7534564/"
+  },
+  {
+    "id": "bathroom-8092396",
+    "category": "bathroom",
+    "title": "Ванная в классических тонах",
+    "description": "Просторная светлая ванная с декоративным бордюром и угловой ванной. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Светлая ванная с бежевой плиткой, большой ванной, душевой кабиной и белой тумбой",
+    "file": "bathroom-8092396.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/bathroom-interior-8092396/"
+  },
+  {
+    "id": "bathroom-7045906",
+    "category": "bathroom",
+    "title": "Ванная с зеркальной стеной",
+    "description": "Ванная со светлой каменной отделкой, зеркальной стеной и деревянной тумбой. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Ванная с двойной раковиной, большим зеркалом, светлой плиткой и деревянной тумбой",
+    "file": "bathroom-7045906.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-modern-bathroom-in-apartment-7045906/"
+  },
+  {
+    "id": "bathroom-6957081",
+    "category": "bathroom",
+    "title": "Ванная с декоративной плиткой",
+    "description": "Ванная с коричневой плиткой, растительным бордюром и большой угловой ванной. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Ванная с белой угловой ванной, бежево-коричневой плиткой и деревянной тумбой",
+    "file": "bathroom-6957081.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/white-bathtub-and-sink-in-spacious-bathtub-at-home-6957081/"
   }
 ]

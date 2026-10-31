@@ -499,6 +499,10 @@ components:
           minLength: 1
           maxLength: 300
           example: Гостиная с зелёным диваном и деревянным полом
+        category:
+          type: string
+          enum: [living, bedroom, kitchen, bathroom, other]
+          description: Категория сюжета фотографии; не меняет тип или условия исходной комнаты.
         sourceUrl:
           type: string
           format: uri

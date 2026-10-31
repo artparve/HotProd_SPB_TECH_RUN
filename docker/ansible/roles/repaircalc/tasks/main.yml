@@ -189,7 +189,7 @@
           diff: false
           when: release_target.existing_database | bool
 
-        - name: Recreate the bootstrap gate (seed only an uninitialized database)
+        - name: Recreate bootstrap (refresh images; seed catalog only for an uninitialized database)
           ansible.builtin.command:
             argv: "{{ release_compose + ['rm', '--force', 'init-data'] }}"
           changed_when: true

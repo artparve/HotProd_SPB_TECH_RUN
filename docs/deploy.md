@@ -19,14 +19,14 @@ Mongo стартует с ключом, root-пользователем и от�
 Базовый стек работает без модели. Для LLM задайте токен от 32 символов в `secret.env`:
 
 ```sh
-docker compose --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml --profile llm up -d llm ollama
+docker compose --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml --profile llm up -d --build --wait
 ```
 
-Модель заранее установите отдельно: `docker compose ... exec ollama ollama pull <имя-модели>`. Команда pull не вызывается автоматически. Выберите совместимую с vision/tools модель в `OLLAMA_MODEL`; ресурсы настраиваются env. Для внешней Ollama задайте `OLLAMA_URL` и запустите только сервис `llm`, без `ollama`.
+Модель заранее установите отдельно: `docker compose ... exec ollama ollama pull <имя-модели>`. Команда pull не вызывается автоматически. Выберите совместимую с vision/tools модель в `OLLAMA_MODEL`; ресурсы настраиваются env. Для внешней Ollama задайте `OLLAMA_URL` и выполните тот же `up` с явными сервисами `frontend backend llm`, чтобы не запускать локальную `ollama`. После изменения токена или адресов backend также должен быть пересоздан командой `up`.
 
 Все публичные API идут через Java. Python доступен только в служебной сети и требует Bearer-токен. Одна очередь допуска ограничивает все виды inference. Планы требуют ручного подтверждения; у интерьерного изображения меняются только поддерживаемые работы и selections, не размеры.
 
-Подборка заполняется по инструкции `data/inspirations/README.md`. Production manifest по умолчанию пустой.
+Подборка уже содержит 20 лицензированных фото Pexels: по пять гостиных, спален, кухонь и ванных. JPEG и manifest хранятся в Git, попадают в backend image через `COPY data` и автоматически импортируются при bootstrap. Установка не зависит от личных файлов разработчика, API-ключей или доступности Pexels. Расширение и атрибуция описаны в `data/inspirations/README.md`.
 
 ## Диагностика и проверки
 
@@ -36,9 +36,9 @@ docker compose --env-file env/.env --env-file env/secret.env -f docker/docker-co
 python scripts/verify-stack.py --playwright
 ```
 
-Скрипт собирает три образа и запускает отдельный проект со случайным именем, синтетическими credentials и картинкой. Java, MongoDB replica set, Python и nginx настоящие; fake Ollama проверяет транспорт без модели. Проверяются калькуляторы, галерея, admin/ETag/очередь/review/publication, seed, backup/restore, отказы и восстановление. Удаляются только volumes этого тестового проекта. Для ограниченной сети: `--maven-repository https://maven-central.storage-download.googleapis.com/maven2`.
+Скрипт собирает три образа и запускает отдельный проект со случайным именем, синтетическими credentials и копией настоящего JPEG из подборки. Java, MongoDB replica set, Python и nginx настоящие; fake Ollama проверяет транспорт без модели. Проверяются калькуляторы, галерея, admin/ETag/очередь/review/publication, seed, backup/restore, отказы и восстановление. Удаляются только volumes этого тестового проекта. Для ограниченной сети: `--maven-repository https://maven-central.storage-download.googleapis.com/maven2`.
 
-При `--playwright` браузер проверяет также состояние UI после отдельной остановки Ollama, Python, Mongo и Java. `--base-only --no-build` проверяет уже собранные образы без Python/Ollama/токена, с пустым production manifest.
+При `--playwright` браузер проверяет также состояние UI после отдельной остановки Ollama, Python, Mongo и Java. `--base-only --no-build --playwright` проверяет все 20 production-фотографий из образа, категории и браузерную галерею без Python/Ollama/токена. `--runtime-only --no-build` дополнительно поднимает полный профиль с официальным образом Ollama и Python; модели автоматически не скачиваются, их отсутствие проверяется как `unavailable`. Это проверка запуска и HTTP-границы, а не качества inference.
 
 ## Backup и restore
 

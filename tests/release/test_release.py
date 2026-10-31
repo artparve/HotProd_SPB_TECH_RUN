@@ -165,7 +165,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertFalse((release.ROOT / "backend/.env.example").exists())
 
     @unittest.skipUnless(shutil.which("docker"), "requires Compose CLI, not Docker Engine")
-    def test_preserve_data_override_skips_bootstrap_but_keeps_selected_images_and_database(self):
+    def test_preserve_data_override_refreshes_gallery_but_keeps_selected_images_and_database(self):
         version = subprocess.run([shutil.which("docker"), "compose", "version", "--short"],
                                  capture_output=True, text=True, timeout=30)
         if version.returncode:
@@ -181,7 +181,8 @@ class ReleaseTests(unittest.TestCase):
         ], cwd=release.ROOT, env=env, capture_output=True, text=True, encoding="utf-8", timeout=30)
         self.assertEqual(result.returncode, 0, result.stderr)
         config = json.loads(result.stdout)
-        self.assertEqual(config["services"]["init-data"]["entrypoint"], ["sh", "-c", "exit 0"])
+        self.assertEqual(config["services"]["init-data"]["entrypoint"],
+                         ["java", "-jar", "/app/backend.jar", "--repaircalc.command=import-inspirations"])
         self.assertEqual(config["services"]["backend"]["depends_on"]["init-data"]["condition"], "service_completed_successfully")
         self.assertEqual(config["volumes"]["mongo-data"]["name"], "repaircalc_mongo-data")
         self.assertEqual(config["services"]["backend"]["image"], "ghcr.io/owner/repo/backend:sha-" + "a" * 40)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build an isolated Docker stack, test real APIs and outages, then remove only its volumes.
 
-Only the Ollama transport is replaced. Java, Mongo transactions, Python and nginx are real.
+By default only the Ollama transport is replaced. --runtime-only uses official Ollama without a model.
 No local .env or secret.env is read; all credentials and assets are disposable fixtures.
 """
 import argparse
@@ -40,14 +40,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--playwright", action="store_true", help="Also run real browser API-mode scenarios")
     parser.add_argument("--no-build", action="store_true", help="Use existing local application images")
-    parser.add_argument("--base-only", action="store_true", help="Verify bundled production photos and baseline without Python/Ollama/token")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--base-only", action="store_true", help="Verify bundled production photos and baseline without Python/Ollama/token")
+    modes.add_argument("--runtime-only", action="store_true", help="Verify full production profile with official Ollama and no installed model")
     parser.add_argument("--maven-repository", default="https://repo.maven.apache.org/maven2", help="Public Maven Central endpoint or mirror for Docker build")
     args = parser.parse_args()
     mongo_image = image_reference()
     compatibility = check_mongo(mongo_image,
                                 seconds=int(os.environ.get("MONGO_COMPAT_SECONDS", "95")),
                                 startup_timeout=int(os.environ.get("MONGO_COMPAT_START_TIMEOUT_SECONDS", "60")))
-    write_report(ROOT / (".build-mongo-compat-base.json" if args.base_only else ".build-mongo-compat-stack.json"), compatibility)
+    report = ".build-mongo-compat-base.json" if args.base_only else ".build-mongo-compat-runtime.json" if args.runtime_only else ".build-mongo-compat-stack.json"
+    write_report(ROOT / report, compatibility)
     if compatibility["status"] != "ok":
         raise RuntimeError("Mongo compatibility failed: " + compatibility["error_code"])
     print("PASS isolated Mongo startup, transaction and " + str(compatibility["stable_seconds"]) + "s CRUD stability", flush=True)
@@ -59,11 +62,12 @@ def main():
         temporary = Path(directory)
         assets = temporary / "inspirations"
         assets.mkdir()
+        (assets / "empty.json").write_text("[]", encoding="utf-8")
         prepared_photo = json.loads((ROOT / "data/inspirations/manifest.json").read_text(encoding="utf-8"))[0]
         (assets / "image.jpg").write_bytes((ROOT / "data/inspirations" / prepared_photo["file"]).read_bytes())
         (assets / "manifest.json").write_text(json.dumps([{
             "id": "test-interior", "title": "Тестовый интерьер", "description": "Только фикстура сквозного теста",
-            "file": "image.jpg", "sourceUrl": prepared_photo["sourceUrl"]
+            "file": "image.jpg", "sourceUrl": prepared_photo["sourceUrl"], "category": prepared_photo["category"]
         }], ensure_ascii=False), encoding="utf-8")
         password = secrets.token_hex(24)
         salt = secrets.token_bytes(16)
@@ -83,8 +87,10 @@ def main():
                  "environment": {"INSPIRATIONS_DIR": "/app/test-inspirations", "INSPIRATIONS_MANIFEST": "/app/test-inspirations/manifest.json"}}
         override = temporary / "override.json"
         override.write_text(json.dumps({"services": {
-            "backend": {} if args.base_only else asset, "init-data": {} if args.base_only else asset,
-            "ollama": {"image": "repaircalc-llm:local", "entrypoint": ["python", "/app/llm/tests/fake_ollama.py"],
+            "backend": {} if args.base_only or args.runtime_only else asset,
+            "init-data": {} if args.base_only or args.runtime_only else asset,
+            "ollama": {"cpus": "0.5", "mem_limit": "512m", "memswap_limit": "512m"} if args.runtime_only else {
+                       "image": "repaircalc-llm:local", "entrypoint": ["python", "/app/llm/tests/fake_ollama.py"],
                        "cpus": "0.5", "mem_limit": "512m", "memswap_limit": "512m",
                        "healthcheck": {"test": ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:11434/api/tags',timeout=2).read()"]}}
         }}), encoding="utf-8")
@@ -137,15 +143,19 @@ def main():
                     raise AssertionError("Readiness timeout: " + path)
                 time.sleep(1)
 
-        def browser_check(outage=None):
+        def browser_check(outage=None, production=False):
             if not args.playwright:
                 return
             browser_env = dict(env, REPAIRCALC_STACK_URL=base)
             browser_env.pop("REPAIRCALC_OUTAGE", None)
+            browser_env.pop("REPAIRCALC_PRODUCTION_GALLERY", None)
             if outage:
                 browser_env["REPAIRCALC_OUTAGE"] = outage
+            if production:
+                browser_env["REPAIRCALC_PRODUCTION_GALLERY"] = "1"
             cli = ROOT / "frontend/node_modules/@playwright/test/cli.js"
-            subprocess.run(["node", str(cli), "test", "--config", "playwright.stack.config.ts"],
+            selected = ["tests/stack/gallery.spec.ts"] if production else []
+            subprocess.run(["node", str(cli), "test", *selected, "--config", "playwright.stack.config.ts"],
                            cwd=ROOT / "frontend", env=browser_env, check=True)
 
         try:
@@ -181,14 +191,20 @@ def main():
                     "works": ["floor", "paint"], "reserve": 10, "layers": 2, "sockets": 0, "cableLength": 0}
             project_body = {"object": "apartment", "renovation": "capital", "rooms": [room]}
             inputs = {"area": 20, "perimeter": 18, "height": 2.7, "reserve": 10, "layers": 2, "quantity": 6}
-            if args.base_only:
+            if args.base_only or args.runtime_only:
+                if args.runtime_only:
+                    run("exec", "-T", "llm", "python", "-c",
+                        "import json,os,urllib.request; result=json.load(urllib.request.urlopen(os.environ['OLLAMA_URL']+'/api/tags',timeout=10)); assert result['models']==[]")
                 feed, _ = request("/api/v1/room-inspirations")
                 prepared = json.loads((ROOT / "data/inspirations/manifest.json").read_text(encoding="utf-8"))
                 assert prepared and feed["status"] == "ok"
                 assert {item["id"] for item in feed["items"]} == {item["id"] for item in prepared}
+                from collections import Counter
+                assert Counter(item["category"] for item in feed["items"]) == {"living": 5, "bedroom": 5, "kitchen": 5, "bathroom": 5}
                 for entry in prepared:
                     item = next(item for item in feed["items"] if item["id"] == entry["id"])
                     assert item["sourceUrl"] == entry["sourceUrl"]
+                    assert item["category"] == entry["category"]
                     original, _ = request(item["imageUrl"])
                     assert original == (ROOT / "data/inspirations" / entry["file"]).read_bytes()
                     preview, _ = request(item["thumbnailUrl"])
@@ -199,7 +215,9 @@ def main():
                 result, _ = request("/api/v1/materials/estimate", {"productId": tile, "input": inputs})
                 assert result["explanationStatus"] == "unavailable" and result["estimate"]["total"] == "34560.00"
                 request("/")
-                print("PASS bundled production photos, previews and unavailable analysis without Python, Ollama or token", flush=True)
+                mode = "with official Ollama/Python and no installed model" if args.runtime_only else "without Python, Ollama or token"
+                print("PASS all 20 production photos, categories, previews and unavailable analysis " + mode, flush=True)
+                browser_check(production=True)
                 return
             estimate, _ = request("/api/v1/estimate", {"project": project_body, "selections": {"room-a:covering": tile}})
             assert estimate["mode"] == "api" and len(estimate["lines"]) == 4 and estimate["labor"] == "33295.00"
@@ -243,6 +261,17 @@ def main():
             run("run", "--rm", "--no-deps", "init-data")
             assert len(request("/api/v1/products")[0]) == 13
             print("PASS admin session, ETag, queue, human review, publication and repeat seed", flush=True)
+
+            # Reproduce an existing production database with an empty/old gallery.
+            published_catalog, _ = request("/api/v1/products")
+            run("run", "--rm", "--no-deps", "-e", "INSPIRATIONS_MANIFEST=/app/test-inspirations/empty.json",
+                "--entrypoint", "java", "init-data", "-jar", "/app/backend.jar", "--repaircalc.command=import-inspirations")
+            assert request("/api/v1/room-inspirations")[0]["items"] == []
+            subprocess.run(compose + ["-f", str(ROOT / "docker/docker-compose.preserve-data.yml"),
+                           "run", "--rm", "--no-deps", "init-data"], cwd=ROOT, env=env, check=True)
+            assert request("/api/v1/room-inspirations")[0]["items"][0]["id"] == "test-interior"
+            assert request("/api/v1/products")[0] == published_catalog
+            print("PASS existing-database release refreshes the gallery and preserves the published catalog", flush=True)
 
             backup = temporary / "mongo.archive.gz"
             backup_command = [sys.executable, str(ROOT / "scripts/mongo-backup.py"),
