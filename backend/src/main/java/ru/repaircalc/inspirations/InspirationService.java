@@ -266,13 +266,22 @@ public class InspirationService {
     var candidates = calculations.candidates(room, snapshot);
     var selections = new LinkedHashMap<String, String>();
     if (!family.equals("unknown")) {
-      var match =
-          candidates.stream()
-              .filter(p -> p.kind().equals("covering") && family.equals(p.materialFamily()))
-              .findFirst();
-      if (match.isEmpty())
-        return empty(id, project, "no_matches", "Нет совместимого покрытия распознанного типа.");
-      selections.put(room.id() + ":covering", match.get().id().toString());
+      var coverings = candidates.stream().filter(p -> p.kind().equals("covering")).toList();
+      if (coverings.isEmpty())
+        return empty(
+            id, project, "no_matches", "В каталоге нет напольного покрытия для условий этой комнаты.");
+      var covering =
+          coverings.stream()
+              .filter(p -> family.equals(p.materialFamily()))
+              .findFirst()
+              .orElse(coverings.getFirst());
+      if (!family.equals(covering.materialFamily()))
+        warnings.addFirst(
+            "Для этой комнаты в каталоге нет покрытия того же типа, что на фото. "
+                + "Предложена совместимая замена — "
+                + covering.name()
+                + ".");
+      selections.put(room.id() + ":covering", covering.id().toString());
     }
     if (!wall.equals("unknown")) {
       var match = candidates.stream().filter(p -> p.kind().equals(wall)).findFirst();
@@ -294,9 +303,7 @@ public class InspirationService {
           "no_matches",
           "В каталоге нет подтверждённого полного комплекта для распознанной отделки.");
     }
-    warnings.add(
-        "Подобран тип материала. Точное совпадение цвета, фактуры и товара по фотографии не"
-            + " подтверждено.");
+    warnings.add("Точное совпадение цвета, фактуры и товара по фотографии не подтверждено.");
     warnings.add(ProjectCalculationService.EDUCATIONAL);
     return new Analysis("ok", id, candidateProject, selections, List.copyOf(warnings));
   }

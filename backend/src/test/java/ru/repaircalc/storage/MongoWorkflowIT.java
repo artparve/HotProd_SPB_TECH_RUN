@@ -1,6 +1,9 @@
 package ru.repaircalc.storage;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static ru.repaircalc.storage.MongoStore.query;
 
 import java.math.BigDecimal;
@@ -10,10 +13,13 @@ import java.util.concurrent.*;
 import org.bson.Document;
 import org.bson.types.Decimal128;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.mongodb.core.query.*;
 import org.springframework.test.context.*;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.testcontainers.junit.jupiter.*;
 import org.testcontainers.mongodb.MongoDBContainer;
 import ru.repaircalc.admin.*;
@@ -21,6 +27,8 @@ import ru.repaircalc.calculation.*;
 import ru.repaircalc.calculation.domain.*;
 import ru.repaircalc.catalog.*;
 import ru.repaircalc.ingestion.*;
+import ru.repaircalc.inspirations.*;
+import ru.repaircalc.llm.LlmClient;
 import ru.repaircalc.rules.*;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
@@ -208,6 +216,60 @@ class MongoWorkflowIT {
                   .sourceUrl())
           .isEqualTo(entry.path("sourceUrl").asText());
     }
+  }
+
+  @ParameterizedTest
+  @CsvSource({"high, laminate, tile", "normal, laminate, laminate", "high, vinyl, vinyl"})
+  void galleryPicksACompatibleCoveringAndExplainsSubstitution(
+      String humidity, String observedFamily, String expectedFamily) throws Exception {
+    var llm = mock(LlmClient.class);
+    var observation =
+        json.createObjectNode().put("floorFamily", observedFamily).put("wallFinish", "paint");
+    observation.putArray("warnings");
+    when(llm.call(eq("inspirations/analyze"), any())).thenReturn(observation);
+    var assets = Path.of("../data/inspirations");
+    var service =
+        new InspirationService(
+            store, llm, snapshots, projects, json, assets.toString(), 8388608, 12000000, 480, 24);
+    service.importManifest(assets.resolve("manifest.json"));
+    var mvc = MockMvcBuilders.standaloneSetup(new InspirationController(service)).build();
+    var room = (ObjectNode) json.valueToTree(room("bath", List.of("floor", "paint")));
+    room.put("name", "Санузел")
+        .put("type", "bathroom")
+        .put("humidity", humidity)
+        .put("length", 3)
+        .put("width", 2)
+        .put("sockets", 6)
+        .put("cableLength", 25);
+    var project =
+        new ProjectInput(
+            "apartment", "capital", List.of(json.treeToValue(room, ProjectInput.Room.class)));
+    var response =
+        mvc.perform(
+                post("/api/v1/room-inspirations/living-room-11701155/analyze")
+                    .contentType("application/json")
+                    .content(json.writeValueAsBytes(new InspirationController.Request(project))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse();
+    var analysis =
+        json.readValue(response.getContentAsByteArray(), InspirationService.Analysis.class);
+    assertThat(analysis.status()).isEqualTo("ok");
+    assertThat(analysis.project()).isEqualTo(project);
+    assertThat(analysis.selections()).containsOnlyKeys("bath:covering", "bath:paint");
+    var lines = projects.estimate(analysis.project(), analysis.selections()).lines();
+    var covering =
+        lines.stream()
+            .map(ProductEstimate.Line::product)
+            .filter(p -> p.kind().equals("covering"))
+            .findFirst()
+            .orElseThrow();
+    assertThat(covering.materialFamily()).isEqualTo(expectedFamily);
+    assertThat(analysis.selections().get("bath:covering")).isEqualTo(covering.id().toString());
+    if (humidity.equals("high"))
+      assertThat(lines).allMatch(line -> Boolean.TRUE.equals(line.product().wet()));
+    assertThat(analysis.warnings().stream().anyMatch(w -> w.contains(covering.name())))
+        .isEqualTo(!observedFamily.equals(expectedFamily));
   }
 
   @Test
