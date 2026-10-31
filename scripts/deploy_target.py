@@ -191,7 +191,10 @@ def plan(args):
                 "MONGO_PORT": mongo_env["MONGO_PORT"], "MONGO_REPLICA_SET": mongo_env["MONGO_REPLICA_SET"]}
     mongo = service(containers, selected, "mongo")
     if not mongo and service(containers, selected, "postgres"):
-        raise PreflightError("Existing PostgreSQL project requires a separate MongoDB deployment; no automatic data migration is allowed")
+        raise PreflightError("Existing PostgreSQL project requires a separate MongoDB deployment; "
+                             "migrate and verify PostgreSQL data explicitly, use a free "
+                             "DEPLOY_FRONTEND_PORT and switch ingress only after verification. "
+                             "No automatic data migration is allowed")
     volume = selected + "_mongo-data"
     preserve = False
     if mongo:

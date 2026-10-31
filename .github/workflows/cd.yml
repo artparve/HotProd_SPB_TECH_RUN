@@ -11,6 +11,10 @@ on:
         description: Optional full SHA of a successful main CI run (defaults to latest main commit)
         type: string
         required: false
+      frontend_port:
+        description: Optional free frontend port for a separate instance (e.g. 8081)
+        type: string
+        required: false
 
 permissions:
   contents: read
@@ -38,7 +42,7 @@ jobs:
       DEPLOY_USER: ${{ vars.DEPLOY_USER }}
       DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
       DEPLOY_FRONTEND_HOST: ${{ vars.DEPLOY_FRONTEND_HOST || '0.0.0.0' }}
-      DEPLOY_FRONTEND_PORT: ${{ vars.DEPLOY_FRONTEND_PORT || '8080' }}
+      DEPLOY_FRONTEND_PORT: ${{ inputs.frontend_port || vars.DEPLOY_FRONTEND_PORT || '8080' }}
       LOG_MAX_SIZE: ${{ vars.LOG_MAX_SIZE || '10m' }}
       LOG_MAX_FILES: ${{ vars.LOG_MAX_FILES || '3' }}
       IMAGE_TAG: ${{ vars.IMAGE_TAG || 'local' }}
