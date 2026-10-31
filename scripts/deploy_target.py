@@ -10,6 +10,7 @@ import re
 import socket
 import subprocess
 import sys
+from urllib.parse import urlsplit, unquote
 
 
 class PreflightError(Exception):
@@ -22,7 +23,7 @@ def command(argv, data=None, timeout=30):
     except (OSError, subprocess.TimeoutExpired):
         raise PreflightError("Deployment preflight command unavailable or timed out") from None
     if result.returncode:
-        # Docker/psql errors can include passwords; do not echo them.
+        # Docker/database errors can include passwords; do not echo them.
         raise PreflightError("Deployment preflight command failed; check Docker and database access on the stand")
     return result.stdout
 
@@ -74,7 +75,9 @@ def choose(containers, project, environment, host, port, pinned=None, managed=Fa
         if owner_project != selected:
             if pinned or managed or environment != "prod" or project != "repaircalc_prod" or owner_project != "repaircalc":
                 raise PreflightError("Frontend port belongs to another Compose project; nothing was stopped")
-            for name in ("frontend", "backend", "postgres"):
+            if service(containers, "repaircalc", "postgres") and not service(containers, "repaircalc", "mongo"):
+                raise PreflightError("Legacy PostgreSQL cannot be adopted as MongoDB; use a fresh project and port. Existing data was not changed")
+            for name in ("frontend", "backend", "mongo"):
                 container = service(containers, "repaircalc", name)
                 state = (container or {}).get("State", {})
                 if state.get("Status") != "running" or (state.get("Health") or {}).get("Status") != "healthy":
@@ -82,16 +85,16 @@ def choose(containers, project, environment, host, port, pinned=None, managed=Fa
             selected, adopted = "repaircalc", True
     # Never select an existing but different database after a port change on first migration.
     legacy = service(containers, "repaircalc", "frontend")
-    if not pinned and not managed and environment == "prod" and selected != "repaircalc" and legacy:
-        if legacy.get("State", {}).get("Status") == "running":
-            raise PreflightError("Legacy RepairCalc is running on another port; use its current port to preserve its database")
+    if not pinned and environment == "prod" and selected != "repaircalc" and legacy:
+        if service(containers, "repaircalc", "mongo"):
+            raise PreflightError("Existing RepairCalc Mongo stack belongs to another project; retain its pinned project and volume")
     return selected, adopted, bool(occupied)
 
 
-def database_volume(postgres, project):
-    mounts = [m for m in postgres.get("Mounts", []) if m.get("Destination") == "/var/lib/postgresql/data"]
-    if len(mounts) != 1 or mounts[0].get("Type") != "volume" or mounts[0].get("Name") != project + "_pgdata":
-        raise PreflightError("Unexpected PostgreSQL volume; refusing to replace or migrate existing data")
+def database_volume(mongo, project):
+    mounts = [m for m in mongo.get("Mounts", []) if m.get("Destination") == "/data/db"]
+    if len(mounts) != 1 or mounts[0].get("Type") != "volume" or mounts[0].get("Name") != project + "_mongo-data":
+        raise PreflightError("Unexpected MongoDB volume; refusing to replace or migrate existing data")
     return mounts[0]["Name"]
 
 
@@ -101,9 +104,9 @@ def compose(path, project):
             "-f", str(path / "docker/docker-compose.yml"), "-f", str(path / "docker/docker-compose.release.yml")]
 
 
-def database_address(postgres):
-    project = labels(postgres).get("com.docker.compose.project")
-    network = postgres.get("NetworkSettings", {}).get("Networks", {}).get(str(project) + "_default") or {}
+def database_address(mongo):
+    project = labels(mongo).get("com.docker.compose.project")
+    network = mongo.get("NetworkSettings", {}).get("Networks", {}).get(str(project) + "_default") or {}
     for field in ("IPAddress", "GlobalIPv6Address"):
         try:
             address = ipaddress.ip_address(network.get(field, ""))
@@ -111,22 +114,56 @@ def database_address(postgres):
             continue
         if not address.is_loopback and not address.is_unspecified and not address.is_link_local:
             return str(address)
-    raise PreflightError("Existing PostgreSQL has no verified Docker network address; refusing a localhost authentication check")
+    raise PreflightError("Existing MongoDB has no verified Docker network address; refusing a localhost authentication check")
 
 
-def query(postgres, settings, sql):
-    # PostgreSQL images commonly trust BOTH Unix sockets and localhost TCP. Use the
-    # container's bridge address so the same network auth rules as the backend apply.
-    # Password goes through stdin, never argv or diagnostic output.
-    address = database_address(postgres)
-    shell = ('IFS= read -r PGPASSWORD; export PGPASSWORD; export PGCONNECT_TIMEOUT=5; '
-             'export PGOPTIONS="-c default_transaction_read_only=on"; '
-             'exec psql -X -A -t -v ON_ERROR_STOP=1 -h "$1" -U "$2" -d "$3" -c "$4"')
+MONGO_QUERY = r'''
+const p = JSON.parse(require('fs').readFileSync(0, 'utf8'));
+const host = p.host.includes(':') ? '['+p.host+']' : p.host;
+const database = p.settings.MONGO_DATABASE;
+const uri = 'mongodb://'+encodeURIComponent(p.settings.MONGO_USER)+':'+encodeURIComponent(p.settings.MONGO_PASSWORD)+'@'+host+':'+p.settings.MONGO_PORT+'/'+encodeURIComponent(database)+'?directConnection=true&serverSelectionTimeoutMS=5000&connectTimeoutMS=5000&socketTimeoutMS=5000&replicaSet='+encodeURIComponent(p.settings.MONGO_REPLICA_SET);
+const c = new Mongo(uri); const d = c.getDB(database);
+if (d.runCommand({ping:1}).ok !== 1) quit(2);
+if (p.operation === 'auth') { print(JSON.stringify({ok:1})); }
+else {
+ const h = c.getDB('admin').runCommand({hello:1});
+ const v = c.getDB('admin').runCommand({buildInfo:1}).version;
+ const pair = d.publication_pointer.findOne({_id:'active'});
+ const initialized = !!(pair && d.catalog_release.findOne({_id:pair.catalogReleaseId}) && d.rule_set.findOne({_id:pair.ruleSetId}) && d.product_revision.countDocuments({releaseId:pair.catalogReleaseId}) > 0);
+ print(JSON.stringify({version:v, replicaSet:h.setName, primary:h.isWritablePrimary, initialized:initialized, invalidPointer:!!pair && !initialized}));
+}
+'''
+
+
+def query(mongo, settings, operation):
+    payload = {"host": database_address(mongo), "settings": settings, "operation": operation}
     try:
-        return command(["docker", "exec", "-i", postgres["Id"], "sh", "-c", shell, "sh",
-                        address, settings["POSTGRES_USER"], settings["POSTGRES_DB"], sql], settings["POSTGRES_PASSWORD"] + "\n").strip()
-    except PreflightError:
-        raise PreflightError("Cannot query existing PostgreSQL over the Docker network with deployment credentials; verify DB_PASSWORD, DB_USER and DB_NAME. No services were restarted") from None
+        return json.loads(command(["docker", "exec", "-i", mongo["Id"], "mongosh", "--nodb", "--quiet", "--eval", MONGO_QUERY], json.dumps(payload)))
+    except (PreflightError, ValueError):
+        raise PreflightError("Cannot query existing MongoDB over the Docker network with deployment credentials; verify Mongo credentials. No services were restarted") from None
+
+
+def runtime_check(path, config):
+    mongo = config["services"]["mongo"]
+    settings = mongo["environment"]
+    argv = [sys.executable, str(path / "scripts/mongo_runtime.py"), "remote-check",
+            "--image", mongo["image"], "--report", str(path / "mongo-compatibility.json"),
+            "--seconds", str(settings.get("MONGO_COMPAT_SECONDS", "95")),
+            "--startup-timeout", str(settings.get("MONGO_COMPAT_START_TIMEOUT_SECONDS", "60")),
+            "--memory", str(mongo.get("mem_limit", "1g")), "--cpus", str(mongo.get("cpus", "1.0"))]
+    try:
+        result = subprocess.run(argv, capture_output=True, text=True, timeout=750, check=False)
+        report = json.loads(result.stdout)
+        if not isinstance(report, dict):
+            raise ValueError("Invalid compatibility report")
+        if result.returncode == 0 and report.get("status") == "ok":
+            return report
+        code = report.get("error_code", "mongodb_compatibility_failed")
+        if not isinstance(code, str) or not re.fullmatch(r"(?:mongodb|docker)_[a-z_]+", code):
+            code = "mongodb_compatibility_failed"
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        code = "mongodb_compatibility_failed"
+    raise PreflightError("Mongo compatibility failed (" + code + "); running services were not restarted")
 
 
 def plan(args):
@@ -147,25 +184,34 @@ def plan(args):
         except OSError:
             raise PreflightError("Frontend address/port is unavailable; nothing was stopped") from None
     config = json.loads(command(compose(args.path, selected) + ["config", "--format", "json"]))
-    settings = config["services"]["postgres"]["environment"]
-    postgres = service(containers, selected, "postgres")
-    volume = selected + "_pgdata"
+    desired = config["services"]["backend"]["environment"]
+    mongo_env = config["services"]["mongo"]["environment"]
+    database = unquote(urlsplit(desired["MONGO_URI"]).path.lstrip('/'))
+    settings = {"MONGO_DATABASE": database, "MONGO_USER": desired["MONGO_USER"], "MONGO_PASSWORD": desired["MONGO_PASSWORD"],
+                "MONGO_PORT": mongo_env["MONGO_PORT"], "MONGO_REPLICA_SET": mongo_env["MONGO_REPLICA_SET"]}
+    mongo = service(containers, selected, "mongo")
+    if not mongo and service(containers, selected, "postgres"):
+        raise PreflightError("Existing PostgreSQL project requires a separate MongoDB deployment; no automatic data migration is allowed")
+    volume = selected + "_mongo-data"
     preserve = False
-    if postgres:
-        volume = database_volume(postgres, selected)
-        if postgres.get("State", {}).get("Status") != "running":
-            raise PreflightError("Existing PostgreSQL is not running; refusing automatic reinitialization")
-        previous = env(postgres)
-        if any(previous.get(key) != settings[key] for key in ("POSTGRES_USER", "POSTGRES_DB")):
-            raise PreflightError("DB_USER/DB_NAME differ from the existing database; keep current settings")
-        version = query(postgres, settings, "SHOW server_version_num")
-        image_tag = config["services"]["postgres"]["image"].rsplit(":", 1)[-1]
-        major = re.match(r"(\d+)(?:[.\-]|$)", image_tag)
-        if not major or int(version) // 10000 != int(major[1]):
-            raise PreflightError("PostgreSQL major upgrade requires a separate migration; existing database was not changed")
-        exists = query(postgres, settings, "SELECT to_regclass('repaircalc.catalog_release') IS NOT NULL") == "t"
-        preserve = exists and query(postgres, settings, "SELECT EXISTS (SELECT 1 FROM repaircalc.catalog_release)") == "t"
+    if mongo:
+        volume = database_volume(mongo, selected)
+        if mongo.get("State", {}).get("Status") != "running":
+            raise PreflightError("Existing MongoDB is not running; refusing automatic reinitialization")
         backend = service(containers, selected, "backend")
+        previous = env(backend or {})
+        if previous.get("MONGO_USER") != settings["MONGO_USER"] or unquote(urlsplit(previous.get("MONGO_URI", "")).path.lstrip('/')) != database:
+            raise PreflightError("Mongo database/user differ from the existing backend; keep current settings")
+        root = {**settings, "MONGO_DATABASE": "admin", "MONGO_USER": mongo_env["MONGO_INITDB_ROOT_USERNAME"], "MONGO_PASSWORD": mongo_env["MONGO_INITDB_ROOT_PASSWORD"]}
+        query(mongo, root, "auth")
+        state = query(mongo, settings, "state")
+        image_tag = config["services"]["mongo"]["image"].split('@', 1)[0].rsplit(":", 1)[-1]
+        major = re.match(r"(\d+)(?:[.\-]|$)", image_tag)
+        if not major or state["version"].split('.')[0] != major[1]:
+            raise PreflightError("MongoDB major upgrade requires a separate migration; existing database was not changed")
+        if state.get("replicaSet") != settings["MONGO_REPLICA_SET"] or not state.get("primary") or state.get("invalidPointer"):
+            raise PreflightError("Existing Mongo replica set or active publication is inconsistent; deployment refused")
+        preserve = state["initialized"]
         old_admin = env(backend or {})
         new_admin = config["services"]["backend"]["environment"]
         if old_admin.get("ADMIN_USERNAME") and old_admin.get("ADMIN_PASSWORD_HASH"):
@@ -178,34 +224,29 @@ def plan(args):
             raise PreflightError("Existing database container is missing; refusing to start against an unverified volume")
     if pinned and pinned.get("volume") != volume:
         raise PreflightError("Database volume changed since the previous deployment; automatic switch refused")
+    compatibility = runtime_check(args.path, config)
     return {"project": selected, "volume": volume, "adopted_legacy": adopted,
-            "existing_database": bool(postgres), "preserve_catalog": preserve,
-            "postgres_id": postgres["Id"] if postgres else None}
+            "existing_database": bool(mongo), "preserve_catalog": preserve, "database": database,
+            "mongo_id": mongo["Id"] if mongo else None, "mongo_runtime": {
+                "status": compatibility["status"], "daemon": compatibility.get("daemon"),
+                "probe_performed": compatibility.get("probe_performed", False)}}
 
 
 def backup(args):
     saved = json.loads((args.path / "deployment-target.json").read_text())
-    postgres = json.loads(command(["docker", "inspect", saved["postgres_id"]]))[0]
-    if database_volume(postgres, saved["project"]) != saved["volume"]:
+    mongo = json.loads(command(["docker", "inspect", saved["mongo_id"]]))[0]
+    if database_volume(mongo, saved["project"]) != saved["volume"]:
         raise PreflightError("Database changed before backup; deployment refused")
-    target = args.path / "database-before.dump"
-    partial = args.path / "database-before.dump.partial"
-    try:
-        with partial.open("xb") as stream:
-            os.chmod(partial, 0o600)
-            result = subprocess.run(["docker", "exec", postgres["Id"], "sh", "-c",
-                                     'exec pg_dump --format=custom -U "$POSTGRES_USER" -d "$POSTGRES_DB"'],
-                                    stdout=stream, stderr=subprocess.PIPE, timeout=300, check=False)
-        if result.returncode or not partial.stat().st_size:
-            raise PreflightError("Database backup failed; running services were not changed")
-        with partial.open("rb") as stream:
-            checked = subprocess.run(["docker", "exec", "-i", postgres["Id"], "pg_restore", "--list"],
-                                     stdin=stream, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=30, check=False)
-        if checked.returncode:
-            raise PreflightError("Database backup archive check failed; running services were not changed")
-        os.replace(partial, target)
-    finally:
-        partial.unlink(missing_ok=True)
+    target = args.path / "database-before.archive.gz"
+    if target.exists() or target.with_name(target.name + '.json').exists():
+        raise PreflightError("Backup already exists; refusing to overwrite it")
+    argv = [sys.executable, str(args.path / "scripts/mongo-backup.py"), "backup", "--file", str(target),
+            "--project-name", saved["project"], "--database", saved["database"]]
+    for file in (".env", "secret.env"):
+        argv += ["--env-file", str(args.path / "env" / file)]
+    for file in ("docker-compose.yml", "docker-compose.release.yml"):
+        argv += ["--compose-file", str(args.path / "docker" / file)]
+    command(argv, timeout=600)
     return {"backup": str(target)}
 
 

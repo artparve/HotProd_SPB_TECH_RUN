@@ -52,6 +52,74 @@ afterEach(() => {
 })
 
 describe('RoomInspirationGallery', () => {
+  it('filters the loaded gallery by category without changing the project', async () => {
+    const input = project()
+    const original = structuredClone(input)
+    vi.mocked(service.roomInspirations).mockResolvedValueOnce({
+      items: [
+        { ...image, id: 'kitchen-1', title: 'Кухня 1', category: 'kitchen' },
+        { ...image, id: 'kitchen-2', title: 'Кухня 2', category: 'kitchen' },
+        { ...image, id: 'bedroom-1', title: 'Спальня 1', category: 'bedroom' },
+      ],
+      nextCursor: null,
+      status: 'ok',
+      warnings: [],
+    })
+    const wrapper = await render(input)
+    const group = wrapper.get('[aria-label="Категории интерьеров"]')
+    const select = (label: string) =>
+      group.findAll('button').find((button) => button.text() === label)!
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)
+    await select('Кухни').trigger('click')
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(2)
+    expect(select('Кухни').attributes('aria-pressed')).toBe('true')
+    await select('Спальни').trigger('click')
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(1)
+    expect(wrapper.get('.inspiration-card').text()).toContain('Спальня 1')
+    await select('Все').trigger('click')
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)
+    expect(input).toEqual(original)
+    expect(service.analyzeRoomInspiration).not.toHaveBeenCalled()
+  })
+
+  it('credits the actual photo source and keeps its original link', async () => {
+    const sourceUrl = 'https://www.pexels.com/photo/modern-bedroom-interior-8089163/'
+    vi.mocked(service.roomInspirations).mockResolvedValueOnce({
+      items: [{ ...image, sourceUrl, description: 'Фото: Max Vakhtbovych / Pexels.' }],
+      nextCursor: null,
+      status: 'ok',
+      warnings: [],
+    })
+    const wrapper = await render()
+    const source = wrapper.get('.inspiration-card-body a')
+    expect(source.text()).toBe('Источник: Pexels')
+    expect(source.attributes('href')).toBe(sourceUrl)
+    expect(source.attributes('rel')).toContain('noopener')
+    expect(wrapper.text()).toContain('Max Vakhtbovych')
+    expect(wrapper.text()).not.toContain('Источник: Pinterest')
+  })
+
+  it.each(['unavailable', 'no_matches'] as const)(
+    'keeps input and skips calculation for %s',
+    async (status) => {
+      const input = project()
+      vi.mocked(service.analyzeRoomInspiration).mockResolvedValueOnce({
+        status,
+        imageId: image.id,
+        project: structuredClone(input),
+        selections: {},
+        warnings: ['Продолжите вручную.'],
+      })
+      const wrapper = await render(input)
+      await wrapper.get('.inspiration-card-body button').trigger('click')
+      await flushPromises()
+      expect(service.catalog).not.toHaveBeenCalled()
+      expect(service.estimate).not.toHaveBeenCalled()
+      expect(wrapper.emitted('prepared')).toBeUndefined()
+      expect(wrapper.get('[role="alert"]').text()).toContain('Продолжите вручную')
+      expect(input.rooms[0]!.length).toBe(5)
+    },
+  )
   it('shows the backend feed and loads a full-size preview on hover', async () => {
     const wrapper = await render()
     expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)

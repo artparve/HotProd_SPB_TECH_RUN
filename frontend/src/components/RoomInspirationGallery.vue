@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { service } from '../services/api'
 import { projectSchema, type Project } from '../domain/types'
 import {
@@ -12,6 +12,22 @@ import {
 const props = defineProps<{ project: Project; disabled?: boolean }>()
 const emit = defineEmits<{ prepared: [value: PreparedInspiration] }>()
 const items = ref<RoomInspiration[]>([])
+const category = ref('all')
+const categories = [
+  { id: 'living', label: 'Гостиные' },
+  { id: 'bedroom', label: 'Спальни' },
+  { id: 'kitchen', label: 'Кухни' },
+  { id: 'bathroom', label: 'Ванные' },
+  { id: 'other', label: 'Другое' },
+]
+const availableCategories = computed(() =>
+  categories.filter((option) => items.value.some((image) => image.category === option.id)),
+)
+const visibleItems = computed(() =>
+  category.value === 'all'
+    ? items.value
+    : items.value.filter((image) => image.category === category.value),
+)
 const cursor = ref<string | null>(null)
 const loading = ref(false)
 const loaded = ref(false)
@@ -26,6 +42,13 @@ let alive = true
 let feedController: AbortController | undefined
 let selectionController: AbortController | undefined
 
+function sourceLabel(url: string) {
+  const host = new URL(url).hostname
+  if (host === 'pexels.com' || host === 'www.pexels.com') return 'Pexels'
+  if (['pinterest.com', 'www.pinterest.com', 'pin.it'].includes(host)) return 'Pinterest'
+  return 'Оригинал'
+}
+
 async function load(more = false) {
   if (loading.value) return
   loading.value = true
@@ -38,6 +61,8 @@ async function load(more = false) {
     const merged = [...(more ? items.value : []), ...result.items]
     items.value = [...new Map(merged.map((item) => [item.id, item])).values()]
     cursor.value = result.nextCursor === previous ? null : result.nextCursor
+    if (result.status === 'unavailable')
+      feedError.value = result.warnings?.join(' ') || 'Подборка временно недоступна.'
     loaded.value = true
   } catch (error) {
     if (alive)
@@ -75,6 +100,11 @@ async function choose(image: RoomInspiration) {
   try {
     const result = await service.analyzeRoomInspiration(image.id, snapshot, controller.signal)
     if (!alive || controller.signal.aborted) return
+    if (result.status && result.status !== 'ok') {
+      selectionError.value =
+        result.warnings.join(' ') || 'Не удалось подобрать материалы. Продолжите вручную.'
+      return
+    }
     const products = await service.catalog()
     validateInspirationProducts(result, products)
     const estimate = await service.estimate(result.project, result.selections)
@@ -131,8 +161,33 @@ onBeforeUnmount(() => {
     <p v-if="loaded && !items.length && !feedError" role="status">
       Изображений пока нет. Вы можете заполнить калькулятор вручную.
     </p>
+    <div
+      v-if="availableCategories.length"
+      class="inspiration-categories"
+      role="group"
+      aria-label="Категории интерьеров"
+    >
+      <button
+        type="button"
+        class="button secondary"
+        :aria-pressed="category === 'all'"
+        @click="category = 'all'"
+      >
+        Все
+      </button>
+      <button
+        v-for="option in availableCategories"
+        :key="option.id"
+        type="button"
+        class="button secondary"
+        :aria-pressed="category === option.id"
+        @click="category = option.id"
+      >
+        {{ option.label }}
+      </button>
+    </div>
     <ul v-if="items.length" class="inspiration-strip" aria-label="Изображения комнат">
-      <li v-for="image in items" :key="image.id" class="inspiration-card">
+      <li v-for="image in visibleItems" :key="image.id" class="inspiration-card">
         <button
           type="button"
           class="inspiration-image"
@@ -156,6 +211,14 @@ onBeforeUnmount(() => {
         <div class="inspiration-card-body">
           <h3>{{ image.title }}</h3>
           <p>{{ image.description }}</p>
+          <a
+            v-if="image.sourceUrl"
+            :href="image.sourceUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Источник: {{ sourceLabel(image.sourceUrl) }}
+          </a>
           <button
             type="button"
             class="button primary"
@@ -244,6 +307,16 @@ onBeforeUnmount(() => {
   }
   p {
     max-width: 680px;
+  }
+}
+.inspiration-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  button[aria-pressed='true'] {
+    background: #252b25;
+    border-color: #252b25;
+    color: white;
   }
 }
 .inspiration-strip {

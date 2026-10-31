@@ -13,6 +13,7 @@ const fields: Field[] = [
     label: 'Вид товара',
     choices: ['covering', 'paint', 'primer', 'wallpaper', 'adhesive', 'socket', 'cable'],
   },
+  { key: 'materialFamily', label: 'Семейство покрытия', choices: ['tile', 'laminate', 'vinyl'] },
   { key: 'price', label: 'Цена', type: 'price' },
   { key: 'currency', label: 'Валюта', choices: ['RUB'] },
   { key: 'priceDate', label: 'Дата актуальности цены', type: 'date' },

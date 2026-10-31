@@ -14,8 +14,12 @@ export const roomInspirationSchema = z.object({
   thumbnailUrl: inspirationImageUrlSchema,
   imageUrl: inspirationImageUrlSchema,
   alt: z.string().min(1).max(300),
+  sourceUrl: z.string().url().startsWith('https://').optional(),
+  category: z.enum(['living', 'bedroom', 'kitchen', 'bathroom', 'other']).optional(),
 })
 export const roomInspirationFeedSchema = z.object({
+  status: z.enum(['ok', 'unavailable']).default('ok'),
+  warnings: z.array(z.string()).default([]),
   items: z.array(roomInspirationSchema).max(24),
   nextCursor: z.string().min(1).max(512).nullable(),
 })
@@ -23,6 +27,7 @@ const inspirationProjectSchema = projectSchema.extend({ rooms: z.array(roomSchem
 export const roomInspirationRequestSchema = z.object({ project: inspirationProjectSchema })
 export const roomInspirationResultSchema = z
   .object({
+    status: z.enum(['ok', 'no_matches', 'unavailable']).default('ok'),
     imageId: z.string().min(1).max(128),
     project: inspirationProjectSchema,
     selections: z.record(z.string().min(1).max(128)),
@@ -31,7 +36,7 @@ export const roomInspirationResultSchema = z
   .superRefine((value, ctx) => {
     const keys = Object.keys(value.selections)
     const kinds = ['covering', 'paint', 'primer', 'wallpaper', 'adhesive', 'socket', 'cable']
-    if (!keys.length || keys.length > 7)
+    if ((value.status === 'ok' ? !keys.length : keys.length !== 0) || keys.length > 7)
       ctx.addIssue({ code: 'custom', message: 'Expected 1–7 selections' })
     if (new Set(value.project.rooms.map((room) => room.id)).size !== value.project.rooms.length)
       ctx.addIssue({ code: 'custom', message: 'Duplicate room IDs' })

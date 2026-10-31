@@ -2,7 +2,8 @@ name: CI
 
 on:
   push:
-    branches: [master, main]
+    branches: [main, backend]
+  pull_request:
 
 permissions:
   contents: read
@@ -21,7 +22,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: make init-config
@@ -39,7 +40,8 @@ jobs:
           retention-days: 7
 
   backend:
-    runs-on: ubuntu-24.04
+    # MongoDB 8.0 currently rejects kernels on the newer Ubuntu 24.04 runner images.
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -48,8 +50,15 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
           cache: maven
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Diagnose Docker host and Mongo image
+        run: python scripts/mongo_runtime.py diagnose --report .build-mongo-environment-backend.json
+      - name: Verify Mongo stability and replica-set transactions before Maven
+        run: python scripts/mongo_runtime.py probe --report .build-mongo-compat-backend.json
       # GitHub hosted Linux runner supplies Docker for Testcontainers.
       - run: bash ./mvnw -B verify
         working-directory: backend
@@ -57,9 +66,11 @@ jobs:
         if: failure()
         with:
           name: java-test-failure
+          include-hidden-files: true
           path: |
             backend/target/surefire-reports/
             backend/target/failsafe-reports/
+            .build-mongo-*.json
           retention-days: 7
 
   python-and-deploy:
@@ -71,21 +82,60 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      - run: python -m pip install -r ansible/requirements.txt -r backend/estimation/requirements.txt -r backend/classification/requirements.txt
-      - run: python -m unittest discover -s backend/estimation/tests
+          python-version: "3.12"
+      - run: python -m pip install -r docker/ansible/requirements.txt -r llm/requirements.txt
+      - run: python -m unittest discover -s llm/estimation/tests
         env:
-          PYTHONPATH: backend/estimation
-      - run: python -m unittest discover -s backend/classification/tests
+          PYTHONPATH: llm/estimation
+      - run: python -m unittest discover -s llm/classification/tests
         env:
-          PYTHONPATH: backend/classification
+          PYTHONPATH: llm/classification
+      - run: python -m unittest discover -s llm/tests
+        env:
+          PYTHONPATH: llm:llm/estimation:llm/classification
       - run: python -m unittest discover -s tests/release
-      - run: ansible-playbook -i localhost, ansible/deploy.yml --syntax-check
+      - run: ansible-playbook -i localhost, docker/ansible/deploy.yml --syntax-check
       - name: Validate release Compose without real credentials
         run: python -m scripts.github_actions validate-compose
 
-  images:
+  stack:
     needs: [frontend, backend, python-and-deploy]
+    runs-on: ubuntu-22.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Diagnose Docker host before application builds
+        run: python scripts/mongo_runtime.py diagnose --report .build-mongo-environment-stack.json
+      - run: npm --prefix frontend ci --no-fund
+      - run: npm --prefix frontend exec -- playwright install --with-deps chromium
+      - run: python scripts/verify-stack.py --playwright
+      - run: python scripts/verify-stack.py --base-only --no-build --playwright
+      - name: Verify the full profile with official Ollama and no model download
+        run: python scripts/verify-stack.py --runtime-only --no-build
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: real-stack-failure
+          include-hidden-files: true
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+            .build-mongo-*.json
+          retention-days: 7
+
+  images:
+    if: github.event_name == 'push'
+    needs: [stack]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -96,13 +146,11 @@ jobs:
       matrix:
         include:
           - image: frontend
-            context: frontend
+            file: docker/frontend.Dockerfile
           - image: backend
-            context: backend
-          - image: estimator
-            context: backend/estimation
-          - image: classifier
-            context: backend/classification
+            file: docker/backend.Dockerfile
+          - image: llm
+            file: docker/llm.Dockerfile
     steps:
       - uses: actions/checkout@v4
         with:
@@ -120,9 +168,21 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
+          context: .
+          file: ${{ matrix.file }}
           push: true
           platforms: linux/amd64
+          build-args: |
+            MAVEN_IMAGE=${{ vars.MAVEN_IMAGE || 'maven:3.9-eclipse-temurin-21' }}
+            JAVA_IMAGE=${{ vars.JAVA_IMAGE || 'eclipse-temurin:21-jre-jammy' }}
+            NODE_IMAGE=${{ vars.NODE_IMAGE || 'node:22-alpine' }}
+            NGINX_IMAGE=${{ vars.NGINX_IMAGE || 'nginx:1.28-alpine' }}
+            PYTHON_IMAGE=${{ vars.PYTHON_IMAGE || 'python:3.12-slim' }}
+            MAVEN_CENTRAL_URL=${{ vars.MAVEN_CENTRAL_URL || 'https://repo.maven.apache.org/maven2' }}
+            VITE_API_TIMEOUT_MS=${{ vars.VITE_API_TIMEOUT_MS || '15000' }}
+            VITE_LLM_TIMEOUT_MS=${{ vars.VITE_LLM_TIMEOUT_MS || '1260000' }}
+            VITE_PLAN_TIMEOUT_MS=${{ vars.VITE_PLAN_TIMEOUT_MS || '660000' }}
+            VITE_INSPIRATION_TIMEOUT_MS=${{ vars.VITE_INSPIRATION_TIMEOUT_MS || '120000' }}
           tags: ${{ steps.registry.outputs.prefix }}/${{ matrix.image }}:sha-${{ github.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}

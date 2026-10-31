@@ -8,7 +8,7 @@ COMPOSE_CLI ?= $(DOCKER) compose
 COMPOSE = $(COMPOSE_CLI) --project-directory docker --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml
 COPY_CONFIG = $(NODE) -e "const fs = require('node:fs'); try { fs.copyFileSync(process.argv[1], process.argv[2], fs.constants.COPYFILE_EXCL); console.log('Created: ' + process.argv[2]); } catch (error) { if (error.code === 'EEXIST' && fs.statSync(process.argv[2]).isFile()) process.exit(0); throw error; }"
 
-.PHONY: help init init-config install dev build preview format typecheck test check config-test e2e e2e-install dependencies backend backend-import-catalog backend-import-rules estimator up down logs ps config image release release-image
+.PHONY: help init init-config install dev build preview format typecheck test check config-test e2e e2e-install dependencies backend backend-import-catalog backend-import-rules backend-import-inspirations llm estimator up down logs ps config image release release-image
 
 help:
 	@echo "RepairCalc: GNU Make + Node.js 22.12+ LTS (no Python or Bash required)"
@@ -21,7 +21,7 @@ help:
 	@echo "e2e-install   - download Playwright Chromium once"
 	@echo "e2e           - desktop and mobile browser tests"
 	@echo "up / down     - start or stop full Docker stack"
-	@echo "dependencies  - start local PostgreSQL only (127.0.0.1:55432 by default)"
+	@echo "dependencies  - start local MongoDB and initialize its replica set"
 	@echo "backend / estimator - run local Java jar or Python using both env files"
 	@echo "logs / ps     - container logs or status"
 	@echo "config        - validate Compose without starting containers"
@@ -31,6 +31,8 @@ help:
 
 init: init-config
 	"$(MAKE)" install
+
+config-init: init-config
 
 init-config: env/.env env/secret.env docker/docker-compose.override.yml
 
@@ -50,9 +52,9 @@ install:
 
 dev build preview check: | env/.env
 up config image dependencies: | env/.env env/secret.env docker/docker-compose.override.yml
-backend backend-import-catalog backend-import-rules estimator: | env/.env env/secret.env
+backend backend-import-catalog backend-import-rules backend-import-inspirations llm estimator: | env/.env env/secret.env
 
-backend backend-import-catalog backend-import-rules estimator:
+backend backend-import-catalog backend-import-rules backend-import-inspirations llm estimator:
 	$(NODE) scripts/local.mjs $@
 
 dev build preview:
@@ -87,13 +89,13 @@ up:
 	$(COMPOSE) up --build --detach --wait
 
 dependencies:
-	$(COMPOSE) up --detach --wait postgres
+	$(COMPOSE) up --detach --wait mongo-init
 
 down:
 	$(COMPOSE) down
 
 logs:
-	$(COMPOSE) logs --follow --tail 100
+	$(COMPOSE) logs --no-color --tail 80
 
 ps:
 	$(COMPOSE) ps

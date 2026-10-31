@@ -1,0 +1,503 @@
+{
+  "schemaVersion": 1,
+  "version": "synthetic-catalog-v2",
+  "dataClass": "test",
+  "products": [
+    {
+      "id": "47f9b29f-8972-3c84-9103-6b3281bd9de7",
+      "name": "Ламинат «Дуб натуральный», 33 класс",
+      "category": "Напольные покрытия",
+      "kind": "covering",
+      "price": "1890.00",
+      "packageSize": 2.22,
+      "unit": "м²",
+      "saleUnit": "уп.",
+      "wet": false,
+      "highLoad": true,
+      "unheated": false,
+      "description": "Тёплый оттенок дерева, толщина 8 мм. Для сухих отапливаемых помещений.",
+      "source": "ТЕСТОВЫЕ данные, не актуальные цены/нормы; synthetic-catalog-v1; Демонстрационная карточка v1",
+      "sources": [
+        {
+          "namespace": "repaircalc.frontend-fixtures",
+          "externalId": "demo-laminate",
+          "raw": {
+            "id": "demo-laminate",
+            "name": "Ламинат «Дуб натуральный», 33 класс",
+            "category": "Напольные покрытия",
+            "kind": "covering",
+            "price": "1890.00",
+            "packageSize": 2.22,
+            "unit": "м²",
+            "saleUnit": "уп.",
+            "works": [
+              "floor"
+            ],
+            "wet": false,
+            "highLoad": true,
+            "unheated": false,
+            "description": "Тёплый оттенок дерева, толщина 8 мм. Для сухих отапливаемых помещений.",
+            "source": "Демонстрационная карточка v1"
+          }
+        }
+      ],
+      "materialFamily": "laminate"
+    },
+    {
+      "id": "ac1f222a-f5e9-3b5d-a91e-c943b053e92e",
+      "name": "Керамогранит «Светлый камень», 60 × 60",
+      "category": "Плитка",
+      "kind": "covering",
+      "price": "2160.00",
+      "packageSize": 1.44,
+      "unit": "м²",
+      "saleUnit": "уп.",
+      "wet": true,
+      "highLoad": true,
+      "unheated": true,
+      "description": "Матовое нескользкое покрытие. Влагостойкое и морозостойкое.",
+      "source": "ТЕСТОВЫЕ данные, не актуальные цены/нормы; synthetic-catalog-v1; Демонстрационная карточка v1",
+      "sources": [
+        {
+          "namespace": "repaircalc.frontend-fixtures",
+          "externalId": "demo-tile",
+          "raw": {
+            "id": "demo-tile",
+            "name": "Керамогранит «Светлый камень», 60 × 60",
+            "category": "Плитка",
+            "kind": "covering",
+            "price": "2160.00",
+            "packageSize": 1.44,
+            "unit": "м²",
+            "saleUnit": "уп.",
+            "works": [
+              "floor"
+            ],
+            "wet": true,
+            "highLoad": true,
+            "unheated": true,
+            "description": "Матовое нескользкое покрытие. Влагостойкое и морозостойкое.",
+            "source": "Демонстрационная карточка v1"
+          }
+        }
+      ],
+      "materialFamily": "tile"
+    },
+    {
+      "id": "fd43e49d-da9a-3231-b95d-49e03a60429a",
+      "name": "Кварцвинил «Дуб песочный», 43 класс",
+      "category": "Напольные покрытия",
+      "kind": "covering",
+      "price": "3690.00",
+      "packageSize": 2.24,
+      "unit": "м²",
+      "saleUnit": "уп.",
+      "wet": true,
+      "highLoad": true,
+      "unheated": false,
+      "description": "Влагостойкое покрытие для кухни и жилых комнат.",
+      "source": "ТЕСТОВЫЕ данные, не актуальные цены/нормы; synthetic-catalog-v1; Демонстрационная карточка v1",
+      "sources": [
+        {
+          "namespace": "repaircalc.frontend-fixtures",
+          "externalId": "demo-vinyl",
+          "raw": {
+            "id": "demo-vinyl",
+            "name": "Кварцвинил «Дуб песочный», 43 класс",
+            "category": "Напольные покрытия",
+            "kind": "covering",
+            "price": "3690.00",
+            "packageSize": 2.24,
+            "unit": "м²",
+            "saleUnit": "уп.",
+            "works": [
+              "floor"
+            ],
+            "wet": true,
+            "highLoad": true,
+            "unheated": false,
+            "description": "Влагостойкое покрытие для кухни и жилых комнат.",
+            "source": "Демонстрационная карточка v1"
+          }
+        }
+      ],
+      "materialFamily": "vinyl"
+    },
+    {
+      "id": "30473701-b10b-3d56-a15a-8591c16486c4",
+      "name": "Краска интерьерная матовая, 5 л",
+      "category": "Краски",
+      "kind": "paint",
+      "price": "2490.00",
+      "packageSize": 5,
+      "consumption": 0.12,
+      "unit": "л",
+      "saleUnit": "бан.",
+      "wet": false,
+      "highLoad": false,
+      "unheated": false,
+      "description": "Для сухих помещений. Демо-норма: 0,12 л/м² на один слой.",
+      "source": "ТЕСТОВЫЕ данные, не актуальные цены/нормы; synthetic-catalog-v1; Учебная норма v1, не норматив производителя",
+      "sources": [
+        {
+          "namespace": "repaircalc.frontend-fixtures",
+          "externalId": "demo-paint",
+          "raw": {
+            "id": "demo-paint",
+            "name": "Краска интерьерная матовая, 5 л",
+            "category": "Краски",
+            "kind": "paint",
+            "price": "2490.00",
+            "packageSize": 5,
+            "consumption": 0.12,
+            "unit": "л",
+            "saleUnit": "бан.",
+            "works": [
+              "paint"
+            ],
+            "wet": false,
+            "highLoad": false,
+            "unheated": false,
+            "description": "Для сухих помещений. Демо-норма: 0,12 л/м² на один слой.",
+            "source": "Учебная норма v1, не норматив производителя"
+          }
+        }
+      ],
+      "materialFamily": null
+    },
+    {
+      "id": "bcabf02c-9d8a-3652-bd92-147c1599740f",
+      "name": "Краска моющаяся влагостойкая, 5 л",
+      "category": "Краски",
+      "kind": "paint",
+      "price": "3290.00",
+      "packageSize": 5,
+      "consumption": 0.14,
+      "unit": "л",
+      "saleUnit": "бан.",
+      "wet": true,
+      "highLoad": true,
+      "unheated": true,
+      "description": "Моющаяся поверхность. Демо-норма: 0,14 л/м² на один слой.",
+      "source": "ТЕСТОВЫЕ данные, не актуальные цены/нормы; synthetic-catalog-v1; Учебная норма v1, не норматив производителя",
+      "sources": [
+        {
+          "namespace": "repaircalc.frontend-fixtures",
+          "externalId": "demo-wet-paint",
+          "raw": {
+            "id": "demo-wet-paint",
+            "name": "Краска моющаяся влагостойкая, 5 л",
+            "category": "Краски",
+            "kind": "paint",
+            "price": "3290.00",
+            "packageSize": 5,
+            "consumption": 0.14,
+            "unit": "л",
+            "saleUnit": "бан.",
+            "works": [
+              "paint"
+            ],
+            "wet": true,
+            "highLoad": true,
+            "unheated": true,
+            "description": "Моющаяся поверхность. Демо-норма: 0,14 л/м² на один слой.",
+            "source": "Учебная норма v1, не норматив производителя"
+          }
+        }
+      ],
+      "materialFamily": null
+    },
+    {
+      "id": "af5d410b-f889-3db0-8b42-c6321252d412",
+      "name": "Грунтовка глубокого проникновения, 5 л",
+      "category": "Подготовка основания",
+      "kind": "primer",
+      "price": "690.00",
+      "packageSize": 5,
+      "consumption": 0.1,
+      "unit": "л",
+      "saleUnit": "кан.",
+      "wet": true,
+      "highLoad": true,
+      "unheated": true,
+      "description": "Подготовка основания перед краской, обоями и плиткой. Демо-норма 0,1 л/м².",
+      "source": "ТЕСТОВЫЕ данные, не актуальные цены/нормы; synthetic-catalog-v1; Учебная норма v1, не норматив производителя",
+      "sources": [
+        {
+          "namespace": "repaircalc.frontend-fixtures",
+          "externalId": "demo-primer",
+          "raw": {
+            "id": "demo-primer",
+            "name": "Грунтовка глубокого проникновения, 5 л",
+            "category": "Подготовка основания",
+            "kind": "primer",
+            "price": "690.00",
+            "packageSize": 5,
+            "consumption": 0.1,
+            "unit": "л",
+            "saleUnit": "кан.",
+            "works": [
+              "paint",
+              "wallpaper",
+              "floor"
+            ],
+            "wet": true,
+            "highLoad": true,
+            "unheated": true,
+            "description": "Подготовка основания перед краской, обоями и плиткой. Демо-норма 0,1 л/м².",
+            "source": "Учебная норма v1, не норматив производителя"
+          }
+        }
+      ],
+      "materialFamily": null
+    },
+    {
+      "id": "f3b607e5-5758-3db2-bbf2-605dc539184c",
+      "name": "Обои флизелиновые «Лён», 1,06 × 10,05 м",
+      "category": "Обои",
+      "kind": "wallpaper",
+      "price": "1890.00",
+      "packageSize": null,
+      "rollWidth": 1.06,
+      "rollLength": 10.05,
+      "rapport": 0.32,
+      "unit": "полотен",
+      "saleUnit": "рул.",
+      "wet": false,
+      "highLoad": false,
+      "unheated": false,
+      "description": "С подгоном рисунка, раппорт 32 см. На полотно добавляется 10 см для подрезки.",
+      "source": "ТЕСТОВЫЕ данные, не актуальные цены/нормы; synthetic-catalog-v1; Демонстрационная карточка v1",
+      "sources": [
+        {
+          "namespace": "repaircalc.frontend-fixtures",
+          "externalId": "demo-wallpaper",
+          "raw": {
+            "id": "demo-wallpaper",
+            "name": "Обои флизелиновые «Лён», 1,06 × 10,05 м",
+            "category": "Обои",
+            "kind": "wallpaper",
+            "price": "1890.00",
+            "packageSize": 1,
+            "rollWidth": 1.06,
+            "rollLength": 10.05,
+            "rapport": 0.32,
+            "unit": "полотен",
+            "saleUnit": "рул.",
+            "works": [
+              "wallpaper"
+            ],
+            "wet": false,
+            "highLoad": false,
+            "unheated": false,
+            "description": "С подгоном рисунка, раппорт 32 см. На полотно добавляется 10 см для подрезки.",
+            "source": "Демонстрационная карточка v1"
+          }
+        }
+      ],
+      "materialFamily": null
+    },
+    {
+      "id": "8824b97d-4c52-3760-ba92-67bc49bf181b",
+      "name": "Клей плиточный влагостойкий, 25 кг",
+      "category": "Строительные смеси",
+      "kind": "adhesive",
+      "price": "790.00",
+      "packageSize": 25,
+      "consumption": 4,
+      "unit": "кг",
+      "saleUnit": "меш.",
+      "wet": true,
+      "highLoad": true,
+      "unheated": true,
+      "description": "Демо-норма 4 кг/м² для условного ровного основания; в реальном расчёте нужны толщина слоя и технология.",
+      "source": "ТЕСТОВЫЕ данные, не актуальные цены/нормы; synthetic-catalog-v1; Учебная норма v1, не норматив производителя",
+      "sources": [
+        {
+          "namespace": "repaircalc.frontend-fixtures",
+          "externalId": "demo-glue",
+          "raw": {
+            "id": "demo-glue",
+            "name": "Клей плиточный влагостойкий, 25 кг",
+            "category": "Строительные смеси",
+            "kind": "adhesive",
+            "price": "790.00",
+            "packageSize": 25,
+            "consumption": 4,
+            "unit": "кг",
+            "saleUnit": "меш.",
+            "works": [
+              "floor"
+            ],
+            "wet": true,
+            "highLoad": true,
+            "unheated": true,
+            "description": "Демо-норма 4 кг/м² для условного ровного основания; в реальном расчёте нужны толщина слоя и технология.",
+            "source": "Учебная норма v1, не норматив производителя"
+          }
+        }
+      ],
+      "materialFamily": null
+    },
+    {
+      "id": "8539fe9d-e2dc-3994-a5fc-85773eb533b5",
+      "name": "Розетка с заземлением, белая",
+      "category": "Электрика",
+      "kind": "socket",
+      "price": "349.00",
+      "packageSize": 1,
+      "unit": "шт.",
+      "saleUnit": "шт.",
+      "wet": false,
+      "highLoad": true,
+      "unheated": true,
+      "description": "Для сухой зоны. Размещение и защита определяются проектом электрики.",
+      "source": "ТЕСТОВЫЕ данные, не актуальные цены/нормы; synthetic-catalog-v1; Демонстрационная карточка v1",
+      "sources": [
+        {
+          "namespace": "repaircalc.frontend-fixtures",
+          "externalId": "demo-socket",
+          "raw": {
+            "id": "demo-socket",
+            "name": "Розетка с заземлением, белая",
+            "category": "Электрика",
+            "kind": "socket",
+            "price": "349.00",
+            "packageSize": 1,
+            "unit": "шт.",
+            "saleUnit": "шт.",
+            "works": [
+              "electrical"
+            ],
+            "wet": false,
+            "highLoad": true,
+            "unheated": true,
+            "description": "Для сухой зоны. Размещение и защита определяются проектом электрики.",
+            "source": "Демонстрационная карточка v1"
+          }
+        }
+      ],
+      "materialFamily": null
+    },
+    {
+      "id": "6eb2cb4a-b71e-3865-9bb2-60ddf81c9b65",
+      "name": "Розетка с крышкой IP44, белая",
+      "category": "Электрика",
+      "kind": "socket",
+      "price": "590.00",
+      "packageSize": 1,
+      "unit": "шт.",
+      "saleUnit": "шт.",
+      "wet": true,
+      "highLoad": true,
+      "unheated": true,
+      "description": "IP44 не заменяет расчёт зон, УЗО и согласованный проект электрики.",
+      "source": "ТЕСТОВЫЕ данные, не актуальные цены/нормы; synthetic-catalog-v1; Демонстрационная карточка v1",
+      "sources": [
+        {
+          "namespace": "repaircalc.frontend-fixtures",
+          "externalId": "demo-wet-socket",
+          "raw": {
+            "id": "demo-wet-socket",
+            "name": "Розетка с крышкой IP44, белая",
+            "category": "Электрика",
+            "kind": "socket",
+            "price": "590.00",
+            "packageSize": 1,
+            "unit": "шт.",
+            "saleUnit": "шт.",
+            "works": [
+              "electrical"
+            ],
+            "wet": true,
+            "highLoad": true,
+            "unheated": true,
+            "description": "IP44 не заменяет расчёт зон, УЗО и согласованный проект электрики.",
+            "source": "Демонстрационная карточка v1"
+          }
+        }
+      ],
+      "materialFamily": null
+    },
+    {
+      "id": "caa5dc4e-49e3-398a-8861-e164c73317d3",
+      "name": "Кабель ВВГнг-LS 3 × 2,5, бухта 50 м",
+      "category": "Электрика",
+      "kind": "cable",
+      "price": "5490.00",
+      "packageSize": 50,
+      "unit": "м",
+      "saleUnit": "бух.",
+      "wet": true,
+      "highLoad": true,
+      "unheated": true,
+      "description": "Условная позиция для интерфейса. Сечение и защиту выбирает специалист.",
+      "source": "ТЕСТОВЫЕ данные, не актуальные цены/нормы; synthetic-catalog-v1; Демонстрационная карточка v1",
+      "sources": [
+        {
+          "namespace": "repaircalc.frontend-fixtures",
+          "externalId": "demo-cable",
+          "raw": {
+            "id": "demo-cable",
+            "name": "Кабель ВВГнг-LS 3 × 2,5, бухта 50 м",
+            "category": "Электрика",
+            "kind": "cable",
+            "price": "5490.00",
+            "packageSize": 50,
+            "unit": "м",
+            "saleUnit": "бух.",
+            "works": [
+              "electrical"
+            ],
+            "wet": true,
+            "highLoad": true,
+            "unheated": true,
+            "description": "Условная позиция для интерфейса. Сечение и защиту выбирает специалист.",
+            "source": "Демонстрационная карточка v1"
+          }
+        }
+      ],
+      "materialFamily": null
+    },
+    {
+      "id": "518d72ad-2dc4-3dd4-b462-2b93f1c4a177",
+      "name": "Лак универсальный, 0,9 л",
+      "category": "Требует уточнения",
+      "kind": "paint",
+      "price": "790.00",
+      "packageSize": 0.9,
+      "unit": "л",
+      "saleUnit": "бан.",
+      "wet": null,
+      "highLoad": null,
+      "unheated": null,
+      "description": "Норма расхода и совместимость не подтверждены. Расчёт заблокирован, пока нет данных.",
+      "source": "ТЕСТОВЫЕ данные, не актуальные цены/нормы; synthetic-catalog-v1; Демо-пример неполной карточки",
+      "sources": [
+        {
+          "namespace": "repaircalc.frontend-fixtures",
+          "externalId": "demo-unknown",
+          "raw": {
+            "id": "demo-unknown",
+            "name": "Лак универсальный, 0,9 л",
+            "category": "Требует уточнения",
+            "kind": "paint",
+            "price": "790.00",
+            "packageSize": 0.9,
+            "unit": "л",
+            "saleUnit": "бан.",
+            "works": [
+              "paint"
+            ],
+            "wet": null,
+            "highLoad": null,
+            "unheated": null,
+            "description": "Норма расхода и совместимость не подтверждены. Расчёт заблокирован, пока нет данных.",
+            "source": "Демо-пример неполной карточки"
+          }
+        }
+      ],
+      "materialFamily": null
+    }
+  ]
+}

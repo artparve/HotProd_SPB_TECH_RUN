@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["floorFamily", "wallFinish", "warnings"],
+  "properties": {
+    "floorFamily": {"enum": ["tile", "laminate", "vinyl", "unknown"]},
+    "wallFinish": {"enum": ["paint", "wallpaper", "unknown"]},
+    "warnings": {"type": "array", "maxItems": 10, "items": {"type": "string", "minLength": 1, "maxLength": 500}}
+  }
+}

@@ -22,14 +22,14 @@ except ImportError:
 
 class GitHubActionsTests(unittest.TestCase):
     def setUp(self):
-        base = "D:/Temp/opencode" if sys.platform == "win32" else None
+        base = None
         self.directory = tempfile.TemporaryDirectory(dir=base)
         self.addCleanup(self.directory.cleanup)
         self.environ = {
             "REPOSITORY": "Owner/RepairCalc", "RELEASE_SHA": "a" * 40,
             "DEPLOY_ENVIRONMENT": "staging", "GH_TOKEN": "private-api-token",
             "SSH_PRIVATE_KEY": "private-key\r\nsecond-line\r\n",
-            "DB_PASSWORD": "private-db-password", "RUNNER_TEMP": self.directory.name,
+            "MONGO_PASSWORD": "private-db-password", "RUNNER_TEMP": self.directory.name,
         }
 
     def run_record(self, **overrides):
@@ -79,7 +79,7 @@ class GitHubActionsTests(unittest.TestCase):
             if os.name == "posix":
                 self.assertEqual(path.stat().st_mode & 0o777, 0o600)
             self.assertNotIn("SSH_PRIVATE_KEY", environ)
-            self.assertEqual(environ["DB_PASSWORD"], "private-db-password")
+            self.assertEqual(environ["MONGO_PASSWORD"], "private-db-password")
             seen.append(path)
             return 7
 
@@ -117,13 +117,14 @@ class GitHubActionsTests(unittest.TestCase):
 
         def run(argv, **kwargs):
             public_file = Path(argv[3])
-            self.assertNotIn("DB_PASSWORD=", public_file.read_text())
+            self.assertNotIn("MONGO_PASSWORD=", public_file.read_text())
             self.assertNotIn("ADMIN_PASSWORD_HASH=", public_file.read_text())
             self.assertEqual(argv[4], "--env-file")
             file = Path(argv[5])
-            self.assertEqual(file.read_text(), "DB_PASSWORD=ci-validation-only\n")
+            self.assertTrue(all("ci-validation-only" in line for line in file.read_text().splitlines()))
+            self.assertIn("MONGO_ROOT_PASSWORD=",file.read_text())
             self.assertEqual(kwargs["env"]["COMPOSE_PROFILES"], "")
-            self.assertNotIn("DB_PASSWORD", kwargs["env"])
+            self.assertNotIn("MONGO_PASSWORD", kwargs["env"])
             self.assertNotIn("private-db-password", " ".join(argv))
             self.assertEqual(argv[-2:], ["config", "--quiet"])
             self.assertFalse(kwargs["check"])
@@ -152,12 +153,14 @@ class WorkflowTests(unittest.TestCase):
     def test_deployment_settings_are_bound_to_selected_environment_and_exported_to_process_env(self):
         path = github_actions.ROOT / ".github/workflows/cd.yml"
         job = yaml.safe_load(path.read_text())["jobs"]["deploy"]
+        self.assertEqual(job["if"], "github.ref == 'refs/heads/main'")
+        self.assertEqual(job["steps"][0]["with"]["ref"], "${{ github.sha }}")
         self.assertEqual(job["environment"]["name"], "${{ inputs.environment }}")
         self.assertEqual(job["env"]["DEPLOY_HOST"], "${{ vars.DEPLOY_HOST }}")
         self.assertEqual(job["env"]["DEPLOY_FRONTEND_HOST"], "${{ vars.DEPLOY_FRONTEND_HOST || '0.0.0.0' }}")
         step = next(step for step in job["steps"] if step.get("run") == "python -m scripts.github_actions deploy")
         self.assertEqual(step["env"]["SSH_PRIVATE_KEY"], "${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}")
-        self.assertEqual(step["env"]["DB_PASSWORD"], "${{ secrets.DB_PASSWORD }}")
+        self.assertEqual(step["env"]["MONGO_PASSWORD"], "${{ secrets.MONGO_PASSWORD }}")
         self.assertEqual(step["env"]["REGISTRY_PASSWORD"], "${{ github.token }}")
         exported = {**job["env"], **step["env"]}
         self.assertTrue(set(github_actions.release.DEPLOYMENT_ENV_DEFAULTS) <= set(exported))

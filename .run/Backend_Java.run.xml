@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Backend Java" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="ru.repaircalc.RepairCalcApplication" />
+    <module name="repaircalc-backend" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

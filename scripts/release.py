@@ -18,21 +18,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # Only configurable runtime settings used by the release Compose stack.
 # Frontend build settings, upstream service names and image references are fixed by deployment.
-DEPLOYMENT_PUBLIC_DEFAULTS = {
-    "DB_NAME": "repaircalc",
-    "DB_USER": "repaircalc",
-    "POSTGRES_IMAGE_TAG": "17.11",
-    "ADMIN_USERNAME": "",
-    "ADMIN_COOKIE_SECURE": "true",
-    "ADMIN_SESSION_SECONDS": "1800",
-    "OLLAMA_URL": "http://ollama:11434",
-    "OLLAMA_MODEL": "gemma4:12b",
-    "OLLAMA_NUM_THREADS": "8",
-    "OLLAMA_IMAGE_TAG": "0.40.13",
-    "OLLAMA_CPU_LIMIT": "8.0",
-    "OLLAMA_MEMORY_LIMIT": "12g",
-}
-DEPLOYMENT_SECRET_DEFAULTS = {"DB_PASSWORD": None, "ADMIN_PASSWORD_HASH": ""}
+# Runtime defaults are shared with local development and Compose.
+# This tracked example contains no credentials. Process env overrides each setting.
+DEPLOYMENT_PUBLIC_DEFAULTS = {}
+for _line in (ROOT / 'env/.env.example').read_text(encoding='utf-8').splitlines():
+    if _line and not _line.lstrip().startswith('#') and '=' in _line:
+        _name, _value = _line.split('=', 1)
+        if not _name.startswith(('VITE_', 'DEV_', 'LOCAL_')) and _name not in {'MONGO_URI', 'API_UPSTREAM', 'LLM_SERVICE_URL', 'SERVER_ADDRESS', 'SERVER_PORT', 'SPRING_PROFILES_ACTIVE'}:
+            DEPLOYMENT_PUBLIC_DEFAULTS[_name] = _value
+DEPLOYMENT_SECRET_DEFAULTS = {'MONGO_ROOT_PASSWORD': None, 'MONGO_PASSWORD': None, 'MONGO_KEYFILE_SECRET': None,
+                              'INTERNAL_SERVICE_TOKEN': '', 'ADMIN_PASSWORD_HASH': ''}
 DEPLOYMENT_ENV_DEFAULTS = {**DEPLOYMENT_PUBLIC_DEFAULTS, **DEPLOYMENT_SECRET_DEFAULTS}
 
 
@@ -63,6 +58,13 @@ def bounded_int(value, minimum, maximum):
     if not minimum <= number <= maximum:
         raise ValueError(f"Value must be between {minimum} and {maximum}")
     return number
+
+
+def boolean(environ, name, default):
+    value = environ.get(name, default).lower()
+    if value not in {"true", "false"}:
+        raise ValueError(f"{name} must be true or false")
+    return value == "true"
 
 
 def required(environ, name):
@@ -113,6 +115,8 @@ def configuration(args, environ):
         "release_frontend_host": frontend_host,
         "release_frontend_port": bounded_int(environ.get("DEPLOY_FRONTEND_PORT", "8080"), 1024, 65535),
         "release_become": not args.no_become,
+        "release_llm_enabled": boolean(environ, "DEPLOY_LLM_ENABLED", "false"),
+        "release_local_ollama": boolean(environ, "DEPLOY_LOCAL_OLLAMA", "true"),
     }
     if bool(environ.get("REGISTRY_USERNAME")) != bool(environ.get("REGISTRY_PASSWORD")):
         raise ValueError("Set both REGISTRY_USERNAME and REGISTRY_PASSWORD, or neither for public images")
@@ -154,7 +158,7 @@ def main(argv=None, environ=None):
             raise ValueError("Run deployment from Linux, macOS or WSL (Ansible controller is not supported on Windows)")
         executable = shutil.which("ansible-playbook", path=environ.get("PATH"))
         if not executable:
-            raise ValueError("Install deployment dependencies: python3 -m pip install -r ansible/requirements.txt")
+            raise ValueError("Install deployment dependencies: python3 -m pip install -r docker/ansible/requirements.txt")
         # Keep generated application secrets in a private temporary file, never argv or logs.
         with tempfile.TemporaryDirectory(prefix="repaircalc-release-") as directory:
             tmp = Path(directory)
@@ -174,11 +178,11 @@ def main(argv=None, environ=None):
                 "ANSIBLE_HOST_KEY_CHECKING": "True",
                 "ANSIBLE_DISPLAY_ARGS_TO_STDOUT": "False",
                 "ANSIBLE_NO_LOG": "True",  # Includes errors: never leak dotenv or registry credentials.
-                "ANSIBLE_CONFIG": str(ROOT / "ansible" / "ansible.cfg"),
+                "ANSIBLE_CONFIG": str(ROOT / "docker" / "ansible" / "ansible.cfg"),
             })
             result = subprocess.run([
                 executable, "-i", str(tmp / "inventory.json"),
-                str(ROOT / "ansible" / "deploy.yml"), "--extra-vars", "@" + str(tmp / "vars.json"),
+                str(ROOT / "docker" / "ansible" / "deploy.yml"), "--extra-vars", "@" + str(tmp / "vars.json"),
             ], cwd=ROOT, env=environ, check=False)
             return result.returncode
     except (ValueError, OSError) as error:

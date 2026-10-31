@@ -1,0 +1,44 @@
+server {
+    listen ${FRONTEND_PORT};
+    root /usr/share/nginx/html;
+    index index.html;
+    client_max_body_size ${API_MAX_BODY_SIZE};
+    add_header X-Content-Type-Options nosniff always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'" always;
+
+    location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+    resolver ${DNS_RESOLVER} valid=10s;
+    location /api/ {
+        set $backend ${API_UPSTREAM};
+        proxy_pass $backend$request_uri;
+        proxy_set_header Host $proxy_host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout ${API_CONNECT_TIMEOUT};
+        proxy_read_timeout ${API_READ_TIMEOUT};
+        proxy_intercept_errors on;
+        error_page 502 504 =503 @api_unavailable;
+    }
+    location @api_unavailable {
+        default_type application/json;
+        add_header Cache-Control no-store always;
+        return 503 '{"code":"backend_unavailable","message":"Backend temporarily unavailable"}';
+    }
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        add_header X-Content-Type-Options nosniff always;
+        try_files $uri =404;
+    }
+    location / {
+        add_header Cache-Control "no-cache";
+        add_header X-Content-Type-Options nosniff always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'self'" always;
+        try_files $uri $uri/ /index.html;
+    }
+}

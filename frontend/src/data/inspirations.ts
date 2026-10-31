@@ -3,6 +3,8 @@ import type { RoomInspirationFeed, RoomInspirationResult } from '../domain/inspi
 
 // Explicit synthetic fixtures, not photographs, ML output or a production catalog.
 export const inspirationFeedMock: RoomInspirationFeed = {
+  status: 'ok',
+  warnings: [],
   items: [
     {
       id: 'demo-warm-living',
@@ -42,6 +44,7 @@ export function analyzeInspirationMock(imageId: string, source: Project): RoomIn
   room.works = ['floor', wallpaper ? 'wallpaper' : 'paint']
   const tile = imageId === 'demo-blue-living' || restricted
   return {
+    status: 'ok',
     imageId,
     project,
     selections: {

@@ -85,7 +85,7 @@ def validate_compose(environ):
         public_path = Path(directory, ".env")
         copyfile(ROOT / "env/.env.example", public_path)
         path = Path(directory, "secret.env")
-        path.write_text("DB_PASSWORD=ci-validation-only\n", encoding="utf-8")
+        path.write_text(''.join(f'{key}=ci-validation-only-01234567890123456789\n' for key in release.DEPLOYMENT_SECRET_DEFAULTS if key != 'ADMIN_PASSWORD_HASH'), encoding='utf-8')
         env = {name: value for name, value in environ.items() if name not in release.DEPLOYMENT_ENV_DEFAULTS}
         env.update(IMAGE_PREFIX="ghcr.io/repaircalc/ci", IMAGE_TAG="sha-" + "0" * 40, COMPOSE_PROFILES="")
         return subprocess.run([

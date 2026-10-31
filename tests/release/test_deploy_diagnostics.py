@@ -20,7 +20,7 @@ class DeploymentDiagnosticsTests(unittest.TestCase):
         self.assertEqual(deploy_diagnostics.rows("not JSON"), [])
 
     def test_only_safe_status_is_printed_and_raw_logs_stay_in_private_file(self):
-        base = "D:/Temp/opencode" if sys.platform == "win32" else None
+        base = None
         with tempfile.TemporaryDirectory(dir=base) as directory:
             root = Path(directory)
             (root / "deployment-failure.json").write_text(json.dumps({"rc": 1, "stderr": "port is already allocated; private-token"}))
@@ -67,6 +67,17 @@ class DeploymentDiagnosticsTests(unittest.TestCase):
         self.assertEqual(len(actual["stdout"]), deploy_diagnostics.LIMIT)
         self.assertEqual(len(actual["stderr"]), deploy_diagnostics.LIMIT)
         self.assertEqual(run.call_args.kwargs["timeout"], 20)
+
+    def test_kernel_incompatibility_from_private_probe_report_is_classified(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)
+            (path / 'mongo-compatibility.json').write_text(json.dumps({
+                'status': 'error', 'error_code': 'mongodb_kernel_incompatible',
+                'container_logs': '12257600 private-test-token'}))
+            with patch.object(deploy_diagnostics, 'run', return_value={'rc': 0, 'stdout': '', 'stderr': ''}):
+                summary = deploy_diagnostics.collect(path, 'repaircalc_staging')
+            self.assertIn('mongodb_kernel_incompatible', summary['signals'])
+            self.assertNotIn('private-', json.dumps(summary))
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
-# Existing databases keep their published catalog/rules. Backend startup still runs Flyway.
+# Keep the active catalog/rules and refresh the release's local image manifest only.
 services:
   init-data:
-    entrypoint: [sh, -c, "exit 0"]
+    entrypoint:
+      [java, -jar, /app/backend.jar, --repaircalc.command=import-inspirations]

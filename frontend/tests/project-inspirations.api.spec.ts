@@ -80,7 +80,7 @@ test('general calculation applies interiors to the active room and preserves the
   expect(persisted).toEqual(estimation.project)
   expect(
     requests.some((request) => new URL(request.url()).pathname === '/api/v1/recommendations'),
-  ).toBe(false)
+  ).toBe(true)
 })
 
 test('a failed full-project recalculation does not partially apply the selected interior', async ({

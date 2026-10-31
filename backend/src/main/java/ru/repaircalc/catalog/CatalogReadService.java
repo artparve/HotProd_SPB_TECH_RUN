@@ -1,78 +1,60 @@
 package ru.repaircalc.catalog;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import static ru.repaircalc.storage.MongoStore.query;
 
-import org.springframework.dao.DataAccessException;
+import java.util.*;
+import org.bson.Document;
+import org.bson.types.Decimal128;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.query.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.repaircalc.catalog.persistence.CatalogReleaseEntity;
-import ru.repaircalc.catalog.persistence.CatalogReleaseRepository;
-import ru.repaircalc.catalog.persistence.ProductRevisionEntity;
-import ru.repaircalc.catalog.persistence.ProductRevisionRepository;
-import ru.repaircalc.catalog.persistence.ProductWorkRepository;
 import ru.repaircalc.common.web.ServiceUnavailableException;
-import tools.jackson.databind.json.JsonMapper;
+import ru.repaircalc.storage.MongoStore;
 
 @Service
-@Transactional(readOnly = true)
 public class CatalogReadService {
-    public static final String UNAVAILABLE_MESSAGE = "Catalog is temporarily unavailable.";
+  public static final String UNAVAILABLE_MESSAGE = "Catalog is temporarily unavailable.";
+  private final MongoStore store;
 
-    private final CatalogReleaseRepository releases;
-    private final ProductRevisionRepository revisions;
-    private final ProductWorkRepository productWorks;
-    private final JsonMapper json;
+  public CatalogReadService(MongoStore store) {
+    this.store = store;
+  }
 
-    public CatalogReadService(CatalogReleaseRepository releases, ProductRevisionRepository revisions,
-                              ProductWorkRepository productWorks, JsonMapper json) {
-        this.releases = releases;
-        this.revisions = revisions;
-        this.productWorks = productWorks;
-        this.json = json;
-    }
+  public List<ProductView> listProducts() {
+    return activeSnapshot().products();
+  }
 
-    public List<ProductView> listProducts() {
-        return activeSnapshot().products();
-    }
+  public Document pointer() {
+    var p = store.id("publication_pointer", "active");
+    if (p == null)
+      throw new ServiceUnavailableException("catalog_unavailable", UNAVAILABLE_MESSAGE);
+    return p;
+  }
 
-    public CatalogSnapshot activeSnapshot() {
-        try {
-            // Published content is immutable: retain this release ID across every subsequent query.
-            var release = releases.findByActiveTrue()
-                    .orElseThrow(CatalogReadService::unavailable);
-            UUID releaseId = release.getId();
-            String taxonomy = json.readTree(release.getManifest()).path("taxonomyVersion").asText();
-            if (taxonomy.isBlank()) { throw unavailable(); }
-            var products = revisions.findByReleaseIdOrderByProductIdAsc(releaseId);
-            Map<UUID, List<String>> worksByProduct = new HashMap<>();
-            for (var assignment : productWorks
-                    .findPublishedAssignments(releaseId)) {
-                var identity = assignment.getId();
-                worksByProduct.computeIfAbsent(identity.getProductId(), ignored -> new ArrayList<>())
-                        .add(identity.getWorkCode());
-            }
-            var views = products.stream()
-                    .map(product -> view(product, worksByProduct.getOrDefault(product.getProductId(), List.of())))
-                    .toList();
-            return new CatalogSnapshot(releaseId, release.getVersion(), release.getFingerprint(), taxonomy, views);
-        } catch (DataAccessException | tools.jackson.core.JacksonException exception) {
-            throw unavailable();
-        }
-    }
+  public CatalogSnapshot activeSnapshot() {
+    return snapshot(pointer().getString("catalogReleaseId"), null);
+  }
 
-    private static ProductView view(ProductRevisionEntity product, List<String> works) {
-        return new ProductView(product.getProductId(), product.getName(), product.getCategory(), product.getKind(),
-                product.getPrice().setScale(2).toPlainString(), product.getPackageSize(), product.getUnit(),
-                product.getSaleUnit(), works, product.getWet(), product.getHighLoad(), product.getUnheated(),
-                product.getDescription(), product.getSource(), product.getConsumption(), product.getRollWidth(),
-                product.getRollLength(), product.getRapport());
-    }
+  public CatalogSnapshot snapshot(String id, UUID onlyProduct) {
+    var release = store.id("catalog_release", id);
+    if (release == null)
+      throw new ServiceUnavailableException("catalog_unavailable", UNAVAILABLE_MESSAGE);
+    var q = query("releaseId", id).with(Sort.by("id"));
+    if (onlyProduct != null) q.addCriteria(Criteria.where("id").is(onlyProduct.toString()));
+    var products = store.find("product_revision", q).stream().map(d -> view(store, d)).toList();
+    return new CatalogSnapshot(
+        UUID.fromString(id),
+        release.getString("version"),
+        release.getString("fingerprint"),
+        release.get("manifest", Document.class).getString("taxonomyVersion"),
+        products);
+  }
 
-    private static ServiceUnavailableException unavailable() {
-        return new ServiceUnavailableException("catalog_unavailable", UNAVAILABLE_MESSAGE);
-    }
+  public static ProductView view(MongoStore store, Document document) {
+    var copy = new Document(document);
+    copy.remove("releaseId");
+    copy.put(
+        "price", ((Decimal128) copy.get("price")).bigDecimalValue().setScale(2).toPlainString());
+    return store.read(copy, ProductView.class);
+  }
 }

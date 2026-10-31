@@ -68,7 +68,7 @@ test('backend feed, large preview and photo selection lead to the ordinary calcu
   expect(lastCalculation.postDataJSON().selections[`${room.id}:covering`]).toBe('demo-laminate')
   expect(
     requests.some((request) => new URL(request.url()).pathname === '/api/v1/recommendations'),
-  ).toBe(false)
+  ).toBe(true)
   expect(errors).toEqual([])
 })
 

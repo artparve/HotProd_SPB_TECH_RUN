@@ -136,6 +136,16 @@ describe('validation and suitability', () => {
     expect(compatible(product('tile'), room)).toBe(true)
     expect(recommendDemo(room).products.every((r) => r.product.wet === true)).toBe(true)
   })
+  it('requires confirmed properties only for the conditions that use them', () => {
+    const incomplete = { ...product('tile'), wet: null, highLoad: null, unheated: null }
+    expect(compatible(incomplete, newRoom())).toBe(true)
+    expect(compatible(incomplete, { ...newRoom(), humidity: 'high' })).toBe(false)
+    expect(compatible(incomplete, { ...newRoom(), load: 'high' })).toBe(false)
+    expect(compatible(incomplete, { ...newRoom(), heated: false })).toBe(false)
+    expect(
+      recommendDemo(newRoom()).products.some(({ product }) => product.id === 'demo-unknown'),
+    ).toBe(false)
+  })
   it('does not treat an unheated balcony as a normal living room', () => {
     const room = { ...newRoom(), type: 'balcony' as const, heated: false }
     expect(recommendDemo(room).products.some((r) => r.product.id === 'demo-laminate')).toBe(false)

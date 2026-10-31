@@ -90,6 +90,8 @@ describe('material estimation API', () => {
     vi.stubEnv('VITE_DATA_MODE', 'api')
     const body = {
       ...envelope(),
+      model: 'not-used',
+      toolCalls: [],
       explanation: null,
       explanationStatus: 'unavailable',
       explanationError: { code: 'upstream_unavailable', message: 'Ollama unavailable' },
@@ -158,7 +160,8 @@ describe('API adapter', () => {
     vi.stubEnv('VITE_DATA_MODE', 'api')
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('down', { status: 503 })))
     const { service } = await import('./api')
-    await expect(service.catalog()).rejects.toThrow('HTTP 503')
+    expect(await service.catalog()).toEqual([])
+    expect((await import('./api')).apiStatus.catalogWarning).toContain('временно недоступен')
   })
   it('validates unknown response structures at runtime', async () => {
     vi.stubEnv('VITE_DATA_MODE', 'api')
@@ -170,7 +173,8 @@ describe('API adapter', () => {
     vi.stubEnv('VITE_DATA_MODE', 'api')
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
     const { service } = await import('./api')
-    await expect(service.catalog()).rejects.toThrow('Проверьте адрес backend')
+    expect(await service.catalog()).toEqual([])
+    expect((await import('./api')).apiStatus.catalogWarning).toContain('временно недоступен')
   })
   it('does not make external calls in demo mode', async () => {
     vi.stubEnv('VITE_DATA_MODE', 'demo')
@@ -192,6 +196,7 @@ describe('API adapter', () => {
     vi.stubEnv('VITE_DATA_MODE', 'api')
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('Aborted', 'AbortError')))
     const { service } = await import('./api')
-    await expect(service.catalog()).rejects.toThrow('15 секунд')
+    expect(await service.catalog()).toEqual([])
+    expect((await import('./api')).apiStatus.catalogWarning).toContain('временно недоступен')
   })
 })

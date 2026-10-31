@@ -75,6 +75,8 @@ describe('OpenAPI contract', () => {
       '/recommendations',
       '/room-inspirations',
       '/room-inspirations/{id}/analyze',
+      '/room-inspirations/{id}/image',
+      '/room-inspirations/{id}/thumbnail',
     ])
   })
 

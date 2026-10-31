@@ -1,0 +1,9 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0">
+  <mirrors>
+    <mirror>
+      <id>central</id>
+      <mirrorOf>central</mirrorOf>
+      <url>${env.MAVEN_CENTRAL_URL}</url>
+    </mirror>
+  </mirrors>
+</settings>

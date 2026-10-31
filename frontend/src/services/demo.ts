@@ -28,7 +28,10 @@ export const demoCatalog = () => catalog
 export function recommendDemo(room: Room): Recommendations {
   roomSchema.parse(room)
   const products = catalog.filter(
-    (p) => p.works.some((work) => room.works.includes(work)) && compatible(p, room),
+    (p) =>
+      p.works.some((work) => room.works.includes(work)) &&
+      compatible(p, room) &&
+      (!['paint', 'primer', 'adhesive'].includes(p.kind) || !!p.consumption),
   )
   return {
     products: products.map((product) => ({
