@@ -41,16 +41,20 @@ def main():
         ('json', args.json_catalog, json_products(args.json_catalog)),
         ('xml', args.xml_catalog, xml_products(args.xml_catalog, xml_categories)),
     ]:
-        count, category_counts, attr_counts = 0, collections.Counter(), collections.Counter()
+        count, uncategorized = 0, 0
+        category_counts, attr_counts = collections.Counter(), collections.Counter()
         names, roots, values = {}, collections.Counter(), collections.defaultdict(collections.Counter)
         source_support = collections.Counter()
         for product in products:
             count += 1
-            category = product['categories'][-1]
-            category_counts[category['id']] += 1
-            names[category['id']] = category['name']
-            if source == 'xml':
-                roots[product['categories'][0]['name']] += 1
+            if product['categories']:
+                category = product['categories'][-1]
+                category_counts[category['id']] += 1
+                names[category['id']] = category['name']
+                if source == 'xml':
+                    roots[product['categories'][0]['name']] += 1
+            else:
+                uncategorized += 1
             for name in {a['name'] for a in product['attributes']}:
                 attr_counts[name] += 1
             for a in product['attributes']:
@@ -78,6 +82,7 @@ def main():
         for g, label, _ in patterns:
             support[g][label]['counts'][source] = source_support[(g, label)]
         summary[source] = {'file': path.name, 'sha256': fingerprint(path), 'products': count,
+                           'uncategorized_products': uncategorized,
                            'used_leaf_category_ids': len(category_counts), 'roots': dict(roots),
                            'attribute_values': {k: v.most_common(30) for k, v in values.items()}}
         for cid, n in category_counts.items():

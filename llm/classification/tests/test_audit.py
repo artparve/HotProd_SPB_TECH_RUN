@@ -11,6 +11,27 @@ from repaircalc_classifier.schema import TAXONOMY
 
 
 class CatalogAuditTests(unittest.TestCase):
+    def test_products_without_categories_are_counted_without_inventing_a_category(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_json, source_xml, output = root / "catalog.json", root / "catalog.xml", root / "audit"
+            source_json.write_text(json.dumps({"products": [{
+                "id": "json-1", "cod_good": "42", "name": "Uncategorized product", "categories": {},
+            }]}), encoding="utf-8")
+            source_xml.write_text('<yml_catalog><shop><offers><offer id="xml-1">'
+                                  '<name>Uncategorized product</name></offer></offers></shop></yml_catalog>',
+                                  encoding="utf-8")
+            args = ["catalog-audit", "--json-catalog", str(source_json),
+                    "--xml-catalog", str(source_xml), "--output", str(output)]
+            with patch("sys.argv", args), contextlib.redirect_stdout(io.StringIO()):
+                audit.main()
+            summary = json.loads((output / "dataset_summary.json").read_text(encoding="utf-8"))
+            for source in ("json", "xml"):
+                self.assertEqual(summary[source]["products"], 1)
+                self.assertEqual(summary[source]["used_leaf_category_ids"], 0)
+                self.assertEqual(summary[source]["uncategorized_products"], 1)
+            self.assertEqual(summary["xml"]["roots"], {})
+
     def test_offline_audit_uses_the_current_taxonomy_and_writes_both_source_inventories(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
