@@ -52,10 +52,38 @@ afterEach(() => {
 })
 
 describe('RoomInspirationGallery', () => {
-  it('filters the loaded gallery by category without changing the project', async () => {
+  it('ignores a late feed from the previous room type', async () => {
+    let finish!: (value: typeof inspirationFeedMock) => void
+    vi.mocked(service.roomInspirations)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve
+          }),
+      )
+      .mockResolvedValueOnce({
+        ...inspirationFeedMock,
+        items: [{ ...image, id: 'kitchen-1', category: 'kitchen' }],
+      })
     const input = project()
+    const wrapper = await render(input)
+    const oldSignal = vi.mocked(service.roomInspirations).mock.calls[0]![1]
+    await wrapper.setProps({
+      project: { ...input, rooms: [{ ...input.rooms[0]!, type: 'kitchen' }] },
+    })
+    await flushPromises()
+    expect(oldSignal?.aborted).toBe(true)
+    finish(structuredClone(inspirationFeedMock))
+    await flushPromises()
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(1)
+    expect(wrapper.get('.inspiration-card img').attributes('src')).toBe(image.thumbnailUrl)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+  })
+  it('shows only interiors matching the selected room type', async () => {
+    const input = project()
+    input.rooms[0]!.type = 'kitchen'
     const original = structuredClone(input)
-    vi.mocked(service.roomInspirations).mockResolvedValueOnce({
+    vi.mocked(service.roomInspirations).mockResolvedValue({
       items: [
         { ...image, id: 'kitchen-1', title: 'Кухня 1', category: 'kitchen' },
         { ...image, id: 'kitchen-2', title: 'Кухня 2', category: 'kitchen' },
@@ -69,15 +97,28 @@ describe('RoomInspirationGallery', () => {
     const group = wrapper.get('[aria-label="Категории интерьеров"]')
     const select = (label: string) =>
       group.findAll('button').find((button) => button.text() === label)!
-    expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(2)
+    expect(group.text()).not.toContain('Спальни')
     await select('Кухни').trigger('click')
     expect(wrapper.findAll('.inspiration-card')).toHaveLength(2)
     expect(select('Кухни').attributes('aria-pressed')).toBe('true')
-    await select('Спальни').trigger('click')
+    await wrapper.setProps({
+      project: { ...input, rooms: [{ ...input.rooms[0]!, type: 'living' }] },
+    })
+    await flushPromises()
+    expect(service.roomInspirations).toHaveBeenLastCalledWith(
+      undefined,
+      expect.any(AbortSignal),
+      'living',
+    )
     expect(wrapper.findAll('.inspiration-card')).toHaveLength(1)
     expect(wrapper.get('.inspiration-card').text()).toContain('Спальня 1')
-    await select('Все').trigger('click')
-    expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)
+    await wrapper.setProps({
+      project: { ...input, rooms: [{ ...input.rooms[0]!, type: 'balcony' }] },
+    })
+    await flushPromises()
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(0)
+    expect(wrapper.text()).toContain('Для выбранного типа комнаты')
     expect(input).toEqual(original)
     expect(service.analyzeRoomInspiration).not.toHaveBeenCalled()
   })
@@ -166,7 +207,7 @@ describe('RoomInspirationGallery', () => {
     vi.mocked(service.roomInspirations).mockResolvedValueOnce({ items: [], nextCursor: null })
     await wrapper.get('button.text-button').trigger('click')
     await flushPromises()
-    expect(wrapper.text()).toContain('Изображений пока нет')
+    expect(wrapper.text()).toContain('интерьеров пока нет')
   })
 
   it('appends pages and deduplicates image IDs', async () => {
@@ -177,7 +218,11 @@ describe('RoomInspirationGallery', () => {
     const wrapper = await render()
     await wrapper.get('button.button.ghost').trigger('click')
     await flushPromises()
-    expect(service.roomInspirations).toHaveBeenLastCalledWith('page-2', expect.any(AbortSignal))
+    expect(service.roomInspirations).toHaveBeenLastCalledWith(
+      'page-2',
+      expect.any(AbortSignal),
+      'living',
+    )
     expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)
   })
 
@@ -196,7 +241,11 @@ describe('RoomInspirationGallery', () => {
     expect(wrapper.findAll('.inspiration-card')).toHaveLength(1)
     await wrapper.get('[role="alert"] button').trigger('click')
     await flushPromises()
-    expect(service.roomInspirations).toHaveBeenLastCalledWith('page-2', expect.any(AbortSignal))
+    expect(service.roomInspirations).toHaveBeenLastCalledWith(
+      'page-2',
+      expect.any(AbortSignal),
+      'living',
+    )
     expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)
   })
 

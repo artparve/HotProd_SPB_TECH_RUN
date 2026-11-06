@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { projectSchema, roomSchema, type Estimate, type Product } from './types'
+import { projectSchema, roomSchema, type Estimate, type Product, type RoomType } from './types'
 import { compatible } from './room'
 
 // Same-origin images work with the existing CSP and do not leak visits to third parties.
@@ -47,6 +47,11 @@ export const roomInspirationResultSchema = z
   })
 
 export type RoomInspiration = z.infer<typeof roomInspirationSchema>
+export function inspirationMatchesRoom(image: RoomInspiration, type: RoomType): boolean {
+  return type === 'living'
+    ? image.category === 'living' || image.category === 'bedroom'
+    : (type === 'bathroom' || type === 'kitchen') && image.category === type
+}
 export type RoomInspirationFeed = z.infer<typeof roomInspirationFeedSchema>
 export type RoomInspirationResult = z.infer<typeof roomInspirationResultSchema>
 export type PreparedInspiration = {

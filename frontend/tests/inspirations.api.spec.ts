@@ -1,7 +1,33 @@
 import { expect, test } from '@playwright/test'
-import { mockInspirationApi } from './mocks/inspirations'
+import { enterRoomDimensions, mockInspirationApi } from './mocks/inspirations'
 import { planImageBase64 } from './mocks/roomPlan'
 import { newRoom } from '../src/domain/types'
+
+test('shows interiors after plan parameters are explicitly applied', async ({ page }) => {
+  const requests = await mockInspirationApi(page)
+  await page.goto('/room')
+  await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
+  await expect(page.locator('.inspiration-gallery')).toHaveCount(0)
+  await page.getByText('Заполнить по плану', { exact: false }).click()
+  await page.getByLabel('Выбрать изображение', { exact: true }).setInputFiles({
+    name: 'room-plan.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(planImageBase64, 'base64'),
+  })
+  await page.getByRole('button', { name: 'Распознать размеры', exact: true }).click()
+  await expect(page.getByLabel('Длина по плану', { exact: true })).toHaveValue('5.32')
+  await expect(page.locator('.inspiration-gallery')).toHaveCount(0)
+  expect(
+    requests.some((request) => new URL(request.url()).pathname === '/api/v1/room-inspirations'),
+  ).toBe(false)
+  await page.getByLabel('Высота потолка по плану', { exact: true }).fill('3')
+  await page.getByLabel('Площадь окон и дверей по плану', { exact: true }).fill('0')
+  await page
+    .getByRole('checkbox', { name: 'Я проверил размеры, единицы и площадь проёмов' })
+    .check()
+  await page.getByRole('button', { name: 'Применить параметры', exact: true }).click()
+  await expect(page.locator('.inspiration-card')).toHaveCount(3)
+})
 
 test('backend feed, large preview and photo selection lead to the ordinary calculator', async ({
   page,
@@ -11,8 +37,10 @@ test('backend feed, large preview and photo selection lead to the ordinary calcu
   page.on('pageerror', (error) => errors.push(error.message))
   const requests = await mockInspirationApi(page)
   await page.goto('/')
-  await expect(page.locator('.inspiration-gallery')).toHaveCount(1)
+  await expect(page.locator('.inspiration-gallery')).toHaveCount(0)
   await page.goto('/room')
+  await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
+  await enterRoomDimensions(page)
   await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
   await page.getByRole('spinbutton', { name: 'Длина м', exact: true }).fill('5')
   await page.getByRole('spinbutton', { name: 'Ширина м', exact: true }).fill('4')
@@ -20,7 +48,7 @@ test('backend feed, large preview and photo selection lead to the ordinary calcu
   await expect(page.locator('.main-panel .room-editor > .inspiration-gallery')).toHaveCount(1)
   expect(
     await gallery.evaluate((element) =>
-      element.previousElementSibling?.classList.contains('plan-import'),
+      element.previousElementSibling?.classList.contains('geometry-strip'),
     ),
   ).toBe(true)
   await expect(gallery.locator('.inspiration-card')).toHaveCount(3)
@@ -77,6 +105,8 @@ test('failed recognition preserves the project and can be retried', async ({ pag
   await mockInspirationApi(page, options)
   await page.goto('/room')
   await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
+  await enterRoomDimensions(page)
+  await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
   await page.getByRole('spinbutton', { name: 'Длина м', exact: true }).fill('6')
   const select = page
     .locator('.inspiration-card')
@@ -101,6 +131,8 @@ test('rejects photo-derived dimensions without replacing the existing calculator
 }) => {
   await mockInspirationApi(page, { corruptDimensions: true })
   await page.goto('/room')
+  await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
+  await enterRoomDimensions(page)
   await page
     .locator('.inspiration-card')
     .first()
@@ -114,7 +146,9 @@ test('rejects photo-derived dimensions without replacing the existing calculator
 test('empty feed leaves the manual calculator usable', async ({ page }) => {
   await mockInspirationApi(page, { empty: true })
   await page.goto('/room')
-  await expect(page.getByText('Изображений пока нет.', { exact: false })).toBeVisible()
+  await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
+  await enterRoomDimensions(page)
+  await expect(page.getByText('интерьеров пока нет.', { exact: false })).toBeVisible()
   await page.getByRole('button', { name: 'Найти материалы' }).click()
   await expect(page.getByRole('heading', { name: 'Материалы для вашей комнаты' })).toBeVisible()
 })
@@ -122,6 +156,8 @@ test('empty feed leaves the manual calculator usable', async ({ page }) => {
 test('loads more rooms with a cursor and no duplicate cards', async ({ page }) => {
   const requests = await mockInspirationApi(page, { paginate: true })
   await page.goto('/room')
+  await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
+  await enterRoomDimensions(page)
   await expect(page.locator('.inspiration-card')).toHaveCount(1)
   await page.getByRole('button', { name: 'Ещё комнаты' }).click()
   await expect(page.locator('.inspiration-card')).toHaveCount(3)
@@ -153,6 +189,8 @@ for (const mode of ['uploaded-only', 'applied', 'edited-after-apply'] as const) 
     )
     const requests = await mockInspirationApi(page)
     await page.goto('/room')
+    await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
+    await enterRoomDimensions(page)
     await page.getByRole('spinbutton', { name: 'Длина м', exact: true }).fill('6')
     await page.getByRole('spinbutton', { name: 'Ширина м', exact: true }).fill('4')
     await page.getByText('Заполнить по плану', { exact: false }).click()
@@ -211,8 +249,10 @@ for (const mode of ['uploaded-only', 'applied', 'edited-after-apply'] as const) 
     if (await menu.isVisible()) await menu.click()
     await page.getByRole('link', { name: 'RepairCalc — главная' }).click()
     await expect(page).toHaveURL('/')
-    await expect(page.locator('.inspiration-gallery')).toHaveCount(1)
+    await expect(page.locator('.inspiration-gallery')).toHaveCount(0)
     await expect(page.getByRole('spinbutton', { name: 'Длина м', exact: true })).toHaveValue('9')
+    await enterRoomDimensions(page)
+    await expect(page.locator('.inspiration-gallery')).toHaveCount(1)
     await expect(page.getByRole('region', { name: 'Подбор по изображению' })).toHaveCount(0)
   })
 }

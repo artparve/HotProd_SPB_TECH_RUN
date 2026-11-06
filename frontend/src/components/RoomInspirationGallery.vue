@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { service } from '../services/api'
 import { projectSchema, type Project } from '../domain/types'
 import {
+  inspirationMatchesRoom,
   validateInspirationEstimate,
   validateInspirationProducts,
   type PreparedInspiration,
@@ -13,6 +14,9 @@ const props = defineProps<{ project: Project; disabled?: boolean }>()
 const emit = defineEmits<{ prepared: [value: PreparedInspiration] }>()
 const items = ref<RoomInspiration[]>([])
 const category = ref('all')
+const matchingItems = computed(() =>
+  items.value.filter((image) => inspirationMatchesRoom(image, props.project.rooms[0]!.type)),
+)
 const categories = [
   { id: 'living', label: 'Гостиные' },
   { id: 'bedroom', label: 'Спальни' },
@@ -21,12 +25,12 @@ const categories = [
   { id: 'other', label: 'Другое' },
 ]
 const availableCategories = computed(() =>
-  categories.filter((option) => items.value.some((image) => image.category === option.id)),
+  categories.filter((option) => matchingItems.value.some((image) => image.category === option.id)),
 )
 const visibleItems = computed(() =>
   category.value === 'all'
-    ? items.value
-    : items.value.filter((image) => image.category === category.value),
+    ? matchingItems.value
+    : matchingItems.value.filter((image) => image.category === category.value),
 )
 const cursor = ref<string | null>(null)
 const loading = ref(false)
@@ -53,11 +57,16 @@ async function load(more = false) {
   if (loading.value) return
   loading.value = true
   feedError.value = ''
-  feedController = new AbortController()
+  const controller = new AbortController()
+  feedController = controller
   try {
     const previous = more ? cursor.value : null
-    const result = await service.roomInspirations(previous || undefined, feedController.signal)
-    if (!alive) return
+    const result = await service.roomInspirations(
+      previous || undefined,
+      controller.signal,
+      props.project.rooms[0]!.type,
+    )
+    if (!alive || controller.signal.aborted) return
     if (result.status === 'unavailable') {
       feedError.value = result.warnings?.join(' ') || 'Подборка временно недоступна.'
       return
@@ -67,10 +76,10 @@ async function load(more = false) {
     cursor.value = result.nextCursor === previous ? null : result.nextCursor
     loaded.value = true
   } catch (error) {
-    if (alive)
+    if (alive && !controller.signal.aborted)
       feedError.value = error instanceof Error ? error.message : 'Не удалось загрузить комнаты.'
   } finally {
-    if (alive) loading.value = false
+    if (alive && feedController === controller) loading.value = false
   }
 }
 
@@ -90,10 +99,21 @@ function cancelSelection() {
   selecting.value = null
 }
 watch(
-  () => props.project.rooms[0]?.id,
-  () => {
+  [() => props.project.rooms[0]?.id, () => props.project.rooms[0]?.type],
+  (current, previous) => {
     cancelSelection()
     selectionError.value = ''
+    closePreview()
+    hovered.value = null
+    if (current[1] !== previous[1]) {
+      feedController?.abort()
+      items.value = []
+      cursor.value = null
+      category.value = 'all'
+      loaded.value = false
+      loading.value = false
+      void load()
+    }
   },
 )
 async function choose(image: RoomInspiration) {
@@ -180,8 +200,8 @@ onBeforeUnmount(() => {
         Повторить загрузку
       </button>
     </div>
-    <p v-if="loaded && !items.length && !feedError" role="status">
-      Изображений пока нет. Вы можете заполнить калькулятор вручную.
+    <p v-if="loaded && !matchingItems.length && !feedError" role="status">
+      Для выбранного типа комнаты интерьеров пока нет. Вы можете продолжить расчёт вручную.
     </p>
     <div
       v-if="availableCategories.length"
@@ -208,7 +228,7 @@ onBeforeUnmount(() => {
         {{ option.label }}
       </button>
     </div>
-    <ul v-if="items.length" class="inspiration-strip" aria-label="Изображения комнат">
+    <ul v-if="matchingItems.length" class="inspiration-strip" aria-label="Изображения комнат">
       <li v-for="image in visibleItems" :key="image.id" class="inspiration-card">
         <button
           type="button"

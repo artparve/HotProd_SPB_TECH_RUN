@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { enterRoomDimensions } from '../mocks/inspirations'
 
 test('real Java estimate, technology replacement and saved result', async ({ page }) => {
   await page.goto('/')
@@ -33,6 +34,8 @@ test('real product calculation and Python explanation preserve the Java total', 
 
 test('image from real feed goes through Python and keeps room dimensions', async ({ page }) => {
   await page.goto('/room')
+  await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
+  await enterRoomDimensions(page)
   await expect(page.getByRole('link', { name: 'Источник: Pexels' })).toBeVisible()
   await expect
     .poll(() =>

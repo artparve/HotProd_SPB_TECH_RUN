@@ -21,9 +21,10 @@ public class InspirationController {
   @GetMapping
   public InspirationService.Feed feed(
       @RequestParam(required = false) String cursor,
+      @RequestParam(required = false) String roomType,
       @RequestParam(defaultValue = "${INSPIRATION_PAGE_LIMIT:24}") int limit) {
     try {
-      return service.feed(cursor, limit);
+      return service.feed(cursor, limit, roomType);
     } catch (org.springframework.dao.DataAccessException | com.mongodb.MongoException e) {
       return new InspirationService.Feed(
           List.of(),

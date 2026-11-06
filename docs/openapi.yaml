@@ -25,6 +25,13 @@ paths:
       description: Локальная подготовленная подборка с устойчивой cursor-пагинацией по ID. Пустой items допустим.
         При недоступности Mongo status=unavailable и warnings объясняют пустой результат.
       parameters:
+      - name: roomType
+        in: query
+        required: false
+        description: Тип комнаты. Для living доступны гостиные и спальни. Для children и balcony подборка пока пуста.
+        schema:
+          type: string
+          enum: [living, bathroom, kitchen, children, balcony]
       - name: cursor
         in: query
         required: false
@@ -64,6 +71,7 @@ paths:
       - RoomInspirations
       summary: Выделить материалы интерьера и подготовить ввод калькулятора
       description: Java загружает изображение только по ID из импортированной подборки, Python извлекает тип отделки,
+        тип интерьера должен соответствовать типу комнаты, иначе возвращается HTTP 422.
         Java сопоставляет его с совместимым каталогом. Если для условий комнаты нет покрытия распознанного типа,
         Java предлагает совместимое напольное покрытие по приоритету правил и указывает замену в warnings.
         Аналогично подбирается совместимая отделка стен, если распознанный вид отделки недоступен.

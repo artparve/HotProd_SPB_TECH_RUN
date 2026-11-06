@@ -111,11 +111,26 @@ public class InspirationService {
   }
 
   public Feed feed(String cursor, int limit) {
+    return feed(cursor, limit, null);
+  }
+
+  private static Set<String> categoriesForRoom(String roomType) {
+    return switch (roomType) {
+      case "living" -> Set.of("living", "bedroom");
+      case "bathroom" -> Set.of("bathroom");
+      case "kitchen" -> Set.of("kitchen");
+      case "children", "balcony" -> Set.of();
+      default -> throw new ApiStatusException(422, "invalid_room_type", "Неизвестный тип комнаты.");
+    };
+  }
+
+  public Feed feed(String cursor, int limit, String roomType) {
     if (limit < 1
         || limit > pageLimit
         || cursor != null && !cursor.matches("[A-Za-z0-9][A-Za-z0-9_-]{0,127}"))
       throw new ApiStatusException(422, "invalid_page", "Неверный размер страницы или cursor.");
     var q = new Query().with(Sort.by("id")).limit(limit + 1);
+    if (roomType != null) q.addCriteria(Criteria.where("category").in(categoriesForRoom(roomType)));
     if (cursor != null) q.addCriteria(Criteria.where("id").gt(cursor));
     var records = store.find("inspiration", q);
     boolean more = records.size() > limit;
@@ -219,6 +234,9 @@ public class InspirationService {
     if (project.rooms().size() != 1)
       throw new ApiStatusException(
           422, "invalid_project", "Для изображения требуется одна комната.");
+    if (!categoriesForRoom(project.rooms().getFirst().type()).contains(find(id).getString("category")))
+      throw new ApiStatusException(
+          422, "inspiration_room_mismatch", "Интерьер не соответствует выбранному типу комнаты.");
     byte[] bytes = image(id, false);
     var result =
         llm.call(

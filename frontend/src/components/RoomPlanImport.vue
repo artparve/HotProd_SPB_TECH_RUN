@@ -11,6 +11,7 @@ import {
 import { service } from '../services/api'
 
 const props = defineProps<{ room: Room }>()
+const emit = defineEmits<{ applied: [] }>()
 const preview = ref('')
 const previewDialog = ref<HTMLDialogElement | null>(null)
 const fileName = ref('')
@@ -164,6 +165,7 @@ function apply() {
   if (!canApply.value) return
   try {
     Object.assign(props.room, applyPlanDimensions(props.room, fingerprint.value, values.value))
+    emit('applied')
     fingerprint.value = JSON.stringify(props.room)
     result.value = null
     success.value = 'Проверенные размеры применены к этой комнате.'

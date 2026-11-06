@@ -17,6 +17,14 @@ afterEach(() => {
 })
 
 describe('room inspiration API', () => {
+  it('passes room type to the gallery endpoint', async () => {
+    vi.stubEnv('VITE_DATA_MODE', 'api')
+    const fetch = vi.fn().mockResolvedValue(response(inspirationFeedMock))
+    vi.stubGlobal('fetch', fetch)
+    const { service } = await import('./api')
+    await service.roomInspirations(undefined, undefined, 'bathroom')
+    expect(fetch.mock.calls[0]![0]).toBe('/api/v1/room-inspirations?roomType=bathroom')
+  })
   it('loads the backend feed with an encoded opaque cursor', async () => {
     vi.stubEnv('VITE_DATA_MODE', 'api')
     const fetch = vi.fn().mockResolvedValue(response(inspirationFeedMock))

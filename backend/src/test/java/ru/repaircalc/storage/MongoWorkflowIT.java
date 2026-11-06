@@ -183,6 +183,17 @@ class MongoWorkflowIT {
     assertThat(service.importManifest(assets.resolve("manifest.json"))).isEqualTo(entries.size());
     assertThat(service.importManifest(assets.resolve("manifest.json"))).isEqualTo(entries.size());
     assertThat(service.feed(null, 24).items()).hasSize(entries.size());
+    assertThat(service.feed(null, 24, "living").items()).hasSize(10);
+    assertThat(service.feed(null, 24, "bathroom").items())
+        .hasSize(5).allMatch(item -> item.category().equals("bathroom"));
+    assertThat(service.feed(null, 24, "kitchen").items())
+        .hasSize(5).allMatch(item -> item.category().equals("kitchen"));
+    assertThat(service.feed(null, 24, "children").items()).isEmpty();
+    assertThat(service.feed(null, 24, "balcony").items()).isEmpty();
+    var firstKitchen = service.feed(null, 2, "kitchen");
+    assertThat(firstKitchen.nextCursor()).isNotNull();
+    assertThat(service.feed(firstKitchen.nextCursor(), 24, "kitchen").items())
+        .hasSize(3).allMatch(item -> item.category().equals("kitchen"));
     assertThat(service.feed(null, 24).items().stream()
             .collect(java.util.stream.Collectors.groupingBy(
                 ru.repaircalc.inspirations.InspirationService.Image::category,
@@ -243,7 +254,10 @@ class MongoWorkflowIT {
         new InspirationService(
             store, llm, snapshots, projects, json, assets.toString(), 8388608, 12000000, 480, 24);
     service.importManifest(assets.resolve("manifest.json"));
-    var mvc = MockMvcBuilders.standaloneSetup(new InspirationController(service)).build();
+    var mvc =
+        MockMvcBuilders.standaloneSetup(new InspirationController(service))
+            .setControllerAdvice(new ru.repaircalc.common.web.ApiExceptionHandler())
+            .build();
     var room = (ObjectNode) json.valueToTree(room("bath", List.of("floor", "paint")));
     room.put("name", "Санузел")
         .put("type", "bathroom")
@@ -255,9 +269,14 @@ class MongoWorkflowIT {
     var project =
         new ProjectInput(
             "apartment", "capital", List.of(json.treeToValue(room, ProjectInput.Room.class)));
+    mvc.perform(
+            post("/api/v1/room-inspirations/living-room-11701155/analyze")
+                .contentType("application/json")
+                .content(json.writeValueAsBytes(new InspirationController.Request(project))))
+        .andExpect(status().isUnprocessableEntity());
     var response =
         mvc.perform(
-                post("/api/v1/room-inspirations/living-room-11701155/analyze")
+                post("/api/v1/room-inspirations/bathroom-6957081/analyze")
                     .contentType("application/json")
                     .content(json.writeValueAsBytes(new InspirationController.Request(project))))
             .andExpect(status().isOk())

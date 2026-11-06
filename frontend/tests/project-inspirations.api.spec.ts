@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { newRoom } from '../src/domain/types'
-import { mockInspirationApi } from './mocks/inspirations'
+import { enterRoomDimensions, mockInspirationApi } from './mocks/inspirations'
 
 test('general calculation applies interiors to the active room and preserves the other rooms and selections', async ({
   page,
@@ -23,6 +23,7 @@ test('general calculation applies interiors to the active room and preserves the
   )
   const requests = await mockInspirationApi(page)
   await page.goto('/')
+  await enterRoomDimensions(page)
   const gallery = page.locator('.main-panel .room-editor > .inspiration-gallery')
   await expect(gallery).toBeVisible()
   await gallery
@@ -47,6 +48,7 @@ test('general calculation applies interiors to the active room and preserves the
     .getByRole('group', { name: 'Помещения проекта' })
     .getByRole('button', { name: 'Вторая комната' })
     .click()
+  await enterRoomDimensions(page)
   await page.getByRole('spinbutton', { name: 'Длина м', exact: true }).fill('7')
   await gallery
     .locator('.inspiration-card')
@@ -112,6 +114,7 @@ test('a failed full-project recalculation does not partially apply the selected 
     else await route.fallback()
   })
   await page.goto('/')
+  await enterRoomDimensions(page)
   await page
     .locator('.inspiration-card')
     .nth(2)

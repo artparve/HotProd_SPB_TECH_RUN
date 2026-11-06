@@ -1,29 +1,30 @@
 import { expect, test } from '@playwright/test'
+import { enterRoomDimensions } from '../mocks/inspirations'
 
-test('production gallery serves five photos per category from the bundled image', async ({
-  page,
-}) => {
+test('production gallery requires entered dimensions and follows room type', async ({ page }) => {
   test.skip(process.env.REPAIRCALC_PRODUCTION_GALLERY !== '1', 'Requires the production manifest')
   await page.goto('/room')
+  await expect(page.locator('.inspiration-gallery')).toHaveCount(0)
+  await enterRoomDimensions(page)
   const length = page.getByRole('spinbutton', { name: 'Длина м', exact: true })
   const originalLength = await length.inputValue()
-  await expect(page.locator('.inspiration-card')).toHaveCount(20)
-  const categories = page.getByRole('group', { name: 'Категории интерьеров' })
-  for (const [label, prefix] of [
-    ['Гостиные', 'living-room-'],
-    ['Спальни', 'bedroom-'],
-    ['Кухни', 'kitchen-'],
-    ['Ванные', 'bathroom-'],
+  await expect(page.locator('.inspiration-card')).toHaveCount(5)
+  for (const [label, prefix, count] of [
+    ['Жилая комната', 'living-room-|bedroom-', 10],
+    ['Кухня', 'kitchen-', 5],
+    ['Санузел', 'bathroom-', 5],
   ] as const) {
-    await categories.getByRole('button', { name: label, exact: true }).click()
-    await expect(page.locator('.inspiration-card')).toHaveCount(5)
+    await page.getByRole('button', { name: label, exact: true }).click()
+    await expect(page.locator('.inspiration-card')).toHaveCount(count)
     await expect
       .poll(async () =>
         page
           .locator('.inspiration-card img')
           .evaluateAll(
             (images, idPrefix) =>
-              images.every((image) => image.getAttribute('src')?.includes('/' + idPrefix)),
+              images.every((image) =>
+                new RegExp('/(' + idPrefix + ')').test(image.getAttribute('src') || ''),
+              ),
             prefix,
           ),
       )
@@ -35,7 +36,12 @@ test('production gallery serves five photos per category from the bundled image'
       .toBeGreaterThan(0)
     await expect(page.locator('.inspiration-card-body a').first()).toHaveText('Источник: Pexels')
   }
-  await categories.getByRole('button', { name: 'Все', exact: true }).click()
-  await expect(page.locator('.inspiration-card')).toHaveCount(20)
+  for (const label of ['Детская', 'Балкон']) {
+    await page.getByRole('button', { name: label, exact: true }).click()
+    await expect(page.locator('.inspiration-card')).toHaveCount(0)
+    await expect(
+      page.getByText('Для выбранного типа комнаты интерьеров пока нет.', { exact: false }),
+    ).toBeVisible()
+  }
   await expect(length).toHaveValue(originalLength)
 })
