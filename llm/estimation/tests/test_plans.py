@@ -146,6 +146,13 @@ class ExtractionTests(unittest.TestCase):
             with self.assertRaises(ServiceError):
                 PlanExtractor(Estimator(transport=lambda *args: response)).extract(request())
 
+    def test_duplicate_model_fields_are_not_silently_overwritten(self):
+        content = '{"shape":"multiple",' + json.dumps(example())[1:]
+        response = {"done": True, "message": {"content": content}}
+        with self.assertRaises(ServiceError) as caught:
+            PlanExtractor(Estimator(transport=lambda *args: response)).extract(request())
+        self.assertEqual(caught.exception.body["code"], "invalid_model_response")
+
     def test_invalid_image_never_calls_model(self):
         with self.assertRaises(ServiceError):
             PlanExtractor(Estimator(transport=lambda *args: self.fail("network"))).extract({"imageBase64": "!"})

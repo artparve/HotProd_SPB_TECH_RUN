@@ -19,7 +19,8 @@ PRODUCT = "ac1f222a-f5e9-3b5d-a91e-c943b053e92e"
 
 class InferenceTests(unittest.TestCase):
     def test_duplicate_keys_and_nonfinite_values_are_rejected(self):
-        for payload in ('{"a":1,"a":2}', '{"a":NaN}', '{"a":Infinity}'):
+        for payload in ('{"a":1,"a":2}', '{"a":NaN}', '{"a":Infinity}',
+                        '{"a":1e999}', '[-1e999]'):
             with self.assertRaises(ValueError):
                 strict_json(payload)
 
@@ -78,6 +79,20 @@ class InferenceTests(unittest.TestCase):
         with self.assertRaises(ServiceError) as caught:
             inference.execute("inspirations/analyze", request)
         self.assertEqual(caught.exception.body["code"], "invalid_model_response")
+
+    def test_malformed_image_responses_are_controlled_model_errors(self):
+        buffer = io.BytesIO()
+        Image.new("RGB", (8, 8)).save(buffer, "PNG")
+        request = {"imageBase64": base64.b64encode(buffer.getvalue()).decode()}
+        content = json.dumps({"floorFamily": "tile", "wallFinish": "paint", "warnings": []})
+        for response in (None, [], {}, {"done": True, "message": None},
+                         {"done": True, "message": {"content": content, "tool_calls": ["bad"]}}):
+            with self.subTest(response=response):
+                inference = Inference(Settings(TOKEN), lambda *_: response)
+                with self.assertRaises(ServiceError) as caught:
+                    inference.execute("inspirations/analyze", request)
+                self.assertEqual(caught.exception.status, 502)
+                self.assertEqual(caught.exception.body["code"], "invalid_model_response")
 
     def test_environment_requires_service_authentication(self):
         with patch.dict("os.environ", {"INTERNAL_SERVICE_TOKEN": ""}, clear=True):

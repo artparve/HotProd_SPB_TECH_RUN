@@ -7,20 +7,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 
-from repaircalc_estimator.service import Estimator, ServiceError
+from repaircalc_estimator.service import Estimator, ServiceError, strict_json
 from .settings import DATA, Settings
-
-
-def strict_json(data):
-    def pairs(items):
-        result = {}
-        for key, value in items:
-            if key in result:
-                raise ValueError("Duplicate JSON key")
-            result[key] = value
-        return result
-    return json.loads(data, object_pairs_hook=pairs,
-                      parse_constant=lambda value: (_ for _ in ()).throw(ValueError("Nonfinite JSON")))
 
 
 class Inference:
@@ -109,7 +97,10 @@ class Inference:
             "options": {"temperature": 0, "num_ctx": s.context,
                         "num_predict": s.predict, "num_thread": s.threads}}, s.timeout)
         try:
-            if response.get("done") is not True or response.get("done_reason") == "length":
+            if (not isinstance(response, dict) or response.get("done") is not True
+                    or response.get("done_reason") == "length"
+                    or not isinstance(response.get("message"), dict)
+                    or response["message"].get("tool_calls")):
                 raise ValueError()
             result = strict_json(response["message"]["content"])
             Draft202012Validator(schema).validate(result)

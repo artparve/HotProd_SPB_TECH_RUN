@@ -2,6 +2,7 @@
 import os
 import copy
 import json
+import math
 from decimal import Decimal, InvalidOperation
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -13,6 +14,25 @@ class ServiceError(Exception):
         super().__init__(message)
         self.status = status
         self.body = {"code": code, "message": message, "fields": fields or []}
+
+
+def strict_json(data):
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            if key in result:
+                raise ValueError("Duplicate JSON key")
+            result[key] = value
+        return result
+
+    def finite_float(text):
+        value = float(text)
+        if not math.isfinite(value):
+            raise ValueError("Nonfinite JSON")
+        return value
+
+    return json.loads(data, object_pairs_hook=pairs,
+                      parse_constant=finite_float, parse_float=finite_float)
 
 
 def number(value, field, minimum, maximum, *, exclusive=False, whole=False):
@@ -58,11 +78,11 @@ def http_json(url, payload=None, timeout=30):
     req = Request(url, data=data, headers={"Content-Type": "application/json", "Accept": "application/json"})
     try:
         with urlopen(req, timeout=timeout) as response:
-            return json.load(response)
+            return strict_json(response.read())
     except HTTPError as exc:
         # Preserve actionable Java validation/catalog errors, never turn them into a model answer.
         try:
-            body = json.loads(exc.read())
+            body = strict_json(exc.read())
         except (ValueError, UnicodeError):
             body = {}
         finally:

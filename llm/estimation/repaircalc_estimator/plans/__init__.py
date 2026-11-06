@@ -15,7 +15,7 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 from PIL import Image, ImageOps, UnidentifiedImageError
 
-from ..service import ServiceError
+from ..service import ServiceError, strict_json
 
 ROOT = Path(os.environ.get('PLAN_DATA_DIR', Path(os.environ.get('DATA_DIR', Path(__file__).resolve().parents[4] / 'data')) / 'plans'))
 SCHEMA_VERSION = "room-plan-draft-v1"
@@ -160,7 +160,7 @@ class PlanExtractor:
             if (response.get("done") is not True or response.get("done_reason") == "length"
                     or response["message"].get("tool_calls")):
                 raise ValueError()
-            draft = json.loads(response["message"]["content"])
+            draft = strict_json(response["message"]["content"])
         except (KeyError, TypeError, ValueError, AttributeError):
             raise ServiceError("invalid_model_response", "Incomplete or invalid plan response", 502) from None
         result = validate_draft(draft)
