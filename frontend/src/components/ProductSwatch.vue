@@ -9,7 +9,11 @@ defineProps<{ product: Product; large?: boolean }>()
     class="product-swatch"
     :class="[
       product.kind,
-      { large, tile: product.id === 'demo-tile', vinyl: product.id === 'demo-vinyl' },
+      {
+        large,
+        tile: product.kind === 'covering' && product.materialFamily === 'tile',
+        vinyl: product.kind === 'covering' && product.materialFamily === 'vinyl',
+      },
     ]"
     aria-hidden="true"
   >

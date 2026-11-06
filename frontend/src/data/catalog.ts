@@ -4,6 +4,7 @@ import type { Product } from '../domain/types'
 export const catalog: Product[] = [
   {
     id: 'demo-laminate',
+    materialFamily: 'laminate',
     name: 'Ламинат «Дуб натуральный», 33 класс',
     category: 'Напольные покрытия',
     kind: 'covering',
@@ -20,6 +21,7 @@ export const catalog: Product[] = [
   },
   {
     id: 'demo-tile',
+    materialFamily: 'tile',
     name: 'Керамогранит «Светлый камень», 60 × 60',
     category: 'Плитка',
     kind: 'covering',
@@ -36,6 +38,7 @@ export const catalog: Product[] = [
   },
   {
     id: 'demo-vinyl',
+    materialFamily: 'vinyl',
     name: 'Кварцвинил «Дуб песочный», 43 класс',
     category: 'Напольные покрытия',
     kind: 'covering',
