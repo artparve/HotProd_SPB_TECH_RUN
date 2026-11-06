@@ -22,7 +22,7 @@ TABLES = (
 
 
 def run(argv, data=None):
-    result = subprocess.run(argv, input=data, text=True, capture_output=True, check=False)
+    result = subprocess.run(argv, input=data, text=True, encoding="utf-8", capture_output=True, check=False)
     if result.returncode:
         raise ValueError("Migration command failed; inspect the database privately (raw errors suppressed)")
     return result.stdout
@@ -30,7 +30,8 @@ def run(argv, data=None):
 
 def private_write(path, content):
     # Refuse overwrites, including symlinks. Database snapshots are private artifacts.
-    with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w") as stream:
+    with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600),
+                   "w", encoding="utf-8", newline="\n") as stream:
         stream.write(content)
 
 
@@ -137,7 +138,7 @@ def transform(tables, reference_rules=None, reference_catalog=None):
         doc["price"] = Decimal(str(row["price"]))
         if row["kind"] == "covering":
             reference = Path(reference_catalog) if reference_catalog is not None else Path(__file__).resolve().parents[1] / "data/catalog-v1.json"
-            products = json.loads(reference.read_text(), parse_float=Decimal)["products"]
+            products = json.loads(reference.read_text(encoding="utf-8"), parse_float=Decimal)["products"]
             prepared = next((p for p in products if p["id"] == row["product_id"]), None)
             identity = (("name", "name"), ("category", "category"), ("unit", "unit"),
                         ("sale_unit", "saleUnit"), ("package_size", "packageSize"))
@@ -166,7 +167,7 @@ def transform(tables, reference_rules=None, reference_catalog=None):
             assignment.setdefault("priority", 0)
         if not bundle.get("kits"):
             reference = Path(reference_rules) if reference_rules is not None else Path(__file__).resolve().parents[1] / "data/rules-v1.json"
-            defaults = json.loads(reference.read_text())
+            defaults = json.loads(reference.read_text(encoding="utf-8"))
             if len(defaults.get("kits", [])) != 8:
                 raise ValueError("Reference release must declare all eight Java material dependencies")
             bundle["kits"] = deepcopy(defaults["kits"])
@@ -317,7 +318,7 @@ def main(argv=None):
         else:
             if not re.fullmatch(r"[a-z][a-z0-9_]{0,62}", args.database) or args.database in ("admin", "local", "config"):
                 raise ValueError("Use a new application database name")
-            payload = json.loads(args.prepared.read_text())
+            payload = json.loads(args.prepared.read_text(encoding="utf-8"))
             payload["database"] = args.database
             result = json.loads(run(import_command(args.container), json.dumps(payload)))
         print(json.dumps(result))

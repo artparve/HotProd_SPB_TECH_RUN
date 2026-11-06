@@ -1,4 +1,7 @@
 import json
+import hashlib
+import os
+import sys
 from decimal import Decimal
 from pathlib import Path
 import tempfile
@@ -27,6 +30,11 @@ def snapshot():
 
 
 class MigrationTests(unittest.TestCase):
+    def test_subprocess_preserves_unicode_independently_of_the_host_locale(self):
+        content = "Краска 🧱\n"
+        command = [sys.executable, "-c", "import sys; sys.stdout.buffer.write(sys.stdin.buffer.read())"]
+        self.assertEqual(migration.run(command, content), content)
+
     def test_covering_family_requires_matching_reviewed_reference(self):
         tables = snapshot()
         tables['product_revision'][0]['kind'] = 'covering'
@@ -90,16 +98,22 @@ class MigrationTests(unittest.TestCase):
     def test_export_uses_one_read_only_snapshot_and_never_overwrites(self):
         tables = snapshot()
         data = json.dumps({"tables": sorted(tables)}) + "\n" + "\n".join(
-            json.dumps({"table": name, "rows": rows}, default=str) for name, rows in tables.items())
+            json.dumps({"table": name, "rows": rows}, default=str, ensure_ascii=False)
+            for name, rows in tables.items())
         with tempfile.TemporaryDirectory() as directory, patch.object(migration, "run", return_value=data) as run:
             output = Path(directory) / "snapshot.jsonl"
-            migration.export_snapshot("postgres", output)
-            self.assertEqual(output.stat().st_mode & 0o777, 0o600)
+            with patch.object(migration.os, "open", wraps=os.open) as open_file:
+                result = migration.export_snapshot("postgres", output)
+            self.assertEqual(open_file.call_args.args[2], 0o600)
+            if os.name != "nt":
+                self.assertEqual(output.stat().st_mode & 0o777, 0o600)
+            self.assertEqual(output.read_bytes(), data.encode("utf-8"))
+            self.assertEqual(result["sha256"], hashlib.sha256(output.read_bytes()).hexdigest())
             self.assertIn("BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY", run.call_args.args[1])
             self.assertNotIn("password", " ".join(run.call_args.args[0]).lower())
             with self.assertRaises(FileExistsError):
                 migration.export_snapshot("postgres", output)
-            self.assertEqual(output.read_text(), data)
+            self.assertEqual(output.read_text(encoding="utf-8"), data)
 
     def test_admin_version_history_dates_and_audit_are_preserved(self):
         tables = snapshot()
