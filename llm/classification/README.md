@@ -7,12 +7,20 @@
 
 ## Файлы
 
-- [taxonomy.json](repaircalc_classifier/taxonomy.json) — единый словарь: 23 работы, 8 мест применения, 17 оснований, 7 свойств. `candidate_pattern` нужен только для аудита кандидатов.
-- [prompt.txt](repaircalc_classifier/prompt.txt) — русский системный промпт, правила неоднозначностей и примеры; в `{taxonomy}` код подставляет словарь.
+- [taxonomy.json](../../data/classification/taxonomy.json) — единый словарь: 23 работы, 8 мест применения, 17 оснований, 7 свойств. `candidate_pattern` нужен только для аудита кандидатов.
+- [prompt.txt](../../data/classification/prompt.txt) — русский системный промпт, правила неоднозначностей и примеры; в `{taxonomy}` код подставляет словарь.
 - [schema.py](repaircalc_classifier/schema.py), [output.schema.json](repaircalc_classifier/output.schema.json) — строгая Pydantic-модель и её JSON Schema. Источник истины — schema.py + taxonomy.json, JSON Schema экспортирована для просмотра.
 - [classifier.py](repaircalc_classifier/classifier.py) — `ChatPromptTemplate | ChatOllama.with_structured_output(Classification, method="json_schema", include_raw=True)` и проверка цитат.
 - [catalogs.py](repaircalc_classifier/catalogs.py) — адаптеры исходных датасетов; HTML очищается, повторные атрибуты сохраняются, XML-иерархия и единицы параметров передаются модели.
 - [audit.py](repaircalc_classifier/audit.py) — воспроизводимый полный проход по двум датасетам, без вызовов модели.
+
+Инвентаризация исходных выгрузок без LLM, из корня репозитория:
+
+```bash
+PYTHONPATH=llm/classification python -m repaircalc_classifier.audit \
+  --json-catalog products_final.json --xml-catalog export_yandex_spb.xml \
+  --output reports/classification/catalog-audit
+```
 
 ## Мониторинг и live-режим
 

@@ -8,8 +8,7 @@ import re
 from pathlib import Path
 
 from .catalogs import fields, json_products, xml_products
-
-HERE = Path(__file__).parent
+from .schema import TAXONOMY
 
 
 def fingerprint(path):
@@ -31,7 +30,7 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
-    taxonomy = json.loads((HERE / 'taxonomy.json').read_text(encoding='utf-8'))
+    taxonomy = TAXONOMY
     groups = ('work_types', 'surface_locations', 'substrates', 'properties')
     patterns = [(g, e['id'], re.compile(e['candidate_pattern'], re.I))
                 for g in groups for e in taxonomy[g]]
