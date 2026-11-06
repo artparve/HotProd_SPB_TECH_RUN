@@ -52,8 +52,15 @@ public class InspirationController {
       @PathVariable String id, @Valid @RequestBody Request request) {
     try {
       return service.analyze(id, request.project());
-    } catch (LlmClient.Failure
-        | ServiceUnavailableException
+    } catch (LlmClient.Failure e) {
+      return InspirationService.empty(
+          id,
+          request.project(),
+          "unavailable",
+          e.code.equals("model_busy")
+              ? "Сервис распознавания занят. Дождитесь завершения текущего запроса и повторите подбор."
+              : "Подбор недоступен. Повторите попытку позже или продолжите расчёт вручную.");
+    } catch (ServiceUnavailableException
         | org.springframework.dao.DataAccessException
         | com.mongodb.MongoException e) {
       return InspirationService.empty(

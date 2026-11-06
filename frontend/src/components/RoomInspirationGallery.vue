@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { service } from '../services/api'
 import { projectSchema, type Project } from '../domain/types'
 import {
@@ -58,11 +58,13 @@ async function load(more = false) {
     const previous = more ? cursor.value : null
     const result = await service.roomInspirations(previous || undefined, feedController.signal)
     if (!alive) return
+    if (result.status === 'unavailable') {
+      feedError.value = result.warnings?.join(' ') || 'Подборка временно недоступна.'
+      return
+    }
     const merged = [...(more ? items.value : []), ...result.items]
     items.value = [...new Map(merged.map((item) => [item.id, item])).values()]
     cursor.value = result.nextCursor === previous ? null : result.nextCursor
-    if (result.status === 'unavailable')
-      feedError.value = result.warnings?.join(' ') || 'Подборка временно недоступна.'
     loaded.value = true
   } catch (error) {
     if (alive)
@@ -82,6 +84,18 @@ function closePreview() {
   dialog.value?.close()
   preview.value = null
 }
+function cancelSelection() {
+  selectionController?.abort()
+  selectionController = undefined
+  selecting.value = null
+}
+watch(
+  () => props.project.rooms[0]?.id,
+  () => {
+    cancelSelection()
+    selectionError.value = ''
+  },
+)
 async function choose(image: RoomInspiration) {
   if (selecting.value || props.disabled) return
   closePreview()
@@ -97,27 +111,35 @@ async function choose(image: RoomInspiration) {
   selecting.value = image.id
   const controller = new AbortController()
   selectionController = controller
+  function checkCurrent() {
+    if (!alive || controller.signal.aborted) return false
+    if (fingerprint !== JSON.stringify(props.project))
+      throw new Error('Проект изменился во время распознавания. Выберите изображение ещё раз.')
+    return true
+  }
   try {
     const result = await service.analyzeRoomInspiration(image.id, snapshot, controller.signal)
-    if (!alive || controller.signal.aborted) return
+    if (!checkCurrent()) return
     if (result.status && result.status !== 'ok') {
       selectionError.value =
         result.warnings.join(' ') || 'Не удалось подобрать материалы. Продолжите вручную.'
       return
     }
-    const products = await service.catalog()
+    const products = await service.catalog(controller.signal)
+    if (!checkCurrent()) return
     validateInspirationProducts(result, products)
-    const estimate = await service.estimate(result.project, result.selections)
+    const estimate = await service.estimate(result.project, result.selections, controller.signal)
+    if (!checkCurrent()) return
     validateInspirationEstimate(result, estimate)
-    if (!alive || controller.signal.aborted) return
-    if (fingerprint !== JSON.stringify(props.project))
-      throw new Error('Проект изменился во время распознавания. Выберите изображение ещё раз.')
     emit('prepared', { image, result, products, estimate })
   } catch (error) {
     if (alive && !controller.signal.aborted)
       selectionError.value = error instanceof Error ? error.message : 'Не удалось подобрать товары.'
   } finally {
-    if (alive) selecting.value = null
+    if (alive && selectionController === controller) {
+      selecting.value = null
+      selectionController = undefined
+    }
   }
 }
 
@@ -125,7 +147,7 @@ onMounted(() => load())
 onBeforeUnmount(() => {
   alive = false
   feedController?.abort()
-  selectionController?.abort()
+  cancelSelection()
   dialog.value?.close()
 })
 </script>
@@ -211,6 +233,14 @@ onBeforeUnmount(() => {
         <div class="inspiration-card-body">
           <h3>{{ image.title }}</h3>
           <p>{{ image.description }}</p>
+          <button
+            v-if="broken.has(image.id)"
+            type="button"
+            class="button ghost"
+            @click="broken.delete(image.id)"
+          >
+            Повторить загрузку изображения
+          </button>
           <a
             v-if="image.sourceUrl"
             :href="image.sourceUrl"
@@ -242,12 +272,7 @@ onBeforeUnmount(() => {
     <p v-if="selecting" role="status">
       Подбираем товары с изображения. Это может занять до двух минут. Ваш проект пока не изменён.
     </p>
-    <button
-      v-if="selecting"
-      type="button"
-      class="text-button"
-      @click="selectionController?.abort()"
-    >
+    <button v-if="selecting" type="button" class="text-button" @click="cancelSelection">
       Отменить распознавание
     </button>
     <div v-if="selectionError" class="alert error" role="alert">
@@ -276,7 +301,15 @@ onBeforeUnmount(() => {
             Закрыть просмотр
           </button>
         </div>
-        <img :src="preview.imageUrl" :alt="preview.alt" @error="broken.add(preview.id)" />
+        <img
+          v-if="!broken.has(preview.id)"
+          :src="preview.imageUrl"
+          :alt="preview.alt"
+          @error="broken.add(preview.id)"
+        />
+        <button v-else type="button" class="button ghost" @click="broken.delete(preview.id)">
+          Повторить загрузку изображения
+        </button>
         <p>{{ preview.description }}</p>
         <button
           type="button"

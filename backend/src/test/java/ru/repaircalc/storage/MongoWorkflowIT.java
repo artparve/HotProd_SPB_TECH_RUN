@@ -219,12 +219,23 @@ class MongoWorkflowIT {
   }
 
   @ParameterizedTest
-  @CsvSource({"high, laminate, tile", "normal, laminate, laminate", "high, vinyl, vinyl"})
+  @CsvSource({
+    "high, laminate, tile, paint, paint",
+    "normal, laminate, laminate, paint, paint",
+    "high, vinyl, vinyl, paint, paint",
+    "high, laminate, tile, wallpaper, paint",
+    "normal, laminate, laminate, wallpaper, wallpaper"
+  })
   void galleryPicksACompatibleCoveringAndExplainsSubstitution(
-      String humidity, String observedFamily, String expectedFamily) throws Exception {
+      String humidity,
+      String observedFamily,
+      String expectedFamily,
+      String observedWall,
+      String expectedWall)
+      throws Exception {
     var llm = mock(LlmClient.class);
     var observation =
-        json.createObjectNode().put("floorFamily", observedFamily).put("wallFinish", "paint");
+        json.createObjectNode().put("floorFamily", observedFamily).put("wallFinish", observedWall);
     observation.putArray("warnings");
     when(llm.call(eq("inspirations/analyze"), any())).thenReturn(observation);
     var assets = Path.of("../data/inspirations");
@@ -255,8 +266,12 @@ class MongoWorkflowIT {
     var analysis =
         json.readValue(response.getContentAsByteArray(), InspirationService.Analysis.class);
     assertThat(analysis.status()).isEqualTo("ok");
-    assertThat(analysis.project()).isEqualTo(project);
-    assertThat(analysis.selections()).containsOnlyKeys("bath:covering", "bath:paint");
+    room.set("works", json.valueToTree(List.of("floor", expectedWall)));
+    assertThat(analysis.project())
+        .isEqualTo(
+            new ProjectInput(
+                "apartment", "capital", List.of(json.treeToValue(room, ProjectInput.Room.class))));
+    assertThat(analysis.selections()).containsOnlyKeys("bath:covering", "bath:" + expectedWall);
     var lines = projects.estimate(analysis.project(), analysis.selections()).lines();
     var covering =
         lines.stream()
@@ -270,6 +285,14 @@ class MongoWorkflowIT {
       assertThat(lines).allMatch(line -> Boolean.TRUE.equals(line.product().wet()));
     assertThat(analysis.warnings().stream().anyMatch(w -> w.contains(covering.name())))
         .isEqualTo(!observedFamily.equals(expectedFamily));
+    var finish =
+        lines.stream()
+            .map(ProductEstimate.Line::product)
+            .filter(p -> p.kind().equals(expectedWall))
+            .findFirst()
+            .orElseThrow();
+    assertThat(analysis.warnings().stream().anyMatch(w -> w.contains(finish.name())))
+        .isEqualTo(!observedWall.equals(expectedWall));
   }
 
   @Test

@@ -240,9 +240,33 @@ public class InspirationService {
     var works = new LinkedHashSet<>(original.works());
     if (!family.equals("unknown")) works.add("floor");
     if (!wall.equals("unknown")) {
+      works.add("paint");
+      works.add("wallpaper");
+    }
+    var snapshot = snapshots.resolve();
+    var candidates = calculations.candidates(original, snapshot, works);
+    var selections = new LinkedHashMap<String, String>();
+    if (!wall.equals("unknown")) {
+      var finishes =
+          candidates.stream()
+              .filter(p -> Set.of("paint", "wallpaper").contains(p.kind()))
+              .filter(p -> p.works().contains(p.kind()))
+              .toList();
+      if (finishes.isEmpty())
+        return empty(
+            id, project, "no_matches", "В каталоге нет отделки стен для условий этой комнаты.");
+      var finish =
+          finishes.stream().filter(p -> p.kind().equals(wall)).findFirst().orElse(finishes.getFirst());
+      if (!wall.equals(finish.kind()))
+        warnings.addFirst(
+            "Для этой комнаты в каталоге нет отделки стен того же типа, что на фото. "
+                + "Предложена совместимая замена — "
+                + finish.name()
+                + ".");
       works.remove("paint");
       works.remove("wallpaper");
-      works.add(wall);
+      works.add(finish.kind());
+      selections.put(original.id() + ":" + finish.kind(), finish.id().toString());
     }
     var room =
         new ProjectInput.Room(
@@ -262,9 +286,6 @@ public class InspirationService {
             original.sockets(),
             original.cableLength());
     var candidateProject = new ProjectInput(project.object(), project.renovation(), List.of(room));
-    var snapshot = snapshots.resolve();
-    var candidates = calculations.candidates(room, snapshot);
-    var selections = new LinkedHashMap<String, String>();
     if (!family.equals("unknown")) {
       var coverings = candidates.stream().filter(p -> p.kind().equals("covering")).toList();
       if (coverings.isEmpty())
@@ -282,13 +303,6 @@ public class InspirationService {
                 + covering.name()
                 + ".");
       selections.put(room.id() + ":covering", covering.id().toString());
-    }
-    if (!wall.equals("unknown")) {
-      var match = candidates.stream().filter(p -> p.kind().equals(wall)).findFirst();
-      if (match.isEmpty())
-        return empty(
-            id, project, "no_matches", "Нет совместимого материала для распознанной отделки стен.");
-      selections.put(room.id() + ":" + wall, match.get().id().toString());
     }
     if (selections.isEmpty())
       return empty(

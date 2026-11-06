@@ -168,20 +168,20 @@ export const service = {
     // Recognition always calls the connected model, including when the catalog uses demo data.
     return request('/plans/extract', planResultSchema, { imageBase64 }, planTimeout)
   },
-  async catalog(): Promise<Product[]> {
+  async catalog(signal?: AbortSignal): Promise<Product[]> {
     if (import.meta.env.DEV && dataMode === 'demo') return (await import('./demo')).demoCatalog()
     try {
-      return await request('/products', z.array(productSchema))
+      return await request('/products', z.array(productSchema), undefined, apiTimeout, signal)
     } catch (error) {
       if (!unavailable(error)) throw error
       apiStatus.catalogWarning = 'Каталог временно недоступен. Повторите загрузку позже.'
       return []
     }
   },
-  async estimate(project: Project, selections: Record<string, string> = {}) {
+  async estimate(project: Project, selections: Record<string, string> = {}, signal?: AbortSignal) {
     if (import.meta.env.DEV && dataMode === 'demo')
       return (await import('./demo')).estimateDemo(project, selections)
-    return request('/estimate', estimateSchema, { project, selections })
+    return request('/estimate', estimateSchema, { project, selections }, apiTimeout, signal)
   },
   async recommendations(room: Room) {
     if (import.meta.env.DEV && dataMode === 'demo')
