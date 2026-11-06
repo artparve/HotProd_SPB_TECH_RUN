@@ -2,6 +2,36 @@ import { expect, test } from '@playwright/test'
 import { catalog } from '../src/data/catalog'
 import { productDemo } from '../src/services/demo'
 
+test('preserves Java money precision in product prices and estimate totals', async ({ page }) => {
+  const product = {
+    ...catalog[0]!,
+    id: '47f9b29f-8972-3c84-9103-6b3281bd9de7',
+    price: '9007199254740993.01',
+    packageSize: 22,
+  }
+  await page.route('**/api/v1/products', (route) => route.fulfill({ json: [product] }))
+  await page.route('**/api/v1/materials/estimate', async (route) => {
+    const estimate = { ...productDemo(product, route.request().postDataJSON().input), mode: 'api' }
+    await route.fulfill({
+      json: {
+        status: 'ok',
+        estimate,
+        baseline: estimate,
+        correction: { applied: false, version: 'not-used', factor: '1' },
+        model: 'not-used',
+        toolCalls: [],
+        explanation: null,
+        explanationStatus: 'unavailable',
+        explanationError: { code: 'llm_unavailable', message: 'Пояснение недоступно' },
+      },
+    })
+  })
+  await page.goto(`/product?id=${product.id}`)
+  await expect(page.locator('.product-detail-price')).toContainText('9 007 199 254 740 993,01 ₽')
+  await page.getByRole('button', { name: 'Рассчитать упаковки' }).click()
+  await expect(page.locator('.grand-total b')).toHaveText('9 007 199 254 740 993,01 ₽')
+})
+
 test('production UI renders Markdown explanation without executing HTML or loading external images', async ({
   page,
 }) => {
