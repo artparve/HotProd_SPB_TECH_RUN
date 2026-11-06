@@ -31,13 +31,17 @@ const input = ref<ProductInput>({
 const showValidation = ref(false)
 const { busy, error, run } = useAsync()
 const invalidProduct = ref(false)
+function selectFromRoute() {
+  const requested = typeof route.query.id === 'string' ? route.query.id : undefined
+  invalidProduct.value = !!requested && !products.value.some((p) => p.id === requested)
+  selectedId.value =
+    products.value.find((p) => p.id === requested)?.id || products.value[0]?.id || ''
+}
 async function load() {
   const response = await run(() => service.catalog())
   if (response) {
     products.value = response
-    const requested = typeof route.query.id === 'string' ? route.query.id : undefined
-    invalidProduct.value = !!requested && !response.some((p) => p.id === requested)
-    selectedId.value = response.find((p) => p.id === requested)?.id || response[0]?.id || ''
+    selectFromRoute()
   }
 }
 onMounted(load)
@@ -50,9 +54,11 @@ watch(
   },
   { deep: true },
 )
-watch(selectedId, (id) => {
-  if (id) void router.replace({ query: { id } })
-})
+watch(() => route.query.id, selectFromRoute)
+function selectProduct() {
+  invalidProduct.value = false
+  if (selectedId.value) void router.replace({ query: { ...route.query, id: selectedId.value } })
+}
 const needsArea = computed(
   () => product.value && !['socket', 'cable', 'wallpaper'].includes(product.value.kind),
 )
@@ -146,7 +152,7 @@ async function calculate() {
         </div>
         <form @submit.prevent="calculate">
           <label class="field"
-            >Товар<select v-model="selectedId">
+            >Товар<select v-model="selectedId" @change="selectProduct">
               <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select></label
           >
