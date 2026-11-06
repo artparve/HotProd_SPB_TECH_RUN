@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminProductForm from '../components/AdminProductForm.vue'
 import AdminProductWorkflow from '../components/AdminProductWorkflow.vue'
@@ -32,6 +32,11 @@ const statusLabels: Record<string, string> = {
   published: 'Опубликован',
   archived: 'Архив',
 }
+let routeGeneration = 0
+let actionGeneration = 0
+onBeforeUnmount(() => {
+  routeGeneration++
+})
 
 function clearError() {
   error.value = ''
@@ -51,15 +56,18 @@ function failure(value: unknown) {
     }
   }
 }
-async function run(action: () => Promise<void>) {
+async function run(action: (isCurrent: () => boolean) => Promise<void>) {
+  const generation = routeGeneration
+  const attempt = ++actionGeneration
+  const isCurrent = () => generation === routeGeneration
   busy.value = true
   clearError()
   try {
-    await action()
+    await action(isCurrent)
   } catch (value) {
-    failure(value)
+    if (isCurrent()) failure(value)
   } finally {
-    busy.value = false
+    if (attempt === actionGeneration) busy.value = false
   }
 }
 async function initialize() {
@@ -71,6 +79,7 @@ async function initialize() {
   initializing.value = false
 }
 async function loadRoute() {
+  const generation = routeGeneration
   const path = route.fullPath
   history.value = null
   if (isNew.value) {
@@ -86,7 +95,7 @@ async function loadRoute() {
       etag.value = ''
     }
     const result = await admin.get(route.params.id)
-    if (route.fullPath !== path) return
+    if (generation !== routeGeneration || route.fullPath !== path) return
     product.value = result.data
     draft.value = result.data.snapshot
     etag.value = result.etag
@@ -94,7 +103,7 @@ async function loadRoute() {
     product.value = null
     draft.value = null
     const result = await admin.list(filters.value)
-    if (route.fullPath === path) list.value = result
+    if (generation === routeGeneration && route.fullPath === path) list.value = result
   }
 }
 async function login() {
@@ -123,10 +132,11 @@ async function logout() {
 async function save(input: AdminDraft) {
   notice.value = ''
   draft.value = input
-  await run(async () => {
+  await run(async (isCurrent) => {
     const result = product.value
       ? await admin.update(product.value.id, input, etag.value)
       : await admin.create(input)
+    if (!isCurrent()) return
     product.value = result.data
     draft.value = result.data.snapshot
     etag.value = result.etag
@@ -139,31 +149,37 @@ async function deleteDraft() {
   if (!product.value || !window.confirm(`Удалить черновик «${product.value.snapshot.name}»?`))
     return
   const id = product.value.id
-  await run(async () => {
+  await run(async (isCurrent) => {
     await admin.deleteDraft(id, etag.value)
+    if (!isCurrent()) return
     await router.push('/admin/products')
     notice.value = 'Черновик удалён.'
   })
 }
 async function search(page = 0) {
   filters.value.page = page
-  await run(async () => {
-    list.value = await admin.list(filters.value)
+  await run(async (isCurrent) => {
+    const result = await admin.list(filters.value)
+    if (isCurrent()) list.value = result
   })
 }
 async function showHistory(page = 0) {
   if (product.value)
-    await run(async () => {
-      history.value = await admin.history(product.value!.id, page)
+    await run(async (isCurrent) => {
+      const result = await admin.history(product.value!.id, page)
+      if (isCurrent()) history.value = result
     })
 }
 async function reload() {
-  await run(loadRoute)
-  notice.value = 'Карточка перечитана с сервера.'
+  await run(async (isCurrent) => {
+    await loadRoute()
+    if (isCurrent()) notice.value = 'Карточка перечитана с сервера.'
+  })
 }
 watch(
   () => route.fullPath,
   async () => {
+    routeGeneration++
     notice.value = ''
     if (session.value?.authenticated) await run(loadRoute)
   },

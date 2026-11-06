@@ -58,6 +58,33 @@ beforeEach(() => {
 })
 
 describe('administrative card', () => {
+  it('does not replace the next card when an earlier save finishes after navigation', async () => {
+    let finishSave!: (result: Awaited<ReturnType<typeof admin.update>>) => void
+    vi.mocked(admin.update).mockReturnValue(
+      new Promise((resolve) => {
+        finishSave = resolve
+      }),
+    )
+    const wrapper = await view(`/admin/products/${card.id}`)
+    await wrapper.get('form.admin-form').trigger('submit')
+    await flushPromises()
+    const nextCard = {
+      ...card,
+      id: 'a1ef2126-909b-4273-9c6e-783881be7750',
+      snapshot: { ...card.snapshot, name: 'Next card' },
+    }
+    vi.mocked(admin.get).mockResolvedValue({ data: nextCard, etag: '"next-etag"' })
+    await wrapper.vm.$router.push(`/admin/products/${nextCard.id}`)
+    await flushPromises()
+    finishSave({ data: { ...card, version: 2 }, etag: '"saved-etag"' })
+    await flushPromises()
+
+    expect(wrapper.text()).toContain(nextCard.id)
+    expect(wrapper.findAll('input').some((input) => input.element.value === 'Next card')).toBe(true)
+    expect(wrapper.text()).not.toContain('Сохранена версия 2')
+    wrapper.unmount()
+  })
+
   it('keeps unsaved fields after a version conflict and reloads only on the explicit action', async () => {
     vi.mocked(admin.update).mockRejectedValue(
       new AdminApiError(412, 'version_mismatch', 'Карточка изменилась.'),
@@ -82,6 +109,74 @@ describe('administrative card', () => {
     expect(
       wrapper.findAll('input').some((input) => input.element.value === 'Other editor name'),
     ).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('ignores a failed save from the previous route while the next card is loading', async () => {
+    let failSave!: (error: Error) => void
+    vi.mocked(admin.update).mockReturnValue(
+      new Promise((_, reject) => {
+        failSave = reject
+      }),
+    )
+    const wrapper = await view(`/admin/products/${card.id}`)
+    await wrapper.get('form.admin-form').trigger('submit')
+    await flushPromises()
+    let finishLoad!: (result: Awaited<ReturnType<typeof admin.get>>) => void
+    vi.mocked(admin.get).mockReturnValue(
+      new Promise((resolve) => {
+        finishLoad = resolve
+      }),
+    )
+    await wrapper.vm.$router.push('/admin/products/next-card')
+    await flushPromises()
+    failSave(new AdminApiError(412, 'version_mismatch', 'Old card conflict'))
+    await flushPromises()
+
+    expect(wrapper.text()).not.toContain('Old card conflict')
+    expect(wrapper.text()).toContain('Выполняем запрос…')
+    finishLoad({ data: { ...card, id: 'next-card' }, etag: '"next-etag"' })
+    await flushPromises()
+    expect(wrapper.text()).toContain('next-card')
+    expect(wrapper.text()).not.toContain('Выполняем запрос…')
+    wrapper.unmount()
+  })
+
+  it('discards history loaded for a card that is no longer open', async () => {
+    let finishHistory!: (result: Awaited<ReturnType<typeof admin.history>>) => void
+    vi.mocked(admin.history).mockReturnValue(
+      new Promise((resolve) => {
+        finishHistory = resolve
+      }),
+    )
+    const wrapper = await view(`/admin/products/${card.id}`)
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Загрузить историю')!
+      .trigger('click')
+    await flushPromises()
+    vi.mocked(admin.get).mockResolvedValue({ data: { ...card, id: 'next-card' }, etag: '"next"' })
+    await wrapper.vm.$router.push('/admin/products/next-card')
+    await flushPromises()
+    finishHistory({
+      items: [
+        {
+          id: card.versionId,
+          version: 1,
+          snapshot: card.snapshot,
+          createdAt: card.createdAt,
+          createdBy: 'admin',
+          requestId: 'old-history',
+          action: 'create',
+        },
+      ],
+      page: 0,
+      size: 10,
+      total: 1,
+    })
+    await flushPromises()
+    expect(wrapper.text()).not.toContain('old-history')
+    expect(wrapper.find('.admin-history details').exists()).toBe(false)
     wrapper.unmount()
   })
 
