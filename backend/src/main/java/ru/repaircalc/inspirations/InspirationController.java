@@ -21,9 +21,10 @@ public class InspirationController {
   @GetMapping
   public InspirationService.Feed feed(
       @RequestParam(required = false) String cursor,
+      @RequestParam(required = false) String roomType,
       @RequestParam(defaultValue = "${INSPIRATION_PAGE_LIMIT:24}") int limit) {
     try {
-      return service.feed(cursor, limit);
+      return service.feed(cursor, limit, roomType);
     } catch (org.springframework.dao.DataAccessException | com.mongodb.MongoException e) {
       return new InspirationService.Feed(
           List.of(),
@@ -52,8 +53,15 @@ public class InspirationController {
       @PathVariable String id, @Valid @RequestBody Request request) {
     try {
       return service.analyze(id, request.project());
-    } catch (LlmClient.Failure
-        | ServiceUnavailableException
+    } catch (LlmClient.Failure e) {
+      return InspirationService.empty(
+          id,
+          request.project(),
+          "unavailable",
+          e.code.equals("model_busy")
+              ? "Сервис распознавания занят. Дождитесь завершения текущего запроса и повторите подбор."
+              : "Подбор недоступен. Повторите попытку позже или продолжите расчёт вручную.");
+    } catch (ServiceUnavailableException
         | org.springframework.dao.DataAccessException
         | com.mongodb.MongoException e) {
       return InspirationService.empty(

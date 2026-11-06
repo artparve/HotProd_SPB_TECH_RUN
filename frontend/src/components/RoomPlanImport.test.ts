@@ -94,6 +94,7 @@ describe('RoomPlanImport', () => {
     await wrapper.get('input[type="checkbox"]').setValue(true)
     await wrapper.get('button.button.primary').trigger('click')
     expect(room).toMatchObject({ length: 5.32, width: 3.32, height: 3, openings: 0 })
+    expect(wrapper.emitted('applied')).toHaveLength(1)
     expect(wrapper.text()).toContain('Проверенные размеры применены')
     await wrapper.setProps({ room: { ...room, length: 7 } })
     expect(wrapper.text()).not.toContain('Комната изменилась. Результат нельзя применить')

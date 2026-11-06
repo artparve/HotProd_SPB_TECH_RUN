@@ -111,11 +111,26 @@ public class InspirationService {
   }
 
   public Feed feed(String cursor, int limit) {
+    return feed(cursor, limit, null);
+  }
+
+  private static Set<String> categoriesForRoom(String roomType) {
+    return switch (roomType) {
+      case "living" -> Set.of("living", "bedroom");
+      case "bathroom" -> Set.of("bathroom");
+      case "kitchen" -> Set.of("kitchen");
+      case "children", "balcony" -> Set.of();
+      default -> throw new ApiStatusException(422, "invalid_room_type", "Неизвестный тип комнаты.");
+    };
+  }
+
+  public Feed feed(String cursor, int limit, String roomType) {
     if (limit < 1
         || limit > pageLimit
         || cursor != null && !cursor.matches("[A-Za-z0-9][A-Za-z0-9_-]{0,127}"))
       throw new ApiStatusException(422, "invalid_page", "Неверный размер страницы или cursor.");
     var q = new Query().with(Sort.by("id")).limit(limit + 1);
+    if (roomType != null) q.addCriteria(Criteria.where("category").in(categoriesForRoom(roomType)));
     if (cursor != null) q.addCriteria(Criteria.where("id").gt(cursor));
     var records = store.find("inspiration", q);
     boolean more = records.size() > limit;
@@ -219,6 +234,9 @@ public class InspirationService {
     if (project.rooms().size() != 1)
       throw new ApiStatusException(
           422, "invalid_project", "Для изображения требуется одна комната.");
+    if (!categoriesForRoom(project.rooms().getFirst().type()).contains(find(id).getString("category")))
+      throw new ApiStatusException(
+          422, "inspiration_room_mismatch", "Интерьер не соответствует выбранному типу комнаты.");
     byte[] bytes = image(id, false);
     var result =
         llm.call(
@@ -240,9 +258,33 @@ public class InspirationService {
     var works = new LinkedHashSet<>(original.works());
     if (!family.equals("unknown")) works.add("floor");
     if (!wall.equals("unknown")) {
+      works.add("paint");
+      works.add("wallpaper");
+    }
+    var snapshot = snapshots.resolve();
+    var candidates = calculations.candidates(original, snapshot, works);
+    var selections = new LinkedHashMap<String, String>();
+    if (!wall.equals("unknown")) {
+      var finishes =
+          candidates.stream()
+              .filter(p -> Set.of("paint", "wallpaper").contains(p.kind()))
+              .filter(p -> p.works().contains(p.kind()))
+              .toList();
+      if (finishes.isEmpty())
+        return empty(
+            id, project, "no_matches", "В каталоге нет отделки стен для условий этой комнаты.");
+      var finish =
+          finishes.stream().filter(p -> p.kind().equals(wall)).findFirst().orElse(finishes.getFirst());
+      if (!wall.equals(finish.kind()))
+        warnings.addFirst(
+            "Для этой комнаты в каталоге нет отделки стен того же типа, что на фото. "
+                + "Предложена совместимая замена — "
+                + finish.name()
+                + ".");
       works.remove("paint");
       works.remove("wallpaper");
-      works.add(wall);
+      works.add(finish.kind());
+      selections.put(original.id() + ":" + finish.kind(), finish.id().toString());
     }
     var room =
         new ProjectInput.Room(
@@ -262,9 +304,6 @@ public class InspirationService {
             original.sockets(),
             original.cableLength());
     var candidateProject = new ProjectInput(project.object(), project.renovation(), List.of(room));
-    var snapshot = snapshots.resolve();
-    var candidates = calculations.candidates(room, snapshot);
-    var selections = new LinkedHashMap<String, String>();
     if (!family.equals("unknown")) {
       var coverings = candidates.stream().filter(p -> p.kind().equals("covering")).toList();
       if (coverings.isEmpty())
@@ -282,13 +321,6 @@ public class InspirationService {
                 + covering.name()
                 + ".");
       selections.put(room.id() + ":covering", covering.id().toString());
-    }
-    if (!wall.equals("unknown")) {
-      var match = candidates.stream().filter(p -> p.kind().equals(wall)).findFirst();
-      if (match.isEmpty())
-        return empty(
-            id, project, "no_matches", "Нет совместимого материала для распознанной отделки стен.");
-      selections.put(room.id() + ":" + wall, match.get().id().toString());
     }
     if (selections.isEmpty())
       return empty(

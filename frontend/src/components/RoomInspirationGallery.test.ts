@@ -52,10 +52,38 @@ afterEach(() => {
 })
 
 describe('RoomInspirationGallery', () => {
-  it('filters the loaded gallery by category without changing the project', async () => {
+  it('ignores a late feed from the previous room type', async () => {
+    let finish!: (value: typeof inspirationFeedMock) => void
+    vi.mocked(service.roomInspirations)
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve
+          }),
+      )
+      .mockResolvedValueOnce({
+        ...inspirationFeedMock,
+        items: [{ ...image, id: 'kitchen-1', category: 'kitchen' }],
+      })
     const input = project()
+    const wrapper = await render(input)
+    const oldSignal = vi.mocked(service.roomInspirations).mock.calls[0]![1]
+    await wrapper.setProps({
+      project: { ...input, rooms: [{ ...input.rooms[0]!, type: 'kitchen' }] },
+    })
+    await flushPromises()
+    expect(oldSignal?.aborted).toBe(true)
+    finish(structuredClone(inspirationFeedMock))
+    await flushPromises()
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(1)
+    expect(wrapper.get('.inspiration-card img').attributes('src')).toBe(image.thumbnailUrl)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+  })
+  it('shows only interiors matching the selected room type', async () => {
+    const input = project()
+    input.rooms[0]!.type = 'kitchen'
     const original = structuredClone(input)
-    vi.mocked(service.roomInspirations).mockResolvedValueOnce({
+    vi.mocked(service.roomInspirations).mockResolvedValue({
       items: [
         { ...image, id: 'kitchen-1', title: 'Кухня 1', category: 'kitchen' },
         { ...image, id: 'kitchen-2', title: 'Кухня 2', category: 'kitchen' },
@@ -69,15 +97,28 @@ describe('RoomInspirationGallery', () => {
     const group = wrapper.get('[aria-label="Категории интерьеров"]')
     const select = (label: string) =>
       group.findAll('button').find((button) => button.text() === label)!
-    expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(2)
+    expect(group.text()).not.toContain('Спальни')
     await select('Кухни').trigger('click')
     expect(wrapper.findAll('.inspiration-card')).toHaveLength(2)
     expect(select('Кухни').attributes('aria-pressed')).toBe('true')
-    await select('Спальни').trigger('click')
+    await wrapper.setProps({
+      project: { ...input, rooms: [{ ...input.rooms[0]!, type: 'living' }] },
+    })
+    await flushPromises()
+    expect(service.roomInspirations).toHaveBeenLastCalledWith(
+      undefined,
+      expect.any(AbortSignal),
+      'living',
+    )
     expect(wrapper.findAll('.inspiration-card')).toHaveLength(1)
     expect(wrapper.get('.inspiration-card').text()).toContain('Спальня 1')
-    await select('Все').trigger('click')
-    expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)
+    await wrapper.setProps({
+      project: { ...input, rooms: [{ ...input.rooms[0]!, type: 'balcony' }] },
+    })
+    await flushPromises()
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(0)
+    expect(wrapper.text()).toContain('Для выбранного типа комнаты')
     expect(input).toEqual(original)
     expect(service.analyzeRoomInspiration).not.toHaveBeenCalled()
   })
@@ -154,6 +195,7 @@ describe('RoomInspirationGallery', () => {
     expect(service.estimate).toHaveBeenCalledWith(
       prepared.result.project,
       prepared.result.selections,
+      expect.any(AbortSignal),
     )
     expect(input).toEqual(original)
   })
@@ -165,7 +207,7 @@ describe('RoomInspirationGallery', () => {
     vi.mocked(service.roomInspirations).mockResolvedValueOnce({ items: [], nextCursor: null })
     await wrapper.get('button.text-button').trigger('click')
     await flushPromises()
-    expect(wrapper.text()).toContain('Изображений пока нет')
+    expect(wrapper.text()).toContain('интерьеров пока нет')
   })
 
   it('appends pages and deduplicates image IDs', async () => {
@@ -176,7 +218,34 @@ describe('RoomInspirationGallery', () => {
     const wrapper = await render()
     await wrapper.get('button.button.ghost').trigger('click')
     await flushPromises()
-    expect(service.roomInspirations).toHaveBeenLastCalledWith('page-2', expect.any(AbortSignal))
+    expect(service.roomInspirations).toHaveBeenLastCalledWith(
+      'page-2',
+      expect.any(AbortSignal),
+      'living',
+    )
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)
+  })
+
+  it('retries the failed next page without losing loaded cards or its cursor', async () => {
+    vi.mocked(service.roomInspirations)
+      .mockResolvedValueOnce({ items: [image], nextCursor: 'page-2' })
+      .mockResolvedValueOnce({
+        status: 'unavailable',
+        items: [],
+        nextCursor: null,
+        warnings: ['Подборка временно недоступна.'],
+      })
+    const wrapper = await render()
+    await wrapper.get('button.button.ghost').trigger('click')
+    await flushPromises()
+    expect(wrapper.findAll('.inspiration-card')).toHaveLength(1)
+    await wrapper.get('[role="alert"] button').trigger('click')
+    await flushPromises()
+    expect(service.roomInspirations).toHaveBeenLastCalledWith(
+      'page-2',
+      expect.any(AbortSignal),
+      'living',
+    )
     expect(wrapper.findAll('.inspiration-card')).toHaveLength(3)
   })
 
@@ -283,11 +352,105 @@ describe('RoomInspirationGallery', () => {
     expect(wrapper.get('.inspiration-card-body button').attributes('disabled')).toBeUndefined()
   })
 
-  it('shows a fallback and disables selection when a thumbnail cannot be loaded', async () => {
+  it.each(['catalog', 'estimate'] as const)(
+    'cancels during %s, allows retry and ignores the late result',
+    async (phase) => {
+      const input = project()
+      const oldResult = analyzeInspirationMock(image.id, input)
+      let finish!: () => void
+      if (phase === 'catalog')
+        vi.mocked(service.catalog).mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              finish = () => resolve(catalog)
+            }),
+        )
+      else
+        vi.mocked(service.estimate).mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              finish = () => resolve(estimateDemo(oldResult.project, oldResult.selections))
+            }),
+        )
+      const wrapper = await render(input)
+      await wrapper.get('.inspiration-card-body button').trigger('click')
+      await flushPromises()
+      const signal =
+        phase === 'catalog'
+          ? vi.mocked(service.catalog).mock.calls[0]![0]
+          : vi.mocked(service.estimate).mock.calls[0]![2]
+      await wrapper
+        .findAll('button')
+        .find((b) => b.text() === 'Отменить распознавание')!
+        .trigger('click')
+      expect(signal?.aborted).toBe(true)
+      expect(wrapper.get('.inspiration-card-body button').attributes('disabled')).toBeUndefined()
+      let finishRetry!: () => void
+      vi.mocked(service.estimate).mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finishRetry = () => resolve(estimateDemo(oldResult.project, oldResult.selections))
+          }),
+      )
+      await wrapper.get('.inspiration-card-body button').trigger('click')
+      await flushPromises()
+      finish()
+      await flushPromises()
+      expect(wrapper.emitted('prepared')).toBeUndefined()
+      expect(wrapper.get('.inspiration-card-body button').attributes('disabled')).toBeDefined()
+      finishRetry()
+      await flushPromises()
+      expect(wrapper.emitted('prepared')).toHaveLength(1)
+    },
+  )
+
+  it('cancels selection when switching rooms and ignores errors from the previous room', async () => {
+    let finish!: (value: ReturnType<typeof analyzeInspirationMock>) => void
+    vi.mocked(service.analyzeRoomInspiration).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve
+        }),
+    )
+    const input = project()
+    const wrapper = await render(input)
+    await wrapper.get('.inspiration-card-body button').trigger('click')
+    const signal = vi.mocked(service.analyzeRoomInspiration).mock.calls[0]![2]
+    await wrapper.setProps({ project: { ...input, rooms: [{ ...input.rooms[0]!, id: 'other' }] } })
+    expect(signal?.aborted).toBe(true)
+    expect(wrapper.get('.inspiration-card-body button').attributes('disabled')).toBeUndefined()
+    finish({
+      status: 'no_matches',
+      imageId: image.id,
+      project: input,
+      selections: {},
+      warnings: ['Старый ответ'],
+    })
+    await flushPromises()
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+    expect(wrapper.emitted('prepared')).toBeUndefined()
+  })
+
+  it('recovers a thumbnail after a temporary image failure', async () => {
     const wrapper = await render()
     await wrapper.get('.inspiration-image img').trigger('error')
     expect(wrapper.get('.inspiration-image-fallback').text()).toContain('Изображение недоступно')
-    expect(wrapper.get('.inspiration-card-body button').attributes('disabled')).toBeDefined()
+    expect(wrapper.get('.inspiration-card-body .primary').attributes('disabled')).toBeDefined()
+    await wrapper.get('.inspiration-card-body .ghost').trigger('click')
+    expect(wrapper.find('.inspiration-image img').exists()).toBe(true)
+    expect(wrapper.get('.inspiration-card-body .primary').attributes('disabled')).toBeUndefined()
+  })
+
+  it('allows retrying a failed full-size preview', async () => {
+    const wrapper = await render()
+    await wrapper.get('.inspiration-image').trigger('click')
+    await wrapper.get('dialog img').trigger('error')
+    expect(wrapper.find('dialog img').exists()).toBe(false)
+    await wrapper
+      .findAll('dialog button')
+      .find((b) => b.text() === 'Повторить загрузку изображения')!
+      .trigger('click')
+    expect(wrapper.get('dialog img').attributes('src')).toBe(image.imageUrl)
   })
 
   it('does not submit another selection while the parent is recalculating the project', async () => {

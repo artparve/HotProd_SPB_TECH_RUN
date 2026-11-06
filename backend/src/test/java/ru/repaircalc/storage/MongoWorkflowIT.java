@@ -196,6 +196,18 @@ class MongoWorkflowIT {
     assertThat(entries.size()).isEqualTo(28);
     assertThat(service.importManifest(assets.resolve("manifest.json"))).isEqualTo(entries.size());
     assertThat(service.importManifest(assets.resolve("manifest.json"))).isEqualTo(entries.size());
+    assertThat(service.feed(null, 24).items()).hasSize(24);
+    assertThat(service.feed(null, 24, "living").items()).hasSize(14);
+    assertThat(service.feed(null, 24, "bathroom").items())
+        .hasSize(7).allMatch(item -> item.category().equals("bathroom"));
+    assertThat(service.feed(null, 24, "kitchen").items())
+        .hasSize(7).allMatch(item -> item.category().equals("kitchen"));
+    assertThat(service.feed(null, 24, "children").items()).isEmpty();
+    assertThat(service.feed(null, 24, "balcony").items()).isEmpty();
+    var firstKitchen = service.feed(null, 2, "kitchen");
+    assertThat(firstKitchen.nextCursor()).isNotNull();
+    assertThat(service.feed(firstKitchen.nextCursor(), 24, "kitchen").items())
+        .hasSize(5).allMatch(item -> item.category().equals("kitchen"));
     var allItems = new ArrayList<ru.repaircalc.inspirations.InspirationService.Image>();
     String next = null;
     do {
@@ -240,12 +252,23 @@ class MongoWorkflowIT {
   }
 
   @ParameterizedTest
-  @CsvSource({"high, laminate, tile", "normal, laminate, laminate", "high, vinyl, vinyl"})
+  @CsvSource({
+    "high, laminate, tile, paint, paint",
+    "normal, laminate, laminate, paint, paint",
+    "high, vinyl, vinyl, paint, paint",
+    "high, laminate, tile, wallpaper, paint",
+    "normal, laminate, laminate, wallpaper, wallpaper"
+  })
   void galleryPicksACompatibleCoveringAndExplainsSubstitution(
-      String humidity, String observedFamily, String expectedFamily) throws Exception {
+      String humidity,
+      String observedFamily,
+      String expectedFamily,
+      String observedWall,
+      String expectedWall)
+      throws Exception {
     var llm = mock(LlmClient.class);
     var observation =
-        json.createObjectNode().put("floorFamily", observedFamily).put("wallFinish", "paint");
+        json.createObjectNode().put("floorFamily", observedFamily).put("wallFinish", observedWall);
     observation.putArray("warnings");
     when(llm.call(eq("inspirations/analyze"), any())).thenReturn(observation);
     var assets = Path.of("../data/inspirations");
@@ -253,7 +276,10 @@ class MongoWorkflowIT {
         new InspirationService(
             store, llm, snapshots, projects, json, assets.toString(), 8388608, 12000000, 480, 24);
     service.importManifest(assets.resolve("manifest.json"));
-    var mvc = MockMvcBuilders.standaloneSetup(new InspirationController(service)).build();
+    var mvc =
+        MockMvcBuilders.standaloneSetup(new InspirationController(service))
+            .setControllerAdvice(new ru.repaircalc.common.web.ApiExceptionHandler())
+            .build();
     var room = (ObjectNode) json.valueToTree(room("bath", List.of("floor", "paint")));
     room.put("name", "Санузел")
         .put("type", "bathroom")
@@ -265,9 +291,14 @@ class MongoWorkflowIT {
     var project =
         new ProjectInput(
             "apartment", "capital", List.of(json.treeToValue(room, ProjectInput.Room.class)));
+    mvc.perform(
+            post("/api/v1/room-inspirations/living-room-11701155/analyze")
+                .contentType("application/json")
+                .content(json.writeValueAsBytes(new InspirationController.Request(project))))
+        .andExpect(status().isUnprocessableEntity());
     var response =
         mvc.perform(
-                post("/api/v1/room-inspirations/living-room-11701155/analyze")
+                post("/api/v1/room-inspirations/bathroom-6957081/analyze")
                     .contentType("application/json")
                     .content(json.writeValueAsBytes(new InspirationController.Request(project))))
             .andExpect(status().isOk())
@@ -276,8 +307,12 @@ class MongoWorkflowIT {
     var analysis =
         json.readValue(response.getContentAsByteArray(), InspirationService.Analysis.class);
     assertThat(analysis.status()).isEqualTo("ok");
-    assertThat(analysis.project()).isEqualTo(project);
-    assertThat(analysis.selections()).containsOnlyKeys("bath:covering", "bath:paint");
+    room.set("works", json.valueToTree(List.of("floor", expectedWall)));
+    assertThat(analysis.project())
+        .isEqualTo(
+            new ProjectInput(
+                "apartment", "capital", List.of(json.treeToValue(room, ProjectInput.Room.class))));
+    assertThat(analysis.selections()).containsOnlyKeys("bath:covering", "bath:" + expectedWall);
     var lines = projects.estimate(analysis.project(), analysis.selections()).lines();
     var covering =
         lines.stream()
@@ -291,6 +326,14 @@ class MongoWorkflowIT {
       assertThat(lines).allMatch(line -> Boolean.TRUE.equals(line.product().wet()));
     assertThat(analysis.warnings().stream().anyMatch(w -> w.contains(covering.name())))
         .isEqualTo(!observedFamily.equals(expectedFamily));
+    var finish =
+        lines.stream()
+            .map(ProductEstimate.Line::product)
+            .filter(p -> p.kind().equals(expectedWall))
+            .findFirst()
+            .orElseThrow();
+    assertThat(analysis.warnings().stream().anyMatch(w -> w.contains(finish.name())))
+        .isEqualTo(!observedWall.equals(expectedWall));
   }
 
   @Test

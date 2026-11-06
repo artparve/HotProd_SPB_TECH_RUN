@@ -61,7 +61,9 @@ function addToProject() {
     notify('В проекте может быть не более 20 комнат')
     return
   }
-  workspace.project.rooms.push({ ...roomSchema.parse(room.value), id: newId() })
+  const added = { ...roomSchema.parse(room.value), id: newId() }
+  workspace.project.rooms.push(added)
+  workspace.roomInputs[added.id] = [...(workspace.roomInputs[room.value.id] || [])]
   notify('Комната добавлена в общий расчёт')
 }
 </script>

@@ -8,6 +8,7 @@ export const inspirationFeedMock: RoomInspirationFeed = {
   items: [
     {
       id: 'demo-warm-living',
+      category: 'living',
       title: 'Тёплая гостиная',
       description: 'Светлый пол и спокойные стены. Учебная иллюстрация интерьера.',
       thumbnailUrl: '/images/inspirations/warm-living.svg',
@@ -16,6 +17,7 @@ export const inspirationFeedMock: RoomInspirationFeed = {
     },
     {
       id: 'demo-blue-living',
+      category: 'living',
       title: 'Синий акцент',
       description: 'Плитка и прохладные оттенки стен. Учебная иллюстрация интерьера.',
       thumbnailUrl: '/images/inspirations/blue-living.svg',
@@ -24,6 +26,7 @@ export const inspirationFeedMock: RoomInspirationFeed = {
     },
     {
       id: 'demo-soft-living',
+      category: 'living',
       title: 'Мягкие оттенки',
       description: 'Обои и светлый ламинат. Учебная иллюстрация интерьера.',
       thumbnailUrl: '/images/inspirations/soft-living.svg',

@@ -1,17 +1,19 @@
 import { reactive, watch } from 'vue'
 import { z } from 'zod'
 import { estimateSchema, newRoom, projectSchema } from '../domain/types'
-import type { Estimate, Project } from '../domain/types'
+import type { Estimate } from '../domain/types'
 
 const schema = z.object({
   project: projectSchema,
   saved: z.array(estimateSchema).max(30),
   cart: estimateSchema.nullable(),
+  roomInputs: z.record(z.array(z.enum(['length', 'width', 'height', 'openings']))).default({}),
 })
-const initial: { project: Project; saved: Estimate[]; cart: Estimate | null } = {
+const initial: z.infer<typeof schema> = {
   project: { object: 'apartment', renovation: 'capital', rooms: [newRoom()] },
   saved: [],
   cart: null,
+  roomInputs: {},
 }
 const storageKey = 'repaircalc-workspace-v1'
 let storageMessage = ''
@@ -28,7 +30,12 @@ try {
 
 export const workspace = reactive({ ...initial, notice: '', storageMessage })
 watch(
-  () => ({ project: workspace.project, saved: workspace.saved, cart: workspace.cart }),
+  () => ({
+    project: workspace.project,
+    saved: workspace.saved,
+    cart: workspace.cart,
+    roomInputs: workspace.roomInputs,
+  }),
   (value) => {
     // An incomplete form may be used while typing, but never replaces the last valid draft.
     if (!schema.safeParse(value).success) return

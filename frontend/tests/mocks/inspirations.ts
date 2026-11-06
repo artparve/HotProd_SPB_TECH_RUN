@@ -5,6 +5,13 @@ import { estimateDemo, recommendDemo } from '../../src/services/demo'
 import type { Project } from '../../src/domain/types'
 import { roomPlanResultMock } from './roomPlan'
 
+export async function enterRoomDimensions(page: Page) {
+  for (const name of ['Длина м', 'Ширина м', 'Высота потолка м', 'Окна и двери м²']) {
+    const field = page.getByRole('spinbutton', { name, exact: true })
+    await field.fill(await field.inputValue())
+  }
+}
+
 export async function mockInspirationApi(
   page: Page,
   options: {

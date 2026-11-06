@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { enterRoomDimensions } from '../mocks/inspirations'
 
 const outage = process.env.REPAIRCALC_OUTAGE
 
@@ -27,6 +28,8 @@ test(`UI remains usable when ${outage} is unavailable`, async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Ваша смета готова' })).toBeVisible()
     await expect(page.getByText(/Смета рассчитана, но пояснение ИИ недоступно/)).toBeVisible()
     await page.goto('/room')
+    await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
+    await enterRoomDimensions(page)
     const length = await page.getByRole('spinbutton', { name: 'Длина м', exact: true }).inputValue()
     const analysis = page.waitForResponse((value) => value.url().endsWith('/test-interior/analyze'))
     await page.locator('.inspiration-card-body button').click()

@@ -32,10 +32,17 @@ public class ProjectCalculationService {
 
   public List<ProductView> candidates(
       ProjectInput.Room room, CalculationSnapshotService.Snapshot snapshot) {
+    return candidates(room, snapshot, room.works());
+  }
+
+  public List<ProductView> candidates(
+      ProjectInput.Room room,
+      CalculationSnapshotService.Snapshot snapshot,
+      Collection<String> works) {
     var assignments = new HashMap<UUID, RuleSetBundle.Assignment>();
     snapshot.rules().bundle().assignments().forEach(a -> assignments.put(a.productId(), a));
     return snapshot.catalog().products().stream()
-        .filter(p -> compatible(p, room) && p.works().stream().anyMatch(room.works()::contains))
+        .filter(p -> compatible(p, room) && p.works().stream().anyMatch(works::contains))
         .filter(
             p ->
                 !p.kind().equals("covering")

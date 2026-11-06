@@ -6,8 +6,22 @@ import { roomLabels, roomSchema, roomTypes, workLabels } from '../domain/types'
 import type { Room, RoomType, Work } from '../domain/types'
 import { geometry } from '../domain/room'
 import { number } from '../domain/format'
+import { dimensionKeys, type DimensionKey } from '../domain/plans'
+import { workspace } from '../composables/useWorkspace'
 
 const props = defineProps<{ room: Room; showValidation?: boolean }>()
+const inspirationReady = computed(
+  () =>
+    dimensionKeys.every((key) => workspace.roomInputs[props.room.id]?.includes(key)) &&
+    roomSchema.safeParse(props.room).success,
+)
+function rememberInput(fields: readonly DimensionKey[]) {
+  const activeIds = new Set([...workspace.project.rooms.map((room) => room.id), props.room.id])
+  workspace.roomInputs = {
+    ...Object.fromEntries(Object.entries(workspace.roomInputs).filter(([id]) => activeIds.has(id))),
+    [props.room.id]: [...new Set([...(workspace.roomInputs[props.room.id] || []), ...fields])],
+  }
+}
 const icons: Record<RoomType, 'bed' | 'bath' | 'kitchen' | 'sun' | 'home'> = {
   living: 'bed',
   bathroom: 'bath',
@@ -53,8 +67,7 @@ function setWall(work: Work) {
       </div>
     </fieldset>
 
-    <RoomPlanImport :room="room" />
-    <slot name="inspiration" />
+    <RoomPlanImport :room="room" @applied="rememberInput(dimensionKeys)" />
     <div class="section-heading small">
       <h3>Размеры помещения</h3>
       <span class="muted">В метрах, по внутренним стенам</span>
@@ -65,6 +78,7 @@ function setWall(work: Work) {
         <div class="input-unit">
           <input
             v-model.number="room.length"
+            @input="rememberInput(['length'])"
             type="number"
             min="0.1"
             max="100"
@@ -79,6 +93,7 @@ function setWall(work: Work) {
         <div class="input-unit">
           <input
             v-model.number="room.width"
+            @input="rememberInput(['width'])"
             type="number"
             min="0.1"
             max="100"
@@ -93,6 +108,7 @@ function setWall(work: Work) {
         <div class="input-unit">
           <input
             v-model.number="room.height"
+            @input="rememberInput(['height'])"
             type="number"
             min="1"
             max="10"
@@ -107,6 +123,7 @@ function setWall(work: Work) {
         <div class="input-unit">
           <input
             v-model.number="room.openings"
+            @input="rememberInput(['openings'])"
             type="number"
             min="0"
             max="2000"
@@ -128,6 +145,11 @@ function setWall(work: Work) {
         ></span
       ><span class="geometry-hint">Проёмы вычтены из стен</span>
     </div>
+    <p v-if="$slots.inspiration && !inspirationReady" class="field-hint">
+      Чтобы увидеть интерьеры для этой комнаты, заполните все четыре поля размеров вручную или
+      примените параметры из плана. Если проёмов нет, укажите 0.
+    </p>
+    <slot v-if="inspirationReady" name="inspiration" />
 
     <fieldset class="field-group works-fieldset">
       <legend class="field-title">Что планируете сделать?</legend>
