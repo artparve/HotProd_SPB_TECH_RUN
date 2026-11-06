@@ -392,6 +392,24 @@ class MongoWorkflowIT {
   }
 
   @Test
+  void deletingDraftPreservesHistoryAndIdentityAndRejectsStaleOrNonDraftRequests() {
+    var input = draft();
+    var p = products.create(input, "test", "create");
+    assertThatThrownBy(() -> products.deleteDraft(p.id(), "\"stale\"", "test", "stale"))
+        .isInstanceOf(AdminException.class).satisfies(e -> assertThat(((AdminException) e).status()).isEqualTo(412));
+    products.deleteDraft(p.id(), AdminProductService.etag(p), "test", "delete");
+    assertThatThrownBy(() -> products.get(p.id())).isInstanceOf(AdminException.class);
+    assertThat(products.list("", "", "", "-updated", 0, 100).items()).noneMatch(item -> item.id().equals(p.id()));
+    var recreated = products.create(input, "test", "recreate");
+    assertThat(recreated.id()).isEqualTo(p.id());
+    assertThat(recreated.version()).isEqualTo(2);
+    assertThat(products.history(p.id(), 0, 100).total()).isEqualTo(2);
+    products.touch(recreated, "review", "test");
+    assertThatThrownBy(() -> products.deleteDraft(p.id(), AdminProductService.etag(recreated), "test", "delete-review"))
+        .isInstanceOf(AdminException.class).satisfies(e -> assertThat(((AdminException) e).status()).isEqualTo(409));
+  }
+
+  @Test
   void leaseTokenFencesExpiredWorkersBusyDoesNotConsumeAnAttemptAndOldVersionsFail() {
     var p = products.create(draft(), "test", "create");
     var job = jobs.enqueue(p.id(), AdminProductService.etag(p), "test", "enqueue");

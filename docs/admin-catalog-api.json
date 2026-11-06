@@ -512,6 +512,51 @@
           }
         },
         "description": "Полный снимок; внешняя идентичность неизменяема. 412 только для несовпадения If-Match, 428 при его отсутствии. Аудит и новая версия записываются атомарно. Публичный каталог обслуживает прежний release."
+      },
+      "delete": {
+        "operationId": "adminDeleteDraft",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Удалить черновик рабочей карточки, сохранив историю и опубликованный каталог",
+        "security": [
+          {
+            "AdminCookie": [],
+            "AdminCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Черновик удалён"
+          },
+          "default": {
+            "description": "400 неверный JSON/параметр; 401 нет сессии; 403 CSRF; 404 нет карточки; 409 конфликт идентичности; 412 версия изменилась; 413 размер; 422 поля; 428 нет If-Match; 429 попытки входа; 503 админка отключена/БД недоступна.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminError"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/products/{id}/history": {
