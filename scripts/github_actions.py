@@ -83,7 +83,7 @@ def validate_compose(environ):
     # This CI-only file contains a synthetic password, never deployment credentials.
     with tempfile.TemporaryDirectory(prefix="repaircalc-compose-", dir=environ.get("RUNNER_TEMP")) as directory:
         public_path = Path(directory, ".env")
-        copyfile(ROOT / "env/.env.example", public_path)
+        copyfile(ROOT / "env/.env", public_path)
         path = Path(directory, "secret.env")
         path.write_text(''.join(f'{key}=ci-validation-only-01234567890123456789\n' for key in release.DEPLOYMENT_SECRET_DEFAULTS if key != 'ADMIN_PASSWORD_HASH'), encoding='utf-8')
         env = {name: value for name, value in environ.items() if name not in release.DEPLOYMENT_ENV_DEFAULTS}

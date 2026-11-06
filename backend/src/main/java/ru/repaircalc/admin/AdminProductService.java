@@ -45,6 +45,10 @@ public class AdminProductService {
                       .append("namespace", namespace)
                       .append("externalId", external)
                       .append("productId", id.toString()));
+            var existing = store.id("admin_product", id);
+            Product previous = existing == null ? null : store.read(existing, Product.class);
+            if (previous != null && !previous.status().equals("deleted"))
+              throw new AdminException(409, "duplicate_identity", "Карточка с этой идентичностью уже существует.");
             Instant now = Instant.now();
             var p =
                 new Product(
@@ -52,14 +56,23 @@ public class AdminProductService {
                     namespace,
                     external,
                     UUID.randomUUID(),
-                    1,
+                    previous == null ? 1 : previous.version() + 1,
                     "draft",
                     snapshot,
-                    now,
-                    actor,
+                    previous == null ? now : previous.createdAt(),
+                    previous == null ? actor : previous.createdBy(),
                     now,
                     actor);
-            store.insert("admin_product", store.document(p).append("_id", id.toString()));
+            if (previous == null) {
+              store.insert("admin_product", store.document(p).append("_id", id.toString()));
+            } else {
+              var update = new Update();
+              store.document(p).forEach(update::set);
+              if (store.update("admin_product", query("_id", id.toString())
+                  .addCriteria(Criteria.where("status").is("deleted"))
+                  .addCriteria(Criteria.where("versionId").is(previous.versionId().toString())), update) != 1)
+                throw mismatch();
+            }
             version(p, requestId, "create");
             audit(
                 id,
@@ -119,7 +132,7 @@ public class AdminProductService {
 
   public Product get(UUID id) {
     var d = store.id("admin_product", id);
-    if (d == null) throw new AdminException(404, "product_not_found", "Карточка не найдена.");
+    if (d == null || "deleted".equals(d.getString("status"))) throw new AdminException(404, "product_not_found", "Карточка не найдена.");
     return store.read(d, Product.class);
   }
 
@@ -128,6 +141,24 @@ public class AdminProductService {
     var p = get(id);
     if (!etag(p).equals(match)) throw mismatch();
     return p;
+  }
+
+  public void deleteDraft(UUID id, String match, String actor, String requestId) {
+    requireMatch(match);
+    store.transaction(() -> {
+      var before = matched(id, match);
+      if (!before.status().equals("draft"))
+        throw new AdminException(409, "not_a_draft", "Удалить можно только черновик.");
+      if (store.update("admin_product", query("_id", id.toString())
+          .addCriteria(Criteria.where("versionId").is(before.versionId().toString()))
+          .addCriteria(Criteria.where("status").is("draft")),
+          new Update().set("status", "deleted").set("versionId", UUID.randomUUID().toString())
+              .set("updatedAt", Instant.now().toString()).set("updatedBy", actor)) != 1)
+        throw mismatch();
+      audit(id, "delete_draft", actor, requestId,
+          new Document("beforeVersionId", before.versionId().toString()));
+      return null;
+    });
   }
 
   public void touch(Product p, String status, String actor) {
@@ -152,13 +183,14 @@ public class AdminProductService {
         || !Set.of("created", "-created", "updated", "-updated").contains(sort))
       throw new AdminException(422, "invalid_filter", "Неверные фильтры.");
     var q = new Query();
+    if (status.isEmpty()) q.addCriteria(Criteria.where("status").ne("deleted"));
     if (!text.isEmpty())
       q.addCriteria(
           new Criteria()
               .orOperator(
                   Criteria.where("snapshot.name").regex(Pattern.quote(text), "i"),
                   Criteria.where("externalId").regex(Pattern.quote(text), "i")));
-    if (!status.isEmpty()) q.addCriteria(Criteria.where("status").is(status));
+    if (!status.isEmpty()) q = q.addCriteria(Criteria.where("status").is(status));
     if (!category.isEmpty()) q.addCriteria(Criteria.where("snapshot.category.value").is(category));
     long total = store.mongo.count(q, "admin_product");
     q.with(

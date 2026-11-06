@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -42,6 +43,12 @@ public class AdminProductController {
             @RequestHeader(value = "If-Match", required = false) String match, HttpServletRequest request, HttpServletResponse response) throws IOException {
         AdminProductService.requireMatch(match);
         return response(products.update(id, match, json.body(request), auth.requireActor(request), response.getHeader("X-Request-ID")));
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id,
+            @RequestHeader(value = "If-Match", required = false) String match, HttpServletRequest request, HttpServletResponse response) {
+        products.deleteDraft(id, match, auth.requireActor(request), response.getHeader("X-Request-ID"));
+        return ResponseEntity.noContent().build();
     }
     @GetMapping("/{id}/history")
     public AdminProductService.Page<AdminProductService.Version> history(@PathVariable UUID id,

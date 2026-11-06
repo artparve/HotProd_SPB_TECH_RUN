@@ -4,7 +4,7 @@ Mongo-задания `backend` и `stack` временно используют 
 
 ## Образ и настройки
 
-Канонический default — `MONGO_IMAGE_TAG` в `env/.env.example`: MongoDB 8.0.34 с digest многоархитектурного manifest. Compose и CD содержат тот же fallback; release-тест проверяет согласованность. Java Testcontainers читает этот tracked-файл, не локальные env/секреты, либо явный `MONGO_IMAGE_TAG`. Для Testcontainers ссылка нормализуется в `mongo@sha256:...`, поскольку его parser не обрабатывает сочетание `name:tag@digest` как обычное имя `mongo`.
+Канонический default — `MONGO_IMAGE_TAG` в отслеживаемом `env/.env`: MongoDB 8.0.34 с digest многоархитектурного manifest. Compose и CD содержат тот же fallback; release-тест проверяет согласованность. Java Testcontainers читает этот tracked-файл, не локальные override/секреты, либо явный `MONGO_IMAGE_TAG`. Для Testcontainers ссылка нормализуется в `mongo@sha256:...`, поскольку его parser не обрабатывает сочетание `name:tag@digest` как обычное имя `mongo`.
 
 Параметры проверки:
 

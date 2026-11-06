@@ -51,3 +51,19 @@ e38f222ecc850d7c1a78ae7ef8e775d6bbd1933d350cf017d7df82829b8660f0  bedroom-706082
 e26daa0c63fef12a6ed8b1136df81b7d6ea0c513b7a75f29a208211a586b07ca  bathroom-7045906.jpg
 1340a215b47dd619ae2000b840461a03c5ab59d1402690c30309ccbdb2e6b792  bathroom-6957081.jpg
 ```
+
+<!-- additional-photos -->
+## Дополнение от 06.11.2026
+
+Ещё 8 фотографий Max Vakhtbovych с Pexels. Лицензия и условия использования — те же, что выше.
+
+| Файл | Исходная страница | SHA-256 | Размер |
+| --- | --- | --- | --- |
+| living-room-7587827.jpg | [Pexels](https://www.pexels.com/photo/modern-living-room-interior-with-a-brick-wall-7587827/) | `c8ff292bbc55d318960c986a2f1907cd0e7c02d2b6f96f9132635e72899b7ad2` | 223576 |
+| living-room-6580224.jpg | [Pexels](https://www.pexels.com/photo/interior-of-spacious-living-room-in-country-style-6580224/) | `f7e4955632f1c6e5f155a1d66989f591f89ab9f6580f28f0c3f089130ce22c5f` | 210349 |
+| bedroom-7031207.jpg | [Pexels](https://www.pexels.com/photo/minimalist-interior-design-of-bedroom-7031207/) | `6220a12487e588bd3ae5ceec99545ac4906b6c68a2664d1466855ef06ad3392c` | 96324 |
+| bedroom-6958138.jpg | [Pexels](https://www.pexels.com/photo/bedroom-with-bed-and-wardrobe-6958138/) | `c6c90f978f985cb8d8ef313a9df2989e024725fdc33bf08df23d48f6407e5b76` | 151447 |
+| kitchen-7535076.jpg | [Pexels](https://www.pexels.com/photo/interior-of-contemporary-kitchen-in-apartment-7535076/) | `c10b07126c85510b2e1e63750b488b76ddf0e5067aef7142c0c26685536f1b8a` | 130444 |
+| kitchen-6032225.jpg | [Pexels](https://www.pexels.com/photo/interior-of-compact-kitchen-in-apartment-6032225/) | `3a89c1524cf763449630de41d1f3a0c6907302e1ec7b8c0f295c6165a76e6e5d` | 300437 |
+| bathroom-8089093.jpg | [Pexels](https://www.pexels.com/photo/modern-bathroom-interior-8089093/) | `c4d05530f989d76704eae61616754ecf108e89c7cd9da4206392275624a95223` | 133168 |
+| bathroom-7031572.jpg | [Pexels](https://www.pexels.com/photo/luxury-modern-home-bathroom-interior-7031572/) | `18d623cffca416d2bb43f5c7d44b925632eb9229b3a9c261f3f52e34a22c5974` | 130291 |

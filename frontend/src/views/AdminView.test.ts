@@ -16,6 +16,7 @@ vi.mock('../services/admin', async (original) => {
       get: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+      deleteDraft: vi.fn(),
       history: vi.fn(),
     },
   }
@@ -82,6 +83,22 @@ describe('administrative card', () => {
       wrapper.findAll('input').some((input) => input.element.value === 'Other editor name'),
     ).toBe(true)
     wrapper.unmount()
+  })
+
+  it('confirms deletion and returns to the list only after success', async () => {
+    vi.stubGlobal('confirm', vi.fn().mockReturnValue(true))
+    vi.mocked(admin.deleteDraft).mockResolvedValue(undefined)
+    vi.mocked(admin.list).mockResolvedValue({ items: [], page: 0, size: 20, total: 0 })
+    const wrapper = await view(`/admin/products/${card.id}`)
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Удалить черновик')!
+      .trigger('click')
+    await flushPromises()
+    expect(admin.deleteDraft).toHaveBeenCalledWith(card.id, '"etag-1"')
+    expect(wrapper.text()).toContain('Черновик удалён.')
+    wrapper.unmount()
+    vi.unstubAllGlobals()
   })
 
   it('shows a connection failure without a demo card or a working save form', async () => {

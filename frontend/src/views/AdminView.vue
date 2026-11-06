@@ -135,6 +135,16 @@ async function save(input: AdminDraft) {
     if (isNew.value) await router.replace(`/admin/products/${result.data.id}`)
   })
 }
+async function deleteDraft() {
+  if (!product.value || !window.confirm(`Удалить черновик «${product.value.snapshot.name}»?`))
+    return
+  const id = product.value.id
+  await run(async () => {
+    await admin.deleteDraft(id, etag.value)
+    await router.push('/admin/products')
+    notice.value = 'Черновик удалён.'
+  })
+}
 async function search(page = 0) {
   filters.value.page = page
   await run(async () => {
@@ -304,6 +314,9 @@ onMounted(initialize)
           Сохранение создаёт новую рабочую версию. Классификация и проверка относятся только к
           сохранённой версии; перед запуском сохраните изменения формы.
         </p>
+        <button v-if="product?.status === 'draft'" :disabled="busy" @click="deleteDraft">
+          Удалить черновик
+        </button>
         <AdminProductForm :initial="draft" :existing="!!product" :busy="busy" @save="save" />
         <AdminProductWorkflow
           v-if="product"

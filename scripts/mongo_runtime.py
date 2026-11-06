@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def default_image_tag():
-    for line in (ROOT / "env/.env.example").read_text(encoding="utf-8").splitlines():
+    for line in (ROOT / "env/.env").read_text(encoding="utf-8").splitlines():
         if line.startswith("MONGO_IMAGE_TAG="):
             return line.split("=", 1)[1].strip()
     raise ValueError("MONGO_IMAGE_TAG is missing from tracked defaults")

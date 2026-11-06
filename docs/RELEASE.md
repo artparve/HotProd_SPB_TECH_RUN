@@ -6,7 +6,7 @@ Workflow `CD` (`.github/workflows/cd.yml`) запускается вручную
 
 ## Настройка environment
 
-Задайте DEPLOY_HOST, DEPLOY_USER, DEPLOY_PORT, DEPLOY_FRONTEND_HOST/PORT, SSH private key в DEPLOY_SSH_PRIVATE_KEY и Mongo secrets MONGO_ROOT_PASSWORD/MONGO_PASSWORD/MONGO_KEYFILE_SECRET. Для admin нужны ADMIN_USERNAME/ADMIN_PASSWORD_HASH. Обычные runtime-настройки экспортируются из GitHub vars; значения по умолчанию совпадают с env/.env.example.
+Задайте DEPLOY_HOST, DEPLOY_USER, DEPLOY_PORT, DEPLOY_FRONTEND_HOST/PORT, SSH private key в DEPLOY_SSH_PRIVATE_KEY и Mongo secrets MONGO_ROOT_PASSWORD/MONGO_PASSWORD/MONGO_KEYFILE_SECRET. Для admin нужны ADMIN_USERNAME/ADMIN_PASSWORD_HASH. Обычные runtime-настройки экспортируются из GitHub vars; значения по умолчанию совпадают с отслеживаемым env/.env.
 
 CD по умолчанию включает ИИ: `DEPLOY_LLM_ENABLED=true`. Для базового стенда явно задайте `DEPLOY_LLM_ENABLED=false`. Ручной `scripts/release.py` по-прежнему оставляет ИИ выключенным без этой настройки. Включение требует `INTERNAL_SERVICE_TOKEN` длиной от 32 символов; отсутствие токена блокирует запуск до SSH.
 

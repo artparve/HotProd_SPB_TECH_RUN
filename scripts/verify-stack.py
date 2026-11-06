@@ -96,7 +96,7 @@ def main():
         }}), encoding="utf-8")
         env = dict(os.environ)
         # A developer's process settings must not redirect this test to their database/ports.
-        for line in (ROOT / "env/.env.example").read_text(encoding="utf-8").splitlines():
+        for line in (ROOT / "env/.env").read_text(encoding="utf-8").splitlines():
             if line and not line.startswith("#") and "=" in line:
                 env.pop(line.split("=", 1)[0], None)
         for key in ("MONGO_ROOT_PASSWORD", "MONGO_PASSWORD", "MONGO_KEYFILE_SECRET", "INTERNAL_SERVICE_TOKEN", "ADMIN_PASSWORD_HASH", "COMPOSE_FILE", "COMPOSE_PROFILES", "IMAGE_TAG"):
@@ -162,7 +162,8 @@ def main():
             if not args.no_build:
                 run("build", "backend", "frontend", *([] if args.base_only else ["llm"]))
             run("up", "--detach", "--no-build", "--wait", "--wait-timeout", "240", "backend", "frontend", *([] if args.base_only else ["llm", "ollama"]))
-            catalog = wait("/api/v1/products", lambda value: len(value) == 12)
+            expected_catalog = json.loads((ROOT / "data/catalog-expanded.json").read_text(encoding="utf-8"))
+            catalog = wait("/api/v1/products", lambda value: len(value) == len(expected_catalog["products"]))
             # Exercise the release preflight against real network authentication without
             # using any developer configuration or changing running services.
             release = temporary / "preflight"
@@ -198,9 +199,14 @@ def main():
                 feed, _ = request("/api/v1/room-inspirations")
                 prepared = json.loads((ROOT / "data/inspirations/manifest.json").read_text(encoding="utf-8"))
                 assert prepared and feed["status"] == "ok"
+                while feed.get("nextCursor"):
+                    page, _ = request("/api/v1/room-inspirations?cursor=" + feed["nextCursor"])
+                    assert page["status"] == "ok" and page["nextCursor"] != feed["nextCursor"]
+                    feed["items"].extend(page["items"])
+                    feed["nextCursor"] = page["nextCursor"]
                 assert {item["id"] for item in feed["items"]} == {item["id"] for item in prepared}
                 from collections import Counter
-                assert Counter(item["category"] for item in feed["items"]) == {"living": 5, "bedroom": 5, "kitchen": 5, "bathroom": 5}
+                assert Counter(item["category"] for item in feed["items"]) == {"living": 7, "bedroom": 7, "kitchen": 7, "bathroom": 7}
                 for entry in prepared:
                     item = next(item for item in feed["items"] if item["id"] == entry["id"])
                     assert item["sourceUrl"] == entry["sourceUrl"]
@@ -216,7 +222,7 @@ def main():
                 assert result["explanationStatus"] == "unavailable" and result["estimate"]["total"] == "34560.00"
                 request("/")
                 mode = "with official Ollama/Python and no installed model" if args.runtime_only else "without Python, Ollama or token"
-                print("PASS all 20 production photos, categories, previews and unavailable analysis " + mode, flush=True)
+                print(f"PASS all {len(prepared)} production photos, categories, previews and unavailable analysis " + mode, flush=True)
                 browser_check(production=True)
                 return
             estimate, _ = request("/api/v1/estimate", {"project": project_body, "selections": {"room-a:covering": tile}})
@@ -257,9 +263,9 @@ def main():
             decisions += [{"group": "properties", "label": label, "action": "accept", "reason": "Сохранено как неизвестное"} for label in classification["properties"]]
             request(product_path + "/reviews", {"jobId": job["id"], "profileId": "paint-012-v1", "decisions": decisions}, headers=version)
             request(product_path + "/publish", {}, headers=version)
-            assert len(request("/api/v1/products")[0]) == 13
+            assert len(request("/api/v1/products")[0]) == len(catalog) + 1
             run("run", "--rm", "--no-deps", "init-data")
-            assert len(request("/api/v1/products")[0]) == 13
+            assert len(request("/api/v1/products")[0]) == len(catalog) + 1
             print("PASS admin session, ETag, queue, human review, publication and repeat seed", flush=True)
 
             # Reproduce an existing production database with an empty/old gallery.
@@ -279,7 +285,7 @@ def main():
                               "--compose-file", str(ROOT / "docker/docker-compose.yml"), "--compose-file", str(override),
                               "--file", str(backup)]
             subprocess.run(backup_command + ["backup"], cwd=ROOT, env=env, check=True)
-            wait("/api/v1/products", lambda value: len(value) == 13)
+            wait("/api/v1/products", lambda value: len(value) == len(catalog) + 1)
             subprocess.run(backup_command + ["restore", "--target-database", "repaircalc_restore_check"], cwd=ROOT, env=env, check=True)
             print("PASS archive backup and restore into a new database", flush=True)
             session, _ = request("/api/v1/admin/session")
@@ -305,7 +311,7 @@ def main():
             request("/api/v1/estimate", {"project": project_body}, expected=503)
             request("/api/v1/admin/products", draft, headers=csrf, expected=503)
             run("start", "mongo")
-            wait("/api/v1/products", lambda value: len(value) == 13)
+            wait("/api/v1/products", lambda value: len(value) == len(catalog) + 1)
             run("stop", "backend")
             browser_check("backend")
             result, _ = request("/api/v1/products", expected=503)

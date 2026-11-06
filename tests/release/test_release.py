@@ -164,7 +164,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn("REGISTRY_PASSWORD: ${{ github.token }}", workflow)
 
     def test_shared_templates_separate_secret_keys_and_cover_release_settings(self):
-        public_text = (release.ROOT / "env/.env.example").read_text(encoding="utf-8")
+        public_text = (release.ROOT / "env/.env").read_text(encoding="utf-8")
         secret_text = (release.ROOT / "env/secret.env.example").read_text(encoding="utf-8")
         public_keys = set(re.findall(r"^([A-Z][A-Z0-9_]*)=", public_text, re.MULTILINE))
         secret_keys = set(re.findall(r"^([A-Z][A-Z0-9_]*)=", secret_text, re.MULTILINE))
@@ -184,7 +184,7 @@ class ReleaseTests(unittest.TestCase):
                    MONGO_KEYFILE_SECRET="configuration-only-key", IMAGE_PREFIX="ghcr.io/owner/repo", IMAGE_TAG="sha-" + "a" * 40,
                    FRONTEND_HOST="127.0.0.1", FRONTEND_PORT="8080", COMPOSE_PROFILES="")
         result = subprocess.run([
-            shutil.which("docker"), "compose", "-p", "repaircalc", "--env-file", "env/.env.example",
+            shutil.which("docker"), "compose", "-p", "repaircalc", "--env-file", "env/.env",
             "--env-file", "env/secret.env.example", "-f", "docker/docker-compose.yml", "-f", "docker/docker-compose.release.yml",
             "-f", "docker/docker-compose.preserve-data.yml", "config", "--format", "json",
         ], cwd=release.ROOT, env=env, capture_output=True, text=True, encoding="utf-8", timeout=30)
@@ -209,7 +209,7 @@ class ReleaseTests(unittest.TestCase):
             with self.subTest(host=host):
                 env["FRONTEND_BIND_ADDRESS"] = host
                 result = subprocess.run([
-                    shutil.which("docker"), "compose", "--env-file", "env/.env.example", "--env-file", "env/secret.env.example",
+                    shutil.which("docker"), "compose", "--env-file", "env/.env", "--env-file", "env/secret.env.example",
                     "-f", "docker/docker-compose.yml", "-f", "docker/docker-compose.release.yml",
                     "config", "--format", "json",
                 ], cwd=release.ROOT, env=env, capture_output=True, text=True, encoding="utf-8", timeout=30)

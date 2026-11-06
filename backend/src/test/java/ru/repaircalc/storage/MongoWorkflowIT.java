@@ -45,7 +45,7 @@ class MongoWorkflowIT {
     String tag = System.getenv("MONGO_IMAGE_TAG");
     if (tag == null || tag.isBlank()) {
       var defaults = new Properties();
-      try (var reader = Files.newBufferedReader(Path.of("../env/.env.example"))) {
+      try (var reader = Files.newBufferedReader(Path.of("../env/.env"))) {
         defaults.load(reader);
         tag = defaults.getProperty("MONGO_IMAGE_TAG");
       } catch (java.io.IOException failure) {
@@ -89,6 +89,20 @@ class MongoWorkflowIT {
     catalogs.importFiles(
         Path.of("../data/catalog-v1.json"), Path.of("../data/work-mappings-v1.json"));
     rules.importFile(Path.of("../data/rules-v1.json"));
+  }
+
+  @Test
+  void expandedCatalogPublishesIdempotentlyWithoutLosingOriginalProducts() {
+    var before = snapshots.resolve();
+    catalogs.importFiles(Path.of("../data/catalog-expanded.json"), Path.of("../data/work-mappings-expanded.json"));
+    rules.importFile(Path.of("../data/rules-expanded.json"));
+    var after = snapshots.resolve();
+    assertThat(after.catalog().products()).hasSize(112);
+    assertThat(after.catalog().products().stream().map(ru.repaircalc.catalog.ProductView::id))
+        .containsAll(before.catalog().products().stream().map(ru.repaircalc.catalog.ProductView::id).toList());
+    assertThat(catalogs.importFiles(Path.of("../data/catalog-expanded.json"), Path.of("../data/work-mappings-expanded.json")).noOp()).isTrue();
+    assertThat(rules.importFile(Path.of("../data/rules-expanded.json")).noOp()).isTrue();
+    assertThat(snapshots.resolve()).isEqualTo(after);
   }
 
   @Test
@@ -179,28 +193,36 @@ class MongoWorkflowIT {
             480,
             24);
     var entries = json.readTree(Files.readString(assets.resolve("manifest.json")));
-    assertThat(entries.size()).isEqualTo(20);
+    assertThat(entries.size()).isEqualTo(28);
     assertThat(service.importManifest(assets.resolve("manifest.json"))).isEqualTo(entries.size());
     assertThat(service.importManifest(assets.resolve("manifest.json"))).isEqualTo(entries.size());
-    assertThat(service.feed(null, 24).items()).hasSize(entries.size());
-    assertThat(service.feed(null, 24, "living").items()).hasSize(10);
+    assertThat(service.feed(null, 24).items()).hasSize(24);
+    assertThat(service.feed(null, 24, "living").items()).hasSize(14);
     assertThat(service.feed(null, 24, "bathroom").items())
-        .hasSize(5).allMatch(item -> item.category().equals("bathroom"));
+        .hasSize(7).allMatch(item -> item.category().equals("bathroom"));
     assertThat(service.feed(null, 24, "kitchen").items())
-        .hasSize(5).allMatch(item -> item.category().equals("kitchen"));
+        .hasSize(7).allMatch(item -> item.category().equals("kitchen"));
     assertThat(service.feed(null, 24, "children").items()).isEmpty();
     assertThat(service.feed(null, 24, "balcony").items()).isEmpty();
     var firstKitchen = service.feed(null, 2, "kitchen");
     assertThat(firstKitchen.nextCursor()).isNotNull();
     assertThat(service.feed(firstKitchen.nextCursor(), 24, "kitchen").items())
-        .hasSize(3).allMatch(item -> item.category().equals("kitchen"));
-    assertThat(service.feed(null, 24).items().stream()
+        .hasSize(5).allMatch(item -> item.category().equals("kitchen"));
+    var allItems = new ArrayList<ru.repaircalc.inspirations.InspirationService.Image>();
+    String next = null;
+    do {
+      var page = service.feed(next, 24);
+      allItems.addAll(page.items());
+      next = page.nextCursor();
+    } while (next != null);
+    assertThat(allItems).hasSize(entries.size());
+    assertThat(allItems.stream()
             .collect(java.util.stream.Collectors.groupingBy(
                 ru.repaircalc.inspirations.InspirationService.Image::category,
                 java.util.stream.Collectors.counting())))
         .containsExactlyInAnyOrderEntriesOf(
-            Map.of("living", 5L, "bedroom", 5L, "kitchen", 5L, "bathroom", 5L));
-    assertThat(service.feed(null, 24).items().stream()
+            Map.of("living", 7L, "bedroom", 7L, "kitchen", 7L, "bathroom", 7L));
+    assertThat(allItems.stream()
             .map(item -> MongoStore.sha(service.image(item.id(), false))))
         .doesNotHaveDuplicates();
     var visited = new HashSet<String>();
@@ -220,7 +242,7 @@ class MongoWorkflowIT {
           javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(service.image(id, true)));
       assertThat(Math.max(preview.getWidth(), preview.getHeight())).isLessThanOrEqualTo(480);
       assertThat(
-              service.feed(null, 24).items().stream()
+              allItems.stream()
                   .filter(item -> item.id().equals(id))
                   .findFirst()
                   .orElseThrow()
@@ -410,6 +432,24 @@ class MongoWorkflowIT {
     assertThatThrownBy(
             () -> products.update(p.id(), AdminProductService.etag(p), draft, "test", "stale"))
         .isInstanceOf(AdminException.class);
+  }
+
+  @Test
+  void deletingDraftPreservesHistoryAndIdentityAndRejectsStaleOrNonDraftRequests() {
+    var input = draft();
+    var p = products.create(input, "test", "create");
+    assertThatThrownBy(() -> products.deleteDraft(p.id(), "\"stale\"", "test", "stale"))
+        .isInstanceOf(AdminException.class).satisfies(e -> assertThat(((AdminException) e).status()).isEqualTo(412));
+    products.deleteDraft(p.id(), AdminProductService.etag(p), "test", "delete");
+    assertThatThrownBy(() -> products.get(p.id())).isInstanceOf(AdminException.class);
+    assertThat(products.list("", "", "", "-updated", 0, 100).items()).noneMatch(item -> item.id().equals(p.id()));
+    var recreated = products.create(input, "test", "recreate");
+    assertThat(recreated.id()).isEqualTo(p.id());
+    assertThat(recreated.version()).isEqualTo(2);
+    assertThat(products.history(p.id(), 0, 100).total()).isEqualTo(2);
+    products.touch(recreated, "review", "test");
+    assertThatThrownBy(() -> products.deleteDraft(p.id(), AdminProductService.etag(recreated), "test", "delete-review"))
+        .isInstanceOf(AdminException.class).satisfies(e -> assertThat(((AdminException) e).status()).isEqualTo(409));
   }
 
   @Test

@@ -174,6 +174,9 @@ export const admin = {
       etag,
     )
   },
+  async deleteDraft(id: string, etag: string) {
+    await request(`/products/${encodeURIComponent(id)}`, z.null(), 'DELETE', undefined, etag)
+  },
   async history(id: string, page = 0) {
     return (
       await request(

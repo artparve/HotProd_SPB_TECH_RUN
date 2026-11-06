@@ -48,13 +48,13 @@ export function localCommand(name, env, root = ROOT) {
     "backend-import-catalog": [
       "--repaircalc.command=import-catalog",
       "--repaircalc.catalog.file=" +
-        dataPath("CATALOG_FILE", "catalog-v1.json"),
+        dataPath("CATALOG_FILE", "catalog-expanded.json"),
       "--repaircalc.catalog.mappings=" +
-        dataPath("CATALOG_MAPPINGS_FILE", "work-mappings-v1.json"),
+        dataPath("CATALOG_MAPPINGS_FILE", "work-mappings-expanded.json"),
     ],
     "backend-import-rules": [
       "--repaircalc.command=import-rules",
-      "--repaircalc.rules.file=" + dataPath("RULES_FILE", "rules-v1.json"),
+      "--repaircalc.rules.file=" + dataPath("RULES_FILE", "rules-expanded.json"),
     ],
     "backend-import-inspirations": ["--repaircalc.command=import-inspirations"],
     backend: [],
