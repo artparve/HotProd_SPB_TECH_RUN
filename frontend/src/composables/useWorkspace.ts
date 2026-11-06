@@ -28,6 +28,7 @@ try {
   storageMessage = 'Локальное хранилище недоступно или повреждено. Работа продолжится в памяти.'
 }
 
+let lastValidProject = projectSchema.parse(initial.project)
 export const workspace = reactive({ ...initial, notice: '', storageMessage })
 watch(
   () => ({
@@ -37,10 +38,13 @@ watch(
     roomInputs: workspace.roomInputs,
   }),
   (value) => {
-    // An incomplete form may be used while typing, but never replaces the last valid draft.
-    if (!schema.safeParse(value).success) return
+    // Preserve the last valid project while typing, but keep saving estimates and the cart.
+    const project = projectSchema.safeParse(value.project)
+    if (project.success) lastValidProject = project.data
+    const parsed = schema.safeParse({ ...value, project: lastValidProject })
+    if (!parsed.success) return
     try {
-      localStorage.setItem(storageKey, JSON.stringify(value))
+      localStorage.setItem(storageKey, JSON.stringify(parsed.data))
     } catch {
       workspace.storageMessage =
         'Не удалось сохранить данные в браузере. Экспортируйте смету в JSON.'
