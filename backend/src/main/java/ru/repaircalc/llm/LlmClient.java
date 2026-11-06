@@ -1,8 +1,12 @@
 package ru.repaircalc.llm;
 
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.net.http.*;
 import java.time.Duration;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
@@ -56,29 +60,47 @@ public class LlmClient {
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body)))
             .build();
+    var bytes = new ByteArrayOutputStream();
+    var pending =
+        client.sendAsync(
+            request,
+            HttpResponse.BodyHandlers.ofByteArrayConsumer(
+                chunk ->
+                    chunk.ifPresent(
+                        part -> {
+                          if (part.length > maxBytes - bytes.size())
+                            throw new Failure(502, "invalid_model_response");
+                          bytes.writeBytes(part);
+                        })));
     try {
-      var response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-      try (var stream = response.body()) {
-        byte[] bytes = stream.readNBytes(maxBytes + 1);
-        if (bytes.length > maxBytes) throw new Failure(502, "invalid_model_response");
-        JsonNode result = json.readTree(bytes);
-        if (response.statusCode() != 200) {
-          String code =
-              response.statusCode() == 429
-                  ? "model_busy"
-                  : result != null && result.isObject()
-                      ? result.path("code").asText("llm_unavailable")
-                      : "llm_unavailable";
-          throw new Failure(
-              response.statusCode(), code.matches("[a-z0-9_]{1,80}") ? code : "llm_unavailable");
-        }
-        if (result == null || !result.isObject()) throw new Failure(502, "invalid_model_response");
-        return result;
+      // A streaming InputStream completes at headers, so its reads escape HttpRequest.timeout.
+      // Wait for the bounded body consumer under one deadline covering headers and body.
+      var response = pending.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+      JsonNode result = json.readTree(bytes.toByteArray());
+      if (response.statusCode() != 200) {
+        String code =
+            response.statusCode() == 429
+                ? "model_busy"
+                : result != null && result.isObject()
+                    ? result.path("code").asText("llm_unavailable")
+                    : "llm_unavailable";
+        throw new Failure(
+            response.statusCode(), code.matches("[a-z0-9_]{1,80}") ? code : "llm_unavailable");
       }
+      if (result == null || !result.isObject()) throw new Failure(502, "invalid_model_response");
+      return result;
     } catch (InterruptedException e) {
+      pending.cancel(true);
       Thread.currentThread().interrupt();
       throw new Failure(503, "llm_unavailable");
-    } catch (java.io.IOException | tools.jackson.core.JacksonException e) {
+    } catch (TimeoutException e) {
+      pending.cancel(true);
+      throw new Failure(503, "llm_unavailable");
+    } catch (ExecutionException e) {
+      for (Throwable cause = e.getCause(); cause != null; cause = cause.getCause())
+        if (cause instanceof Failure failure) throw failure;
+      throw new Failure(503, "llm_unavailable");
+    } catch (tools.jackson.core.JacksonException e) {
       throw new Failure(503, "llm_unavailable");
     }
   }
