@@ -9,7 +9,7 @@ export default defineConfig({
     command: 'npm run dev -- --mode test --port 5174',
     url: 'http://127.0.0.1:5174',
     reuseExistingServer: false,
-    env: { VITE_DATA_MODE: 'api' },
+    env: { VITE_DATA_MODE: 'api', VITE_GUIDE_ENABLED: 'false', VITE_SPLASH_ENABLED: 'false' },
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },

@@ -14,6 +14,21 @@ export default defineConfig({
   use: {
     ...devices['Desktop Chrome'],
     baseURL: process.env.REPAIRCALC_STACK_URL,
+    storageState: {
+      cookies: [
+        {
+          name: 'repaircalc_guide_v1',
+          value: 'done',
+          domain: new URL(process.env.REPAIRCALC_STACK_URL).hostname,
+          path: '/',
+          expires: -1,
+          httpOnly: false,
+          secure: false,
+          sameSite: 'Lax',
+        },
+      ],
+      origins: [],
+    },
     trace: 'retain-on-failure',
   },
 })

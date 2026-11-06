@@ -30,6 +30,7 @@ jobs:
       - run: make check
       - run: npm --prefix frontend exec -- playwright install --with-deps chromium
       - run: npm --prefix frontend run test:e2e
+      - run: npm --prefix frontend run test:e2e:welcome
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -184,6 +185,8 @@ jobs:
             VITE_LLM_TIMEOUT_MS=${{ vars.VITE_LLM_TIMEOUT_MS || '1260000' }}
             VITE_PLAN_TIMEOUT_MS=${{ vars.VITE_PLAN_TIMEOUT_MS || '660000' }}
             VITE_INSPIRATION_TIMEOUT_MS=${{ vars.VITE_INSPIRATION_TIMEOUT_MS || '120000' }}
+            VITE_GUIDE_ENABLED=${{ vars.VITE_GUIDE_ENABLED || 'true' }}
+            VITE_SPLASH_ENABLED=${{ vars.VITE_SPLASH_ENABLED || 'true' }}
           tags: ${{ steps.registry.outputs.prefix }}/${{ matrix.image }}:sha-${{ github.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}

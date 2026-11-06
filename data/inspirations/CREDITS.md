@@ -55,7 +55,7 @@ e26daa0c63fef12a6ed8b1136df81b7d6ea0c513b7a75f29a208211a586b07ca  bathroom-70459
 <!-- additional-photos -->
 ## Дополнение от 06.11.2026
 
-Ещё 8 фотографий Max Vakhtbovych с Pexels. Лицензия и условия использования — те же, что выше.
+Дополнение: 12 фотографий Max Vakhtbovych с Pexels. Лицензия и условия использования — те же, что выше.
 
 | Файл | Исходная страница | SHA-256 | Размер |
 | --- | --- | --- | --- |
@@ -67,3 +67,7 @@ e26daa0c63fef12a6ed8b1136df81b7d6ea0c513b7a75f29a208211a586b07ca  bathroom-70459
 | kitchen-6032225.jpg | [Pexels](https://www.pexels.com/photo/interior-of-compact-kitchen-in-apartment-6032225/) | `3a89c1524cf763449630de41d1f3a0c6907302e1ec7b8c0f295c6165a76e6e5d` | 300437 |
 | bathroom-8089093.jpg | [Pexels](https://www.pexels.com/photo/modern-bathroom-interior-8089093/) | `c4d05530f989d76704eae61616754ecf108e89c7cd9da4206392275624a95223` | 133168 |
 | bathroom-7031572.jpg | [Pexels](https://www.pexels.com/photo/luxury-modern-home-bathroom-interior-7031572/) | `18d623cffca416d2bb43f5c7d44b925632eb9229b3a9c261f3f52e34a22c5974` | 130291 |
+| children-7045943.jpg | [Pexels](https://www.pexels.com/photo/interior-of-spacious-playroom-for-children-in-apartment-7045943/) | `a8733f1aa1844073b6af803c67ff90335597e5b9a1485d573aaeb3a8a719b9b0` | 189781 |
+| children-7167058.jpg | [Pexels](https://www.pexels.com/photo/domestic-room-with-a-toddler-bed-7167058/) | `5084825bc73b653483545e97ad45e93a1901b1c4de68e1bdf39894c50a6b5da2` | 133100 |
+| balcony-8142972.jpg | [Pexels](https://www.pexels.com/photo/coffee-table-and-chair-in-a-balcony-8142972/) | `c346f406ba4019b94f4abe66cb3e64cf529e54e8fde979a03ec95b020b09398d` | 195095 |
+| balcony-7545501.jpg | [Pexels](https://www.pexels.com/photo/empty-balcony-with-light-brick-walls-7545501/) | `c75fdd7af0ae48adfacf2702ff8be83821304947827996c25186a7f0cdc40462` | 174617 |

@@ -191,7 +191,8 @@ class ReleaseTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         config = json.loads(result.stdout)
         self.assertEqual(config["services"]["init-data"]["entrypoint"],
-                         ["java", "-jar", "/app/backend.jar", "--repaircalc.command=import-inspirations"])
+                          ["java", "-jar", "/app/backend.jar", "--repaircalc.command=import-inspirations"])
+        self.assertEqual(config["services"]["init-data"]["environment"]["EXPAND_ROOM_CATALOG"], "true")
         self.assertEqual(config["services"]["backend"]["depends_on"]["init-data"]["condition"], "service_completed_successfully")
         self.assertEqual(config["volumes"]["mongo-data"]["name"], "repaircalc_mongo-data")
         self.assertEqual(config["services"]["backend"]["image"], "ghcr.io/owner/repo/backend:sha-" + "a" * 40)

@@ -23,15 +23,17 @@ test('general calculation applies interiors to the active room and preserves the
   )
   const requests = await mockInspirationApi(page)
   await page.goto('/')
-  await enterRoomDimensions(page)
-  const gallery = page.locator('.main-panel .room-editor > .inspiration-gallery')
+  const gallery = page.getByRole('region', { name: 'Вдохновитесь готовой комнатой' })
   await expect(gallery).toBeVisible()
+  await expect(page.locator('.room-editor .inspiration-gallery')).toHaveCount(1)
+  await expect(page.locator('.plan-import')).not.toHaveAttribute('open', '')
   await gallery
     .locator('.inspiration-card')
     .nth(1)
     .getByRole('button', { name: 'Выбрать интерьер' })
     .click()
   await expect(page.getByRole('heading', { name: 'Материалы для вашего проекта' })).toBeVisible()
+  await expect(gallery).toHaveCount(0)
   await expect(page).toHaveURL('/')
   let analysis = requests.filter((request) => request.url().endsWith('/analyze')).at(-1)!
   expect(analysis.postDataJSON().project.rooms).toEqual([project.rooms[0]])
@@ -44,6 +46,7 @@ test('general calculation applies interiors to the active room and preserves the
   expect(estimation.project.rooms[1]).toEqual(project.rooms[1])
 
   await page.getByRole('button', { name: 'Параметры', exact: true }).click()
+  await expect(page.locator('.room-editor .inspiration-gallery')).toBeVisible()
   await page
     .getByRole('group', { name: 'Помещения проекта' })
     .getByRole('button', { name: 'Вторая комната' })

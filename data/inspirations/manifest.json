@@ -250,5 +250,41 @@
     "alt": "Светлая ванная комната с серой плиткой и двумя раковинами",
     "file": "bathroom-7031572.jpg",
     "sourceUrl": "https://www.pexels.com/photo/luxury-modern-home-bathroom-interior-7031572/"
+  },
+  {
+    "id": "children-7045943",
+    "category": "children",
+    "title": "Светлая детская игровая",
+    "description": "Игровая комната с книжными полками и игрушками. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Светлая детская комната с синими полками для книг и игрушек",
+    "file": "children-7045943.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-spacious-playroom-for-children-in-apartment-7045943/"
+  },
+  {
+    "id": "children-7167058",
+    "category": "children",
+    "title": "Детская с цветочными акцентами",
+    "description": "Спокойная детская с кроваткой, цветочной отделкой и деревянной дверью. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Детская комната с кроваткой и цветочными акцентами",
+    "file": "children-7167058.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/domestic-room-with-a-toddler-bed-7167058/"
+  },
+  {
+    "id": "balcony-8142972",
+    "category": "balcony",
+    "title": "Балкон с зеленью и местом для отдыха",
+    "description": "Светлый балкон со столиком, креслом и растениями. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Балкон с креслом, столиком и растениями у окна",
+    "file": "balcony-8142972.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/coffee-table-and-chair-in-a-balcony-8142972/"
+  },
+  {
+    "id": "balcony-7545501",
+    "category": "balcony",
+    "title": "Светлый застеклённый балкон",
+    "description": "Панорамные окна, светлые кирпичные стены и каменный пол. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Пустой светлый балкон с кирпичными стенами и панорамными окнами",
+    "file": "balcony-7545501.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/empty-balcony-with-light-brick-walls-7545501/"
   }
 ]

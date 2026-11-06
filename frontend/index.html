@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/startup.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#245a48" />
     <meta
@@ -12,6 +13,17 @@
     <title>RepairCalc — калькулятор ремонта</title>
   </head>
   <body>
+    <div
+      id="startup-screen"
+      data-enabled="%VITE_SPLASH_ENABLED%"
+      role="status"
+      aria-label="Загрузка RepairCalc"
+    >
+      <img src="/favicon.svg" alt="" width="76" height="76" />
+      <strong>RepairCalc</strong>
+      <p>Ремонт начинается с расчёта.<br />Материалы, упаковки и стоимость — без догадок.</p>
+      <noscript>Для работы калькулятора включите JavaScript.</noscript>
+    </div>
     <div id="app"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -74,7 +74,7 @@ public class InspirationService {
       String category = entry.path("category").asText("other");
       if (!id.matches("[A-Za-z0-9][A-Za-z0-9_-]{0,127}")
           || !ids.add(id)
-          || !Set.of("living", "bedroom", "kitchen", "bathroom", "other").contains(category)
+          || !Set.of("living", "bedroom", "kitchen", "bathroom", "children", "balcony", "other").contains(category)
           || title.isBlank()
           || title.length() > 120
           || alt.isBlank()
@@ -119,7 +119,8 @@ public class InspirationService {
       case "living" -> Set.of("living", "bedroom");
       case "bathroom" -> Set.of("bathroom");
       case "kitchen" -> Set.of("kitchen");
-      case "children", "balcony" -> Set.of();
+      case "children" -> Set.of("children");
+      case "balcony" -> Set.of("balcony");
       default -> throw new ApiStatusException(422, "invalid_room_type", "Неизвестный тип комнаты.");
     };
   }

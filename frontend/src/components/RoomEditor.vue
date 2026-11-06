@@ -10,11 +10,6 @@ import { dimensionKeys, type DimensionKey } from '../domain/plans'
 import { workspace } from '../composables/useWorkspace'
 
 const props = defineProps<{ room: Room; showValidation?: boolean }>()
-const inspirationReady = computed(
-  () =>
-    dimensionKeys.every((key) => workspace.roomInputs[props.room.id]?.includes(key)) &&
-    roomSchema.safeParse(props.room).success,
-)
 function rememberInput(fields: readonly DimensionKey[]) {
   const activeIds = new Set([...workspace.project.rooms.map((room) => room.id), props.room.id])
   workspace.roomInputs = {
@@ -145,11 +140,7 @@ function setWall(work: Work) {
         ></span
       ><span class="geometry-hint">Проёмы вычтены из стен</span>
     </div>
-    <p v-if="$slots.inspiration && !inspirationReady" class="field-hint">
-      Чтобы увидеть интерьеры для этой комнаты, заполните все четыре поля размеров вручную или
-      примените параметры из плана. Если проёмов нет, укажите 0.
-    </p>
-    <slot v-if="inspirationReady" name="inspiration" />
+    <slot name="inspiration" />
 
     <fieldset class="field-group works-fieldset">
       <legend class="field-title">Что планируете сделать?</legend>

@@ -8,7 +8,17 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, envDir, '')
   return {
     envDir,
-    plugins: [vue()],
+    plugins: [
+      vue(),
+      {
+        name: 'startup-default',
+        transformIndexHtml: {
+          order: 'pre',
+          handler: (html) =>
+            html.replace('%VITE_SPLASH_ENABLED%', env.VITE_SPLASH_ENABLED || 'true'),
+        },
+      },
+    ],
     server: {
       host: env.DEV_HOST || '127.0.0.1',
       port: Number(env.DEV_PORT || 5173),

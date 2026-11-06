@@ -206,7 +206,7 @@ def main():
                     feed["nextCursor"] = page["nextCursor"]
                 assert {item["id"] for item in feed["items"]} == {item["id"] for item in prepared}
                 from collections import Counter
-                assert Counter(item["category"] for item in feed["items"]) == {"living": 7, "bedroom": 7, "kitchen": 7, "bathroom": 7}
+                assert Counter(item["category"] for item in feed["items"]) == Counter(item["category"] for item in prepared)
                 for entry in prepared:
                     item = next(item for item in feed["items"] if item["id"] == entry["id"])
                     assert item["sourceUrl"] == entry["sourceUrl"]

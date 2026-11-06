@@ -15,7 +15,9 @@ export const roomInspirationSchema = z.object({
   imageUrl: inspirationImageUrlSchema,
   alt: z.string().min(1).max(300),
   sourceUrl: z.string().url().startsWith('https://').optional(),
-  category: z.enum(['living', 'bedroom', 'kitchen', 'bathroom', 'other']).optional(),
+  category: z
+    .enum(['living', 'bedroom', 'kitchen', 'bathroom', 'children', 'balcony', 'other'])
+    .optional(),
 })
 export const roomInspirationFeedSchema = z.object({
   status: z.enum(['ok', 'unavailable']).default('ok'),
@@ -50,7 +52,7 @@ export type RoomInspiration = z.infer<typeof roomInspirationSchema>
 export function inspirationMatchesRoom(image: RoomInspiration, type: RoomType): boolean {
   return type === 'living'
     ? image.category === 'living' || image.category === 'bedroom'
-    : (type === 'bathroom' || type === 'kitchen') && image.category === type
+    : image.category === type
 }
 export type RoomInspirationFeed = z.infer<typeof roomInspirationFeedSchema>
 export type RoomInspirationResult = z.infer<typeof roomInspirationResultSchema>

@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import type { MaterialEstimate } from '../domain/materials'
 import MarkdownText from './MarkdownText.vue'
+import { computed } from 'vue'
+import { explanationJson } from '../domain/explanation'
+import ExplanationValue from './ExplanationValue.vue'
 
-defineProps<{ response: MaterialEstimate }>()
+const props = defineProps<{ response: MaterialEstimate }>()
+const structured = computed(() => explanationJson(props.response.explanation || ''))
 </script>
 
 <template>
@@ -12,7 +16,8 @@ defineProps<{ response: MaterialEstimate }>()
       Помощник: {{ response.model }}
     </p>
     <template v-if="response.explanationStatus === 'unverified_model_text'">
-      <MarkdownText :text="response.explanation || ''" />
+      <ExplanationValue v-if="structured !== undefined" :value="structured" />
+      <MarkdownText v-else :text="response.explanation || ''" />
       <p class="field-hint">
         Текст создан ИИ и может содержать ошибки. Проверенные количество и стоимость указаны в смете
         выше.

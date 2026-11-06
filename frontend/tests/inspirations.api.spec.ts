@@ -2,12 +2,59 @@ import { expect, test } from '@playwright/test'
 import { enterRoomDimensions, mockInspirationApi } from './mocks/inspirations'
 import { planImageBase64 } from './mocks/roomPlan'
 import { newRoom } from '../src/domain/types'
+import { inspirationFeedMock } from '../src/data/inspirations'
+import expanded from '../../data/catalog-expanded.json' with { type: 'json' }
+import mappings from '../../data/work-mappings-expanded.json' with { type: 'json' }
 
-test('shows interiors after plan parameters are explicitly applied', async ({ page }) => {
+test('API catalog exposes all 112 products, including the new variants', async ({ page }) => {
+  await mockInspirationApi(page)
+  const products = expanded.products.map((p) => ({
+    ...p,
+    works: mappings.mappings.find((m) => m.productId === p.id)!.works,
+  }))
+  await page.route('**/api/v1/products', (route) => route.fulfill({ json: products }))
+  await page.goto('/product')
+  const select = page.getByRole('combobox', { name: 'Товар', exact: true })
+  await expect(select.locator('option')).toHaveCount(112)
+  await select.selectOption(products[111]!.id)
+  await expect(select).toHaveValue(products[111]!.id)
+})
+
+test('children and balcony categories are available without uploading a plan', async ({ page }) => {
+  await mockInspirationApi(page)
+  const items = [
+    {
+      ...inspirationFeedMock.items[0]!,
+      id: 'children-test',
+      category: 'children',
+      title: 'Детская',
+    },
+    { ...inspirationFeedMock.items[0]!, id: 'balcony-test', category: 'balcony', title: 'Балкон' },
+  ]
+  await page.route(/\/api\/v1\/room-inspirations(?:\?.*)?$/, (route) =>
+    route.fulfill({ json: { items, nextCursor: null } }),
+  )
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Детская', exact: true }).click()
+  const categories = page.getByRole('group', { name: 'Категории интерьеров' })
+  await categories.getByRole('button', { name: 'Детские', exact: true }).click()
+  await expect(page.locator('.inspiration-card')).toHaveCount(1)
+  await expect(
+    page.getByRole('button', { name: 'Рассмотреть: Детская', exact: true }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Балкон', exact: true }).click()
+  await categories.getByRole('button', { name: 'Балконы', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Рассмотреть: Балкон', exact: true })).toBeVisible()
+  await expect(page.locator('.plan-import')).not.toHaveAttribute('open', '')
+})
+
+test('shows interiors before and after plan parameters are explicitly applied', async ({
+  page,
+}) => {
   const requests = await mockInspirationApi(page)
   await page.goto('/room')
   await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
-  await expect(page.locator('.inspiration-gallery')).toHaveCount(0)
+  await expect(page.locator('.inspiration-gallery')).toBeVisible()
   await page.getByText('Заполнить по плану', { exact: false }).click()
   await page.getByLabel('Выбрать изображение', { exact: true }).setInputFiles({
     name: 'room-plan.png',
@@ -16,10 +63,10 @@ test('shows interiors after plan parameters are explicitly applied', async ({ pa
   })
   await page.getByRole('button', { name: 'Распознать размеры', exact: true }).click()
   await expect(page.getByLabel('Длина по плану', { exact: true })).toHaveValue('5.32')
-  await expect(page.locator('.inspiration-gallery')).toHaveCount(0)
+  await expect(page.locator('.inspiration-gallery')).toBeVisible()
   expect(
     requests.some((request) => new URL(request.url()).pathname === '/api/v1/room-inspirations'),
-  ).toBe(false)
+  ).toBe(true)
   await page.getByLabel('Высота потолка по плану', { exact: true }).fill('3')
   await page.getByLabel('Площадь окон и дверей по плану', { exact: true }).fill('0')
   await page
@@ -37,7 +84,9 @@ test('backend feed, large preview and photo selection lead to the ordinary calcu
   page.on('pageerror', (error) => errors.push(error.message))
   const requests = await mockInspirationApi(page)
   await page.goto('/')
-  await expect(page.locator('.inspiration-gallery')).toHaveCount(0)
+  await expect(page.locator('.welcome-guide')).toHaveCount(0)
+  await expect(page.locator('#startup-screen')).toHaveCount(0)
+  await expect(page.locator('.inspiration-gallery')).toHaveCount(1)
   await page.goto('/room')
   await page.getByRole('button', { name: 'Жилая комната', exact: true }).click()
   await enterRoomDimensions(page)
@@ -45,12 +94,10 @@ test('backend feed, large preview and photo selection lead to the ordinary calcu
   await page.getByRole('spinbutton', { name: 'Длина м', exact: true }).fill('5')
   await page.getByRole('spinbutton', { name: 'Ширина м', exact: true }).fill('4')
   const gallery = page.getByRole('region', { name: 'Вдохновитесь готовой комнатой' })
-  await expect(page.locator('.main-panel .room-editor > .inspiration-gallery')).toHaveCount(1)
-  expect(
-    await gallery.evaluate((element) =>
-      element.previousElementSibling?.classList.contains('geometry-strip'),
-    ),
-  ).toBe(true)
+  await expect(gallery).toBeVisible()
+  expect(await gallery.evaluate((element) => !!element.closest('.room-editor'))).toBe(true)
+  expect(await gallery.evaluate((element) => element.closest('details'))).toBeNull()
+  await expect(page.locator('.plan-import')).not.toHaveAttribute('open', '')
   await expect(gallery.locator('.inspiration-card')).toHaveCount(3)
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
   const inspect = gallery.getByRole('button', { name: 'Рассмотреть: Тёплая гостиная' })
@@ -249,7 +296,7 @@ for (const mode of ['uploaded-only', 'applied', 'edited-after-apply'] as const) 
     if (await menu.isVisible()) await menu.click()
     await page.getByRole('link', { name: 'RepairCalc — главная' }).click()
     await expect(page).toHaveURL('/')
-    await expect(page.locator('.inspiration-gallery')).toHaveCount(0)
+    await expect(page.locator('.inspiration-gallery')).toHaveCount(1)
     await expect(page.getByRole('spinbutton', { name: 'Длина м', exact: true })).toHaveValue('9')
     await enterRoomDimensions(page)
     await expect(page.locator('.inspiration-gallery')).toHaveCount(1)

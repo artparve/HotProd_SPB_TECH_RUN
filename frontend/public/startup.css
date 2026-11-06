@@ -1,0 +1,31 @@
+#startup-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #fff;
+  color: #245a48;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 16px;
+  text-align: center;
+  padding: 24px;
+  font-family: system-ui, sans-serif;
+}
+#startup-screen[data-enabled='false'] {
+  display: none;
+}
+#startup-screen img {
+  width: 76px;
+  height: 76px;
+}
+#startup-screen strong {
+  font-size: clamp(32px, 8vw, 48px);
+  letter-spacing: -2px;
+}
+#startup-screen p {
+  max-width: 400px;
+  color: #52645b;
+  margin: 0;
+  line-height: 1.6;
+}

@@ -21,10 +21,10 @@ def main():
     manifest = json.loads((ASSETS / "manifest.json").read_text(encoding="utf-8"))
     ids = {entry["id"] for entry in manifest}
     credits = [MARKER, "## Дополнение от 06.11.2026", "",
-               "Ещё 8 фотографий Max Vakhtbovych с Pexels. Лицензия и условия использования — те же, что выше.", "",
+               f"Дополнение: {len(additions)} фотографий Max Vakhtbovych с Pexels. Лицензия и условия использования — те же, что выше.", "",
                "| Файл | Исходная страница | SHA-256 | Размер |", "| --- | --- | --- | --- |"]
     for entry in additions:
-        match = re.fullmatch(r"(?:living-room|bedroom|kitchen|bathroom)-(\d+)\.jpg", entry["file"])
+        match = re.fullmatch(r"(?:living-room|bedroom|kitchen|bathroom|children|balcony)-(\d+)\.jpg", entry["file"])
         if not match or not entry["sourceUrl"].startswith("https://www.pexels.com/photo/"):
             raise ValueError("Invalid curated photo metadata")
         path = ASSETS / entry["file"]

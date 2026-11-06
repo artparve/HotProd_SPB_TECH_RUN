@@ -22,6 +22,8 @@ const categories = [
   { id: 'bedroom', label: 'Спальни' },
   { id: 'kitchen', label: 'Кухни' },
   { id: 'bathroom', label: 'Ванные' },
+  { id: 'children', label: 'Детские' },
+  { id: 'balcony', label: 'Балконы' },
   { id: 'other', label: 'Другое' },
 ]
 const availableCategories = computed(() =>
@@ -175,6 +177,7 @@ onBeforeUnmount(() => {
 <template>
   <section
     class="inspiration-gallery panel"
+    data-tour="inspiration"
     aria-labelledby="inspiration-title"
     :aria-busy="loading || !!selecting || disabled"
   >

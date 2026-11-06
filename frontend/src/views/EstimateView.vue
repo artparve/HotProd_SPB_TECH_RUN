@@ -279,7 +279,7 @@ async function replace(key: string, event: Event) {
     </li>
   </ol>
 
-  <div class="workspace-grid">
+  <div class="workspace-grid" data-tour="project">
     <section class="panel main-panel">
       <template v-if="step === 1">
         <div class="panel-heading">

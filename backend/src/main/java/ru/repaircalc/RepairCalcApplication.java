@@ -19,11 +19,12 @@ public class RepairCalcApplication {
     if (commands == null
         || commands.size() != 1
         || !("import-catalog".equals(commands.getFirst())
-            || "import-rules".equals(commands.getFirst())
+             || "import-rules".equals(commands.getFirst())
+             || "expand-catalog".equals(commands.getFirst())
             || "import-inspirations".equals(commands.getFirst()))) {
       System.err.println(
           "Supported operator commands:"
-              + " --repaircalc.command=import-catalog|import-rules|import-inspirations");
+              + " --repaircalc.command=import-catalog|import-rules|import-inspirations|expand-catalog");
       System.exit(2);
       return;
     }

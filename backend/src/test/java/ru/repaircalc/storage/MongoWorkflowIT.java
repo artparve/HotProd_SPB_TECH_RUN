@@ -71,6 +71,7 @@ class MongoWorkflowIT {
   @Autowired MongoSchema schema;
   @Autowired JsonMapper json;
   @Autowired CatalogImportService catalogs;
+  @Autowired ru.repaircalc.ingestion.CatalogExpansionService expansion;
   @Autowired RuleSetImportService rules;
   @Autowired CatalogReadService read;
   @Autowired AdminProductService products;
@@ -89,6 +90,43 @@ class MongoWorkflowIT {
     catalogs.importFiles(
         Path.of("../data/catalog-v1.json"), Path.of("../data/work-mappings-v1.json"));
     rules.importFile(Path.of("../data/rules-v1.json"));
+  }
+
+  @Test
+  void additiveExpansionKeepsAdminPublicationAndIsIdempotent() throws Exception {
+    var p = reviewed();
+    publications.publish(p.id(), AdminProductService.etag(p), "test", "before-expansion");
+    var before = snapshots.resolve();
+    var pointer = store.id("publication_pointer", "active");
+    var oldRules = store.id("rule_set", pointer.getString("ruleSetId"));
+    var sources = store.find("source_record", query("releaseId", pointer.getString("catalogReleaseId")));
+    assertThat(expansion.expand(Path.of("../data/catalog-expanded.json"), Path.of("../data/work-mappings-expanded.json"), Path.of("../data/rules-expanded.json"))).isEqualTo(100);
+    var after = snapshots.resolve();
+    assertThat(after.catalog().products()).hasSize(before.catalog().products().size() + 100);
+    assertThat(after.catalog().products()).containsAll(before.catalog().products());
+    assertThat(after.rules().bundle().laborTariffs()).isEqualTo(before.rules().bundle().laborTariffs());
+    assertThat(after.rules().bundle().kits()).isEqualTo(before.rules().bundle().kits());
+    assertThat(after.rules().bundle().assignments()).containsAll(before.rules().bundle().assignments());
+    assertThat(store.id("rule_set", pointer.getString("ruleSetId"))).isEqualTo(oldRules);
+    assertThat(store.find("source_record", query("releaseId", pointer.getString("catalogReleaseId")))).isEqualTo(sources);
+    assertThat(expansion.expand(Path.of("../data/catalog-expanded.json"), Path.of("../data/work-mappings-expanded.json"), Path.of("../data/rules-expanded.json"))).isZero();
+    assertThat(snapshots.resolve()).isEqualTo(after);
+  }
+
+  @Test
+  void expansionFailureRollsBackTheNewPair() throws Exception {
+    catalogs.importFiles(Path.of("../data/catalog-expanded.json"), Path.of("../data/work-mappings-expanded.json"));
+    var pointer = store.id("publication_pointer", "active");
+    var current = store.id("rule_set", pointer.getString("ruleSetId"));
+    var invalid = current.get("bundle", Document.class);
+    invalid.put("sources", List.of());
+    store.update("rule_set", query("_id", current.getString("_id")), new Update().set("bundle", invalid));
+    var releases = store.find("catalog_release", new Query());
+    var revisions = store.find("product_revision", new Query());
+    assertThatThrownBy(() -> expansion.expand(Path.of("../data/catalog-expanded.json"), Path.of("../data/work-mappings-expanded.json"), Path.of("../data/rules-expanded.json"))).isInstanceOf(RuntimeException.class);
+    assertThat(store.id("publication_pointer", "active")).isEqualTo(pointer);
+    assertThat(store.find("catalog_release", new Query())).isEqualTo(releases);
+    assertThat(store.find("product_revision", new Query())).isEqualTo(revisions);
   }
 
   @Test
@@ -193,7 +231,7 @@ class MongoWorkflowIT {
             480,
             24);
     var entries = json.readTree(Files.readString(assets.resolve("manifest.json")));
-    assertThat(entries.size()).isEqualTo(28);
+    assertThat(entries.size()).isEqualTo(32);
     assertThat(service.importManifest(assets.resolve("manifest.json"))).isEqualTo(entries.size());
     assertThat(service.importManifest(assets.resolve("manifest.json"))).isEqualTo(entries.size());
     assertThat(service.feed(null, 24).items()).hasSize(24);
@@ -202,8 +240,8 @@ class MongoWorkflowIT {
         .hasSize(7).allMatch(item -> item.category().equals("bathroom"));
     assertThat(service.feed(null, 24, "kitchen").items())
         .hasSize(7).allMatch(item -> item.category().equals("kitchen"));
-    assertThat(service.feed(null, 24, "children").items()).isEmpty();
-    assertThat(service.feed(null, 24, "balcony").items()).isEmpty();
+    assertThat(service.feed(null, 24, "children").items()).hasSize(2).allMatch(i -> i.category().equals("children"));
+    assertThat(service.feed(null, 24, "balcony").items()).hasSize(2).allMatch(i -> i.category().equals("balcony"));
     var firstKitchen = service.feed(null, 2, "kitchen");
     assertThat(firstKitchen.nextCursor()).isNotNull();
     assertThat(service.feed(firstKitchen.nextCursor(), 24, "kitchen").items())
@@ -221,7 +259,7 @@ class MongoWorkflowIT {
                 ru.repaircalc.inspirations.InspirationService.Image::category,
                 java.util.stream.Collectors.counting())))
         .containsExactlyInAnyOrderEntriesOf(
-            Map.of("living", 7L, "bedroom", 7L, "kitchen", 7L, "bathroom", 7L));
+            Map.of("living", 7L, "bedroom", 7L, "kitchen", 7L, "bathroom", 7L, "children", 2L, "balcony", 2L));
     assertThat(allItems.stream()
             .map(item -> MongoStore.sha(service.image(item.id(), false))))
         .doesNotHaveDuplicates();

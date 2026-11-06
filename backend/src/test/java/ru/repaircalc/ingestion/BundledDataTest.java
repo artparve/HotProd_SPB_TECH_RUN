@@ -71,7 +71,7 @@ class BundledDataTest {
     var ids = new HashSet<String>();
     var counts = new java.util.HashMap<String, Integer>();
     String credits = Files.readString(root.resolve("CREDITS.md"));
-    assertThat(manifest.size()).isEqualTo(28);
+    assertThat(manifest.size()).isEqualTo(32);
     for (var entry : manifest) {
       Path image = root.resolve(entry.path("file").asText());
       byte[] bytes = Files.readAllBytes(image);
@@ -84,6 +84,6 @@ class BundledDataTest {
       assertThat(credits).contains(image.getFileName().toString(), entry.path("sourceUrl").asText(), MongoStore.sha(bytes));
       counts.merge(entry.path("category").asText(), 1, Integer::sum);
     }
-    assertThat(counts).containsExactlyInAnyOrderEntriesOf(java.util.Map.of("living", 7, "bedroom", 7, "kitchen", 7, "bathroom", 7));
+    assertThat(counts).containsExactlyInAnyOrderEntriesOf(java.util.Map.of("living", 7, "bedroom", 7, "kitchen", 7, "bathroom", 7, "children", 2, "balcony", 2));
   }
 }

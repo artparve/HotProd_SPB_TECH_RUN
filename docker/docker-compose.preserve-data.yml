@@ -1,5 +1,8 @@
-# Keep the active catalog/rules and refresh the release's local image manifest only.
+# Append missing curated room products while retaining all active products and rules.
 services:
   init-data:
+    environment:
+      # Old image SHAs ignore this flag and still support import-inspirations.
+      EXPAND_ROOM_CATALOG: "true"
     entrypoint:
       [java, -jar, /app/backend.jar, --repaircalc.command=import-inspirations]

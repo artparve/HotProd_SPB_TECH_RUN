@@ -8,4 +8,4 @@
 
 Python: создайте venv, установите `pip install -r llm/requirements.txt`. PYTHONPATH должен включать `llm`, `llm/classification`, `llm/estimation`; launcher `make llm` выставляет его автоматически и использует общий env-loader. В env можно задать PYTHON и JAVA_BIN, если стандартные команды отсутствуют в PATH. Локальная Ollama задаётся LOCAL_OLLAMA_URL.
 
-Frontend: `make install`, `make dev`. Proxy обращается только в Java. Без LLM обычные расчёты работают, пояснение показывает недоступность, галерея показывает 28 встроенных фотографий по категориям, а анализ возвращает контролируемый `unavailable`.
+Frontend: `make install`, `make dev`. Proxy обращается только в Java. Без LLM обычные расчёты работают, пояснение показывает недоступность, галерея показывает 32 встроенные фотографии по категориям без обязательной загрузки плана, а анализ возвращает контролируемый `unavailable`.

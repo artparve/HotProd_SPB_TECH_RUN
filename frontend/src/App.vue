@@ -4,6 +4,13 @@ import { useRoute } from 'vue-router'
 import { apiStatus } from './services/api'
 import AppIcon from './components/AppIcon.vue'
 import { workspace } from './composables/useWorkspace'
+import WelcomeGuide from './components/WelcomeGuide.vue'
+import { guideEnabled } from './startup'
+const guide = ref<InstanceType<typeof WelcomeGuide> | null>(null)
+function restartGuide() {
+  helpOpen.value = false
+  void nextTick(() => guide.value?.start())
+}
 
 const route = useRoute()
 const menuOpen = ref(false)
@@ -157,6 +164,10 @@ const links = [
       <button class="button primary" @click="helpOpen = false">
         Всё понятно <AppIcon name="check" :size="17" />
       </button>
+      <button v-if="guideEnabled" class="button secondary" @click="restartGuide">
+        Повторить знакомство
+      </button>
     </section>
   </dialog>
+  <WelcomeGuide v-if="guideEnabled" ref="guide" @navigation="menuOpen = $event" />
 </template>

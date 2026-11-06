@@ -76,7 +76,7 @@ function addToProject() {
       <p>Влажность, нагрузка и назначение помогают исключить неподходящее.</p>
     </div>
   </div>
-  <div class="workspace-grid">
+  <div class="workspace-grid" data-tour="project">
     <section class="panel main-panel">
       <div class="panel-heading">
         <div class="section-title">
