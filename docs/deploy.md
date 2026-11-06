@@ -26,7 +26,7 @@ docker compose --env-file env/.env --env-file env/secret.env -f docker/docker-co
 
 Все публичные API идут через Java. Python доступен только в служебной сети и требует Bearer-токен. Одна очередь допуска ограничивает все виды inference. Планы требуют ручного подтверждения; у интерьерного изображения меняются только поддерживаемые работы и selections, не размеры.
 
-Подборка уже содержит 20 лицензированных фото Pexels: по пять гостиных, спален, кухонь и ванных. JPEG и manifest хранятся в Git, попадают в backend image через `COPY data` и автоматически импортируются при bootstrap. Установка не зависит от личных файлов разработчика, API-ключей или доступности Pexels. Расширение и атрибуция описаны в `data/inspirations/README.md`.
+Подборка содержит 28 лицензированных фото Pexels: по семь гостиных, спален, кухонь и ванных. JPEG и manifest хранятся в Git, попадают в backend image через `COPY data`; метаданные автоматически импортируются при bootstrap. Установка не зависит от личных файлов разработчика, API-ключей или доступности Pexels. Расширение и атрибуция описаны в `data/inspirations/README.md`.
 
 ## Диагностика и проверки
 
@@ -38,7 +38,7 @@ python scripts/verify-stack.py --playwright
 
 Скрипт собирает три образа и запускает отдельный проект со случайным именем, синтетическими credentials и копией настоящего JPEG из подборки. Java, MongoDB replica set, Python и nginx настоящие; fake Ollama проверяет транспорт без модели. Проверяются калькуляторы, галерея, admin/ETag/очередь/review/publication, seed, backup/restore, отказы и восстановление. Удаляются только volumes этого тестового проекта. Для ограниченной сети: `--maven-repository https://maven-central.storage-download.googleapis.com/maven2`.
 
-При `--playwright` браузер проверяет также состояние UI после отдельной остановки Ollama, Python, Mongo и Java. `--base-only --no-build --playwright` проверяет все 20 production-фотографий из образа, категории и браузерную галерею без Python/Ollama/токена. `--runtime-only --no-build` дополнительно поднимает полный профиль с официальным образом Ollama и Python; модели автоматически не скачиваются, их отсутствие проверяется как `unavailable`. Это проверка запуска и HTTP-границы, а не качества inference.
+При `--playwright` браузер проверяет также состояние UI после отдельной остановки Ollama, Python, Mongo и Java. `--base-only --no-build --playwright` проверяет все 28 production-фотографий из образа, категории, пагинацию и браузерную галерею без Python/Ollama/токена. `--runtime-only --no-build` дополнительно поднимает полный профиль с официальным образом Ollama и Python; модели автоматически не скачиваются, их отсутствие проверяется как `unavailable`. Это проверка запуска и HTTP-границы, а не качества inference.
 
 ## Backup и restore
 

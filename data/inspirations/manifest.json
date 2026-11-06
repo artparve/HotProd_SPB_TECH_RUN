@@ -178,5 +178,77 @@
     "alt": "Ванная с белой угловой ванной, бежево-коричневой плиткой и деревянной тумбой",
     "file": "bathroom-6957081.jpg",
     "sourceUrl": "https://www.pexels.com/photo/white-bathtub-and-sink-in-spacious-bathtub-at-home-6957081/"
+  },
+  {
+    "id": "living-room-7587827",
+    "category": "living",
+    "title": "Гостиная с кирпичной стеной",
+    "description": "Кирпичная акцентная стена, бирюзовый диван и большие окна. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Гостиная с кирпичной стеной и бирюзовым диваном",
+    "file": "living-room-7587827.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/modern-living-room-interior-with-a-brick-wall-7587827/"
+  },
+  {
+    "id": "living-room-6580224",
+    "category": "living",
+    "title": "Гостиная с деревянной отделкой",
+    "description": "Светлое дерево, тёмная мягкая мебель и ковёр с орнаментом. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Просторная гостиная с деревянными стенами и тёмной мебелью",
+    "file": "living-room-6580224.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-spacious-living-room-in-country-style-6580224/"
+  },
+  {
+    "id": "bedroom-7031207",
+    "category": "bedroom",
+    "title": "Спальня в серых тонах",
+    "description": "Минималистичная спальня с подвесными светильниками и серой отделкой. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Серая спальня с круглым подвесным освещением над кроватью",
+    "file": "bedroom-7031207.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/minimalist-interior-design-of-bedroom-7031207/"
+  },
+  {
+    "id": "bedroom-6958138",
+    "category": "bedroom",
+    "title": "Спальня с синими акцентами",
+    "description": "Синяя кровать, деревянный шкаф и светлые стены. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Светлая спальня с синей кроватью и деревянным шкафом",
+    "file": "bedroom-6958138.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/bedroom-with-bed-and-wardrobe-6958138/"
+  },
+  {
+    "id": "kitchen-7535076",
+    "category": "kitchen",
+    "title": "Кухня со стеклянным столом",
+    "description": "Деревянные фасады и круглый стеклянный обеденный стол. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Современная кухня с деревянными фасадами и круглым стеклянным столом",
+    "file": "kitchen-7535076.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-contemporary-kitchen-in-apartment-7535076/"
+  },
+  {
+    "id": "kitchen-6032225",
+    "category": "kitchen",
+    "title": "Компактная кухня с тёмными фасадами",
+    "description": "Лаконичная кухня с деревянной столешницей и тёмной мебелью. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Компактная кухня с тёмными шкафами и деревянной столешницей",
+    "file": "kitchen-6032225.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/interior-of-compact-kitchen-in-apartment-6032225/"
+  },
+  {
+    "id": "bathroom-8089093",
+    "category": "bathroom",
+    "title": "Ванная с подвесными светильниками",
+    "description": "Минималистичная раковина, тёплые акценты и подвесное освещение. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Современная ванная с раковиной и подвесными светильниками",
+    "file": "bathroom-8089093.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/modern-bathroom-interior-8089093/"
+  },
+  {
+    "id": "bathroom-7031572",
+    "category": "bathroom",
+    "title": "Светлая ванная с двумя раковинами",
+    "description": "Серая плитка, белая ванна и двойной умывальник. Фото: Max Vakhtbovych / Pexels.",
+    "alt": "Светлая ванная комната с серой плиткой и двумя раковинами",
+    "file": "bathroom-7031572.jpg",
+    "sourceUrl": "https://www.pexels.com/photo/luxury-modern-home-bathroom-interior-7031572/"
   }
 ]

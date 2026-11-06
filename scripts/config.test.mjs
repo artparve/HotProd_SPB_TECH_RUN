@@ -12,7 +12,7 @@ import {
 } from "node:fs";
 import { resolve } from "node:path";
 import { tmpdir } from "node:os";
-import { ROOT, initConfig, localEnvironment } from "./config.mjs";
+import { ROOT, SECRET_KEYS, initConfig, localEnvironment } from "./config.mjs";
 import { localCommand } from "./local.mjs";
 
 function fixture(t) {
@@ -22,7 +22,7 @@ function fixture(t) {
   mkdirSync(resolve(root, "env"));
   mkdirSync(resolve(root, "docker"));
   for (const file of [
-    "env/.env.example",
+    "env/.env",
     "env/secret.env.example",
     "docker/docker-compose.override.yml.example",
   ]) {
@@ -32,7 +32,7 @@ function fixture(t) {
   return root;
 }
 
-test("initialization creates both env files without overwriting existing configuration", (t) => {
+test("initialization preserves settings and secret values while adding missing keys", (t) => {
   const root = fixture(t);
   assert.ok(existsSync(resolve(root, "env/.env")));
   assert.ok(existsSync(resolve(root, "env/secret.env")));
@@ -46,10 +46,11 @@ test("initialization creates both env files without overwriting existing configu
     readFileSync(resolve(root, "env/.env"), "utf8"),
     "DEV_PORT=5199\n",
   );
-  assert.equal(
-    readFileSync(resolve(root, "env/secret.env"), "utf8"),
-    "MONGO_PASSWORD='private-$value'\n",
-  );
+  const secrets = readFileSync(resolve(root, "env/secret.env"), "utf8");
+  assert.ok(secrets.includes("MONGO_PASSWORD='private-$value'\n"));
+  for (const key of SECRET_KEYS) assert.ok(secrets.includes(key + "="));
+  initConfig(root);
+  assert.equal(readFileSync(resolve(root, "env/secret.env"), "utf8"), secrets);
   if (process.platform !== "win32")
     assert.equal(statSync(resolve(root, "env/secret.env")).mode & 0o777, 0o600);
 });
@@ -57,7 +58,7 @@ test("initialization creates both env files without overwriting existing configu
 test("local Java/Python configuration merges defaults, public settings, secrets, then process env", (t) => {
   const root = fixture(t);
   writeFileSync(
-    resolve(root, "env/.env"),
+    resolve(root, "env/.env.local"),
     "SERVER_PORT=8090\nADMIN_USERNAME=operator\n",
   );
   writeFileSync(
@@ -80,6 +81,22 @@ test("legacy secrets in public env fail safely rather than silently replacing cr
     () => localEnvironment(root, {}),
     (error) => !error.message.includes("private-value"),
   );
+});
+
+test("secret synchronization archives obsolete keys and preserves supported values", (t) => {
+  const root = fixture(t);
+  const prior =
+    "DB_PASSWORD='obsolete-private'\nADMIN_PASSWORD_HASH='keep-$hash'\n";
+  writeFileSync(resolve(root, "env/secret.env"), prior);
+  initConfig(root);
+  assert.equal(
+    readFileSync(resolve(root, "env/secret.env.legacy"), "utf8"),
+    prior,
+  );
+  const env = localEnvironment(root, {});
+  assert.equal(env.DB_PASSWORD, undefined);
+  assert.equal(env.ADMIN_PASSWORD_HASH, "keep-$hash");
+  for (const key of SECRET_KEYS) assert.ok(key in env);
 });
 
 test("secret file cannot introduce client-exposed VITE variables or arbitrary configuration", (t) => {

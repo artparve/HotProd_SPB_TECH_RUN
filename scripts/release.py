@@ -19,9 +19,9 @@ ROOT = Path(__file__).resolve().parents[1]
 # Only configurable runtime settings used by the release Compose stack.
 # Frontend build settings, upstream service names and image references are fixed by deployment.
 # Runtime defaults are shared with local development and Compose.
-# This tracked example contains no credentials. Process env overrides each setting.
+# This tracked public configuration contains no credentials. Process env overrides it.
 DEPLOYMENT_PUBLIC_DEFAULTS = {}
-for _line in (ROOT / 'env/.env.example').read_text(encoding='utf-8').splitlines():
+for _line in (ROOT / 'env/.env').read_text(encoding='utf-8').splitlines():
     if _line and not _line.lstrip().startswith('#') and '=' in _line:
         _name, _value = _line.split('=', 1)
         if not _name.startswith(('VITE_', 'DEV_', 'LOCAL_')) and _name not in {'MONGO_URI', 'API_UPSTREAM', 'LLM_SERVICE_URL', 'SERVER_ADDRESS', 'SERVER_PORT', 'SPRING_PROFILES_ACTIVE'}:

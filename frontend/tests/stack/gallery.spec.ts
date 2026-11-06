@@ -1,13 +1,15 @@
 import { expect, test } from '@playwright/test'
 
-test('production gallery serves five photos per category from the bundled image', async ({
+test('production gallery paginates seven photos per category from the bundled image', async ({
   page,
 }) => {
   test.skip(process.env.REPAIRCALC_PRODUCTION_GALLERY !== '1', 'Requires the production manifest')
   await page.goto('/room')
   const length = page.getByRole('spinbutton', { name: 'Длина м', exact: true })
   const originalLength = await length.inputValue()
-  await expect(page.locator('.inspiration-card')).toHaveCount(20)
+  await expect(page.locator('.inspiration-card')).toHaveCount(24)
+  await page.getByRole('button', { name: 'Ещё комнаты', exact: true }).click()
+  await expect(page.locator('.inspiration-card')).toHaveCount(28)
   const categories = page.getByRole('group', { name: 'Категории интерьеров' })
   for (const [label, prefix] of [
     ['Гостиные', 'living-room-'],
@@ -16,7 +18,7 @@ test('production gallery serves five photos per category from the bundled image'
     ['Ванные', 'bathroom-'],
   ] as const) {
     await categories.getByRole('button', { name: label, exact: true }).click()
-    await expect(page.locator('.inspiration-card')).toHaveCount(5)
+    await expect(page.locator('.inspiration-card')).toHaveCount(7)
     await expect
       .poll(async () =>
         page
@@ -36,6 +38,6 @@ test('production gallery serves five photos per category from the bundled image'
     await expect(page.locator('.inspiration-card-body a').first()).toHaveText('Источник: Pexels')
   }
   await categories.getByRole('button', { name: 'Все', exact: true }).click()
-  await expect(page.locator('.inspiration-card')).toHaveCount(20)
+  await expect(page.locator('.inspiration-card')).toHaveCount(28)
   await expect(length).toHaveValue(originalLength)
 })

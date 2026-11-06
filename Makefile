@@ -5,7 +5,8 @@ NPM ?= npm
 DOCKER ?= docker
 
 COMPOSE_CLI ?= $(DOCKER) compose
-COMPOSE = $(COMPOSE_CLI) --project-directory docker --env-file env/.env --env-file env/secret.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml
+LOCAL_ENV = $(if $(wildcard env/.env.local),--env-file env/.env.local,)
+COMPOSE = $(COMPOSE_CLI) --project-directory docker --env-file env/.env $(LOCAL_ENV) --env-file env/secret.env -f docker/docker-compose.yml -f docker/docker-compose.override.yml
 COPY_CONFIG = $(NODE) -e "const fs = require('node:fs'); try { fs.copyFileSync(process.argv[1], process.argv[2], fs.constants.COPYFILE_EXCL); console.log('Created: ' + process.argv[2]); } catch (error) { if (error.code === 'EEXIST' && fs.statSync(process.argv[2]).isFile()) process.exit(0); throw error; }"
 
 .PHONY: help init init-config install dev build preview format typecheck test check config-test e2e e2e-install dependencies backend backend-import-catalog backend-import-rules backend-import-inspirations llm estimator up down logs ps config image release release-image
@@ -13,7 +14,7 @@ COPY_CONFIG = $(NODE) -e "const fs = require('node:fs'); try { fs.copyFileSync(p
 help:
 	@echo "RepairCalc: GNU Make + Node.js 22.12+ LTS (no Python or Bash required)"
 	@echo "init          - create missing local config and install dependencies"
-	@echo "init-config   - create env/.env, env/secret.env and local Compose override"
+	@echo "init-config   - sync secret keys and create local Compose override"
 	@echo "install       - npm ci using the lockfile"
 	@echo "dev / preview - start the development or built SPA server"
 	@echo "build         - typecheck and production frontend/dist"
@@ -34,13 +35,11 @@ init: init-config
 
 config-init: init-config
 
-init-config: env/.env env/secret.env docker/docker-compose.override.yml
+init-config:
+	@$(NODE) scripts/config.mjs init
 
 # File rules avoid requiring Node on a Docker-only host once configs exist.
 # Exclusive copies never replace existing configuration, even across processes.
-env/.env:
-	@$(COPY_CONFIG) env/.env.example "$@"
-
 env/secret.env:
 	@$(NODE) scripts/config.mjs init
 

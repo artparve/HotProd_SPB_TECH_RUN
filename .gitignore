@@ -1,17 +1,20 @@
-# Large source resources are stored on Yandex Disk; see INVENTORY.md.
+# Large source resources are stored on Yandex Disk; see docs/reference/INVENTORY.md.
 /products_final.json
 /export_yandex_spb.xml
 /2026-10-15 18-16-47.mp4
 
-# Local configuration (only examples belong in Git).
+# Public env/.env is tracked; credentials and machine overrides are private.
 **/docker-compose.override.yml
 **/.env
 **/.env.local
 **/.env.*.local
 **/secret.env
-!**/.env.example
+!/env/.env
+!**/secret.env.example
+**/secret.env.*
 !**/secret.env.example
 /.idea
+/.run/
 
 # Frontend build artifacts.
 **/node_modules/

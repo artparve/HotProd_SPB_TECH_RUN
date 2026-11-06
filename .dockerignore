@@ -5,6 +5,7 @@
 **/.env
 **/.env.*
 **/secret.env
+**/secret.env.*
 **/docker-compose.override.yml
 **/.venv*
 **/venv
@@ -25,3 +26,5 @@ export_yandex_spb.xml
 .maven-verify-settings.xml
 .build-*
 docker/local-ollama-runtime
+docs/reference/assets
+.run

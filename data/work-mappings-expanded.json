@@ -1,0 +1,843 @@
+{
+  "schemaVersion": 1,
+  "version": "synthetic-rooms-mappings-v1",
+  "taxonomyVersion": "work-taxonomy-v1",
+  "mappings": [
+    {
+      "productId": "47f9b29f-8972-3c84-9103-6b3281bd9de7",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual synthetic UI fixture; repaircalc.frontend-fixtures/demo-laminate; test-only work labels, not verified manufacturer data."
+    },
+    {
+      "productId": "ac1f222a-f5e9-3b5d-a91e-c943b053e92e",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual synthetic UI fixture; repaircalc.frontend-fixtures/demo-tile; test-only work labels, not verified manufacturer data."
+    },
+    {
+      "productId": "fd43e49d-da9a-3231-b95d-49e03a60429a",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual synthetic UI fixture; repaircalc.frontend-fixtures/demo-vinyl; test-only work labels, not verified manufacturer data."
+    },
+    {
+      "productId": "30473701-b10b-3d56-a15a-8591c16486c4",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual synthetic UI fixture; repaircalc.frontend-fixtures/demo-paint; test-only work labels, not verified manufacturer data."
+    },
+    {
+      "productId": "bcabf02c-9d8a-3652-bd92-147c1599740f",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual synthetic UI fixture; repaircalc.frontend-fixtures/demo-wet-paint; test-only work labels, not verified manufacturer data."
+    },
+    {
+      "productId": "af5d410b-f889-3db0-8b42-c6321252d412",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual synthetic UI fixture; repaircalc.frontend-fixtures/demo-primer; test-only work labels, not verified manufacturer data."
+    },
+    {
+      "productId": "f3b607e5-5758-3db2-bbf2-605dc539184c",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual synthetic UI fixture; repaircalc.frontend-fixtures/demo-wallpaper; test-only work labels, not verified manufacturer data."
+    },
+    {
+      "productId": "8824b97d-4c52-3760-ba92-67bc49bf181b",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual synthetic UI fixture; repaircalc.frontend-fixtures/demo-glue; test-only work labels, not verified manufacturer data."
+    },
+    {
+      "productId": "8539fe9d-e2dc-3994-a5fc-85773eb533b5",
+      "works": [
+        "electrical"
+      ],
+      "evidence": "Manual synthetic UI fixture; repaircalc.frontend-fixtures/demo-socket; test-only work labels, not verified manufacturer data."
+    },
+    {
+      "productId": "6eb2cb4a-b71e-3865-9bb2-60ddf81c9b65",
+      "works": [
+        "electrical"
+      ],
+      "evidence": "Manual synthetic UI fixture; repaircalc.frontend-fixtures/demo-wet-socket; test-only work labels, not verified manufacturer data."
+    },
+    {
+      "productId": "caa5dc4e-49e3-398a-8861-e164c73317d3",
+      "works": [
+        "electrical"
+      ],
+      "evidence": "Manual synthetic UI fixture; repaircalc.frontend-fixtures/demo-cable; test-only work labels, not verified manufacturer data."
+    },
+    {
+      "productId": "518d72ad-2dc4-3dd4-b462-2b93f1c4a177",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual synthetic UI fixture; repaircalc.frontend-fixtures/demo-unknown; test-only work labels, not verified manufacturer data."
+    },
+    {
+      "productId": "45810551-5d27-5c89-840c-81d7189f57ba",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "4de50418-8267-5391-8125-5e1020563fd2",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "d4efb525-f7a9-58fe-87a0-e3269fb0cdd5",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "9f24ff3b-b9ac-5ab9-82b2-e0226413b44a",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "34f03a72-be49-531d-939b-89567e9a9048",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "0fef6bb6-909f-5dcb-aa89-c27b023652cd",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "c08e7180-747f-5780-a331-7cc386074c9e",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "921d4170-32fe-5bcc-bf4b-6d2718c29aff",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "8a791a3c-72ce-5f5d-814d-5fecb3b63be3",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "33e4d982-8640-5d2f-946e-719e55885158",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "ea454f7d-c0d6-5dab-9805-8a2b6677df86",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "aca5a560-1117-50da-aef5-d5ef9fe88210",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "01dbaa7f-9d6c-5295-96ff-9ec8a0b2a761",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "f28ed916-5d62-5b4c-9aa9-0db3a6218cfb",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "5fb82cf3-7f2a-58f7-9564-f24ff98076b7",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "ffac8489-948d-53b7-a1e6-278e199826ab",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "1c02c8cc-859b-523b-aa5e-3f09b9b3c015",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "fd9734c8-dc4f-5256-8c1f-2fcad09456f0",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "03ad6085-e569-5a42-be21-1cec84ee9fdc",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "6777b997-1d62-52e8-af75-4c9485ec4fd2",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "cf7cdbe2-ae7c-5838-80b1-31550b08cfbe",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "ea887ff0-bf7b-561f-b051-479985a34022",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "f2fb1f73-058b-5ab2-981b-175d4f1e5456",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "0f54da08-8ea5-52ac-96a9-b8557c6893f3",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "12893077-2c7c-57f3-aaee-e45819042d80",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "e1acef66-3cf9-5180-92b9-304f29038278",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "05905919-9446-5626-8a23-821e84f51ebb",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "a3a09bbc-f8d4-5ad6-86c8-d905d20fb0f1",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "31c8df5a-4d1e-509f-b912-ec5908b563c4",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "01595896-486d-5bad-8889-b1913fa5fd26",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "655ee51a-b8b2-53d5-87e8-b484d5ad66f4",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "d01db111-0aab-54b4-a05d-df4fef4010a0",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "5cc5f918-8651-5a8e-aeda-dbea62b4d901",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "45be7918-070b-5d0b-9812-e7398c4e4a5f",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "203f086a-9754-5912-a2bb-7718d14a4262",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "70c2af85-6b25-57fb-a304-e2e1b9baeec9",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "e7370dd9-20a4-56a9-a10d-5ead078b9d03",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "fc7315ae-694e-5477-aea0-b74300a55ad2",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "c1c2f8ee-94d2-5cc8-88b5-c0c1ee3c2a42",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "460c9975-6e39-51fe-bcf9-1de8fd3aa679",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "8f440d8e-61f8-5ce1-b11f-2296c7afed1a",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "50a20737-d837-58cb-adc6-ea5c0d6550c2",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "89d1653c-b1fd-578d-8bd0-c426ae26ce75",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "2957128d-c05b-5f32-851c-8bb6a3df412e",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "e389495d-fe85-5405-9ad8-6e97e274955c",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "50ca9bf7-2ce2-5620-924e-b0ba7aaf5e98",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "5da539da-0066-5eb8-8445-dde801c52335",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "82204c7d-3e72-5e2c-b1da-c0b42373f4ba",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "f309f34b-b14f-5e2e-bd44-dd21a490024f",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "63a750b6-8be5-54f7-bd5c-5596336bc241",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "5eba4d97-8ad3-5d00-a6c0-97e12c4d2986",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "7f68050b-0ad2-5e60-913a-0e0f6847d951",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "e143d288-7d3b-525a-b855-a3197f2dfff0",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "81551501-2b05-5643-816e-7d36b5c3ecee",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "495d90b6-2cbb-55c9-abdb-a1667c607740",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "453f676f-65b2-5747-ad57-6377f15804e6",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "766e2686-123e-59ba-b32e-2fdb9272b198",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "64f73380-a2fb-5631-b2c8-162ce99a04ed",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "e324ed06-60e4-589c-8065-166ddd4185e3",
+      "works": [
+        "wallpaper"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "4637a65a-f64d-5290-8296-1a79f764bd62",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "a4aa00c4-2d64-5398-8de2-dc0c95501581",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "10b8ae52-39e7-5e5f-88ce-db77b949dd98",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "e182a28c-56ad-5745-b7e1-d1935a1952de",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "04a1bd82-675e-5b87-a6e4-6bb5eecc0bae",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "22ac94e2-98f7-5d3e-bcc2-786a422b3df9",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "25951257-19ae-5c88-a1a0-a2733746a420",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "e7fe999e-e720-542b-9306-0c73e083cd8f",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "06d2af67-c92d-5cea-9d95-5a0bd5424aab",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "ab9018b4-1975-5024-a0e8-7d8aad615cc0",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "35b6f194-7f2a-5f48-812a-965c347bcaa0",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "6fd2488e-f36a-5604-9f74-7396e24d119a",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "1ff1918d-54ce-5aee-b878-dddd04ed3682",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "aa733227-3b4a-5438-8266-133638cdda7a",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "5ea80241-446b-5705-bc58-97b87eb93ed6",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "82f48946-bfce-5954-9def-955749d7bbcd",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "21a50536-f3f1-5c9b-8f99-56f35040c7f9",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "1ea9e000-878a-5196-bfe6-6e1ae408fab5",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "32934685-1a95-5037-b138-01ed77137289",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "1aebc075-dcd4-56ef-9f06-9ae98a0e2049",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "3e9ebdd4-1efe-5c1f-985b-41c167976a12",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "591dc41c-adae-5f51-9bbe-f72994f88dcb",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "6b683cf9-6a48-549f-8415-93bb7b9fec6a",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "e0a39983-38ab-5bff-8041-109de8b3603c",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "9a5fbd83-0370-574f-80fa-7ca2e606e3af",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "e582fe46-9baf-57a8-be68-81422efa795b",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "25662310-3938-566f-9dc7-a965df2971a9",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "7c7a70eb-1c97-5fd6-84db-3721940ec17d",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "5b5c5e62-4a3e-557f-9f68-9c0dba74e39f",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "75c54b74-46fe-5b78-a588-872057317bc3",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "17cbc8ff-0748-52b2-9ad7-dfa908c4de34",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "55c05160-503a-56e8-990f-e65fd0cd555d",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "ff1c3842-52ce-5f3e-9a70-ed234b046630",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "0245656f-a52d-59d5-93f9-890edab1014c",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "e2e4037d-29b3-557b-a963-33c2edd02b83",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "2aed6d39-3112-5a48-b4ec-25afe248da0e",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "af2ffe22-45b1-53a2-af4a-b75ded9c900c",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "ba338af2-ca0c-51e1-b453-bf548eac08b5",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "00027bda-53fd-526a-9c6b-c317917399c9",
+      "works": [
+        "paint"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "55aa0c70-5a4b-5288-8c3f-6aef6c1057eb",
+      "works": [
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    },
+    {
+      "productId": "23c5deab-9fbd-515b-a06b-9bea1e0bc727",
+      "works": [
+        "paint",
+        "wallpaper",
+        "floor"
+      ],
+      "evidence": "Manual educational variant; inherited synthetic work mapping, not manufacturer data."
+    }
+  ]
+}

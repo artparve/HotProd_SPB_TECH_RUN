@@ -43,9 +43,9 @@ x-java: &java
     CLASSIFICATION_RETRY_MS: ${CLASSIFICATION_RETRY_MS:-15000}
     CLASSIFICATION_POLL_MS: ${CLASSIFICATION_POLL_MS:-2000}
     DATA_DIR: ${DATA_DIR:-/app/data}
-    CATALOG_FILE: ${CATALOG_FILE:-${DATA_DIR:-/app/data}/catalog-v1.json}
-    CATALOG_MAPPINGS_FILE: ${CATALOG_MAPPINGS_FILE:-${DATA_DIR:-/app/data}/work-mappings-v1.json}
-    RULES_FILE: ${RULES_FILE:-${DATA_DIR:-/app/data}/rules-v1.json}
+    CATALOG_FILE: ${CATALOG_FILE:-${DATA_DIR:-/app/data}/catalog-expanded.json}
+    CATALOG_MAPPINGS_FILE: ${CATALOG_MAPPINGS_FILE:-${DATA_DIR:-/app/data}/work-mappings-expanded.json}
+    RULES_FILE: ${RULES_FILE:-${DATA_DIR:-/app/data}/rules-expanded.json}
     CLASSIFICATION_TAXONOMY: ${CLASSIFICATION_TAXONOMY:-${DATA_DIR:-/app/data}/classification/taxonomy.json}
     INSPIRATIONS_DIR: ${INSPIRATIONS_DIR:-${DATA_DIR:-/app/data}/inspirations}
     INSPIRATIONS_MANIFEST: ${INSPIRATIONS_MANIFEST:-${DATA_DIR:-/app/data}/inspirations/manifest.json}

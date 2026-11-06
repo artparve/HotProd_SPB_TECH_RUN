@@ -1,0 +1,874 @@
+{
+  "schemaVersion": 1,
+  "version": "synthetic-rooms-rules-v1",
+  "dataClass": "test",
+  "catalog": {
+    "version": "synthetic-rooms-catalog-v1",
+    "fingerprint": "124c1a6b6215eae077b5aab67321629945f56eb0c8088018a23412d5d77d4712",
+    "taxonomyVersion": "work-taxonomy-v1"
+  },
+  "sources": [
+    {
+      "id": "synthetic-ui-rules-v1",
+      "description": "ТЕСТОВЫЕ нормы и правила из учебных frontend fixtures и demo calculations v1. Не нормативы производителя; цены, свойства, нормы и условия требуют независимой проверки."
+    },
+    {
+      "id": "synthetic-labor-v1",
+      "description": "ТЕСТОВЫЕ тарифы учебного frontend v1 в RUB. Не актуальная стоимость услуг и не коммерческое предложение."
+    }
+  ],
+  "profiles": [
+    {
+      "id": "covering-v1",
+      "strategy": "COVERING",
+      "unit": "м²",
+      "consumption": null,
+      "trimAllowance": null,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "ONE",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВЫЙ расчёт площади покрытия с пользовательским запасом и округлением по площади упаковки."
+    },
+    {
+      "id": "paint-012-v1",
+      "strategy": "PAINT",
+      "unit": "л",
+      "consumption": 0.12,
+      "trimAllowance": null,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "INPUT",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВАЯ норма 0,12 л/м² на один слой; число слоёв задаёт пользователь. Не норма производителя."
+    },
+    {
+      "id": "paint-014-v1",
+      "strategy": "PAINT",
+      "unit": "л",
+      "consumption": 0.14,
+      "trimAllowance": null,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "INPUT",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВАЯ норма 0,14 л/м² на один слой; число слоёв задаёт пользователь. Не норма производителя."
+    },
+    {
+      "id": "primer-v1",
+      "strategy": "PRIMER",
+      "unit": "л",
+      "consumption": 0.1,
+      "trimAllowance": null,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "ONE",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВАЯ норма 0,1 л/м² за один цикл грунтования; число слоёв краски повторно не применяется."
+    },
+    {
+      "id": "adhesive-v1",
+      "strategy": "ADHESIVE",
+      "unit": "кг",
+      "consumption": 4,
+      "trimAllowance": null,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "ONE",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВАЯ норма 4 кг/м² для условного ровного основания. Реальные толщина слоя, основание и технология не подтверждены."
+    },
+    {
+      "id": "wallpaper-v1",
+      "strategy": "WALLPAPER",
+      "unit": "полотен",
+      "consumption": null,
+      "trimAllowance": 0.1,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "ONE",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВЫЙ расчёт целых полотен и рулонов по геометрии, раппорту и подрезке 0,10 м на полотно. Проёмы не вычитаются."
+    },
+    {
+      "id": "socket-v1",
+      "strategy": "SOCKET",
+      "unit": "шт.",
+      "consumption": null,
+      "trimAllowance": null,
+      "reservePolicy": "NONE",
+      "layerPolicy": "ONE",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВЫЙ расчёт целого числа заданных электроточек без процентного запаса. Не заменяет проект электрики."
+    },
+    {
+      "id": "cable-v1",
+      "strategy": "CABLE",
+      "unit": "м",
+      "consumption": null,
+      "trimAllowance": null,
+      "reservePolicy": "USER_PERCENT",
+      "layerPolicy": "ONE",
+      "sourceId": "synthetic-ui-rules-v1",
+      "conditions": "ТЕСТОВЫЙ расчёт заданной длины трассы с пользовательским запасом и округлением до целых бухт. Не определяет сечение и защиту."
+    }
+  ],
+  "assignments": [
+    {
+      "productId": "47f9b29f-8972-3c84-9103-6b3281bd9de7",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 0
+    },
+    {
+      "productId": "ac1f222a-f5e9-3b5d-a91e-c943b053e92e",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 1
+    },
+    {
+      "productId": "fd43e49d-da9a-3231-b95d-49e03a60429a",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 2
+    },
+    {
+      "productId": "30473701-b10b-3d56-a15a-8591c16486c4",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 3
+    },
+    {
+      "productId": "bcabf02c-9d8a-3652-bd92-147c1599740f",
+      "profileId": "paint-014-v1",
+      "blockedReason": null,
+      "priority": 4
+    },
+    {
+      "productId": "af5d410b-f889-3db0-8b42-c6321252d412",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 5
+    },
+    {
+      "productId": "f3b607e5-5758-3db2-bbf2-605dc539184c",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 6
+    },
+    {
+      "productId": "8824b97d-4c52-3760-ba92-67bc49bf181b",
+      "profileId": "adhesive-v1",
+      "blockedReason": null,
+      "priority": 7
+    },
+    {
+      "productId": "8539fe9d-e2dc-3994-a5fc-85773eb533b5",
+      "profileId": "socket-v1",
+      "blockedReason": null,
+      "priority": 8
+    },
+    {
+      "productId": "6eb2cb4a-b71e-3865-9bb2-60ddf81c9b65",
+      "profileId": "socket-v1",
+      "blockedReason": null,
+      "priority": 9
+    },
+    {
+      "productId": "caa5dc4e-49e3-398a-8861-e164c73317d3",
+      "profileId": "cable-v1",
+      "blockedReason": null,
+      "priority": 10
+    },
+    {
+      "productId": "518d72ad-2dc4-3dd4-b462-2b93f1c4a177",
+      "profileId": null,
+      "blockedReason": "Норма расхода и совместимость не подтверждены; требуется проверка данных. ТЕСТОВАЯ карточка не получает выдуманную норму.",
+      "priority": 11
+    },
+    {
+      "productId": "45810551-5d27-5c89-840c-81d7189f57ba",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 101
+    },
+    {
+      "productId": "4de50418-8267-5391-8125-5e1020563fd2",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 102
+    },
+    {
+      "productId": "d4efb525-f7a9-58fe-87a0-e3269fb0cdd5",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 103
+    },
+    {
+      "productId": "9f24ff3b-b9ac-5ab9-82b2-e0226413b44a",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 104
+    },
+    {
+      "productId": "34f03a72-be49-531d-939b-89567e9a9048",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 105
+    },
+    {
+      "productId": "0fef6bb6-909f-5dcb-aa89-c27b023652cd",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 106
+    },
+    {
+      "productId": "c08e7180-747f-5780-a331-7cc386074c9e",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 107
+    },
+    {
+      "productId": "921d4170-32fe-5bcc-bf4b-6d2718c29aff",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 108
+    },
+    {
+      "productId": "8a791a3c-72ce-5f5d-814d-5fecb3b63be3",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 109
+    },
+    {
+      "productId": "33e4d982-8640-5d2f-946e-719e55885158",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 110
+    },
+    {
+      "productId": "ea454f7d-c0d6-5dab-9805-8a2b6677df86",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 111
+    },
+    {
+      "productId": "aca5a560-1117-50da-aef5-d5ef9fe88210",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 112
+    },
+    {
+      "productId": "01dbaa7f-9d6c-5295-96ff-9ec8a0b2a761",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 113
+    },
+    {
+      "productId": "f28ed916-5d62-5b4c-9aa9-0db3a6218cfb",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 114
+    },
+    {
+      "productId": "5fb82cf3-7f2a-58f7-9564-f24ff98076b7",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 115
+    },
+    {
+      "productId": "ffac8489-948d-53b7-a1e6-278e199826ab",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 116
+    },
+    {
+      "productId": "1c02c8cc-859b-523b-aa5e-3f09b9b3c015",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 117
+    },
+    {
+      "productId": "fd9734c8-dc4f-5256-8c1f-2fcad09456f0",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 118
+    },
+    {
+      "productId": "03ad6085-e569-5a42-be21-1cec84ee9fdc",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 119
+    },
+    {
+      "productId": "6777b997-1d62-52e8-af75-4c9485ec4fd2",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 120
+    },
+    {
+      "productId": "cf7cdbe2-ae7c-5838-80b1-31550b08cfbe",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 121
+    },
+    {
+      "productId": "ea887ff0-bf7b-561f-b051-479985a34022",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 122
+    },
+    {
+      "productId": "f2fb1f73-058b-5ab2-981b-175d4f1e5456",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 123
+    },
+    {
+      "productId": "0f54da08-8ea5-52ac-96a9-b8557c6893f3",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 124
+    },
+    {
+      "productId": "12893077-2c7c-57f3-aaee-e45819042d80",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 125
+    },
+    {
+      "productId": "e1acef66-3cf9-5180-92b9-304f29038278",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 126
+    },
+    {
+      "productId": "05905919-9446-5626-8a23-821e84f51ebb",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 127
+    },
+    {
+      "productId": "a3a09bbc-f8d4-5ad6-86c8-d905d20fb0f1",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 128
+    },
+    {
+      "productId": "31c8df5a-4d1e-509f-b912-ec5908b563c4",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 129
+    },
+    {
+      "productId": "01595896-486d-5bad-8889-b1913fa5fd26",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 130
+    },
+    {
+      "productId": "655ee51a-b8b2-53d5-87e8-b484d5ad66f4",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 131
+    },
+    {
+      "productId": "d01db111-0aab-54b4-a05d-df4fef4010a0",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 132
+    },
+    {
+      "productId": "5cc5f918-8651-5a8e-aeda-dbea62b4d901",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 133
+    },
+    {
+      "productId": "45be7918-070b-5d0b-9812-e7398c4e4a5f",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 134
+    },
+    {
+      "productId": "203f086a-9754-5912-a2bb-7718d14a4262",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 135
+    },
+    {
+      "productId": "70c2af85-6b25-57fb-a304-e2e1b9baeec9",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 136
+    },
+    {
+      "productId": "e7370dd9-20a4-56a9-a10d-5ead078b9d03",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 137
+    },
+    {
+      "productId": "fc7315ae-694e-5477-aea0-b74300a55ad2",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 138
+    },
+    {
+      "productId": "c1c2f8ee-94d2-5cc8-88b5-c0c1ee3c2a42",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 139
+    },
+    {
+      "productId": "460c9975-6e39-51fe-bcf9-1de8fd3aa679",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 140
+    },
+    {
+      "productId": "8f440d8e-61f8-5ce1-b11f-2296c7afed1a",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 141
+    },
+    {
+      "productId": "50a20737-d837-58cb-adc6-ea5c0d6550c2",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 142
+    },
+    {
+      "productId": "89d1653c-b1fd-578d-8bd0-c426ae26ce75",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 143
+    },
+    {
+      "productId": "2957128d-c05b-5f32-851c-8bb6a3df412e",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 144
+    },
+    {
+      "productId": "e389495d-fe85-5405-9ad8-6e97e274955c",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 145
+    },
+    {
+      "productId": "50ca9bf7-2ce2-5620-924e-b0ba7aaf5e98",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 146
+    },
+    {
+      "productId": "5da539da-0066-5eb8-8445-dde801c52335",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 147
+    },
+    {
+      "productId": "82204c7d-3e72-5e2c-b1da-c0b42373f4ba",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 148
+    },
+    {
+      "productId": "f309f34b-b14f-5e2e-bd44-dd21a490024f",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 149
+    },
+    {
+      "productId": "63a750b6-8be5-54f7-bd5c-5596336bc241",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 150
+    },
+    {
+      "productId": "5eba4d97-8ad3-5d00-a6c0-97e12c4d2986",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 151
+    },
+    {
+      "productId": "7f68050b-0ad2-5e60-913a-0e0f6847d951",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 152
+    },
+    {
+      "productId": "e143d288-7d3b-525a-b855-a3197f2dfff0",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 153
+    },
+    {
+      "productId": "81551501-2b05-5643-816e-7d36b5c3ecee",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 154
+    },
+    {
+      "productId": "495d90b6-2cbb-55c9-abdb-a1667c607740",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 155
+    },
+    {
+      "productId": "453f676f-65b2-5747-ad57-6377f15804e6",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 156
+    },
+    {
+      "productId": "766e2686-123e-59ba-b32e-2fdb9272b198",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 157
+    },
+    {
+      "productId": "64f73380-a2fb-5631-b2c8-162ce99a04ed",
+      "profileId": "paint-012-v1",
+      "blockedReason": null,
+      "priority": 158
+    },
+    {
+      "productId": "e324ed06-60e4-589c-8065-166ddd4185e3",
+      "profileId": "wallpaper-v1",
+      "blockedReason": null,
+      "priority": 159
+    },
+    {
+      "productId": "4637a65a-f64d-5290-8296-1a79f764bd62",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 160
+    },
+    {
+      "productId": "a4aa00c4-2d64-5398-8de2-dc0c95501581",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 161
+    },
+    {
+      "productId": "10b8ae52-39e7-5e5f-88ce-db77b949dd98",
+      "profileId": "paint-014-v1",
+      "blockedReason": null,
+      "priority": 162
+    },
+    {
+      "productId": "e182a28c-56ad-5745-b7e1-d1935a1952de",
+      "profileId": "adhesive-v1",
+      "blockedReason": null,
+      "priority": 163
+    },
+    {
+      "productId": "04a1bd82-675e-5b87-a6e4-6bb5eecc0bae",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 164
+    },
+    {
+      "productId": "22ac94e2-98f7-5d3e-bcc2-786a422b3df9",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 165
+    },
+    {
+      "productId": "25951257-19ae-5c88-a1a0-a2733746a420",
+      "profileId": "paint-014-v1",
+      "blockedReason": null,
+      "priority": 166
+    },
+    {
+      "productId": "e7fe999e-e720-542b-9306-0c73e083cd8f",
+      "profileId": "adhesive-v1",
+      "blockedReason": null,
+      "priority": 167
+    },
+    {
+      "productId": "06d2af67-c92d-5cea-9d95-5a0bd5424aab",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 168
+    },
+    {
+      "productId": "ab9018b4-1975-5024-a0e8-7d8aad615cc0",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 169
+    },
+    {
+      "productId": "35b6f194-7f2a-5f48-812a-965c347bcaa0",
+      "profileId": "paint-014-v1",
+      "blockedReason": null,
+      "priority": 170
+    },
+    {
+      "productId": "6fd2488e-f36a-5604-9f74-7396e24d119a",
+      "profileId": "adhesive-v1",
+      "blockedReason": null,
+      "priority": 171
+    },
+    {
+      "productId": "1ff1918d-54ce-5aee-b878-dddd04ed3682",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 172
+    },
+    {
+      "productId": "aa733227-3b4a-5438-8266-133638cdda7a",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 173
+    },
+    {
+      "productId": "5ea80241-446b-5705-bc58-97b87eb93ed6",
+      "profileId": "paint-014-v1",
+      "blockedReason": null,
+      "priority": 174
+    },
+    {
+      "productId": "82f48946-bfce-5954-9def-955749d7bbcd",
+      "profileId": "adhesive-v1",
+      "blockedReason": null,
+      "priority": 175
+    },
+    {
+      "productId": "21a50536-f3f1-5c9b-8f99-56f35040c7f9",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 176
+    },
+    {
+      "productId": "1ea9e000-878a-5196-bfe6-6e1ae408fab5",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 177
+    },
+    {
+      "productId": "32934685-1a95-5037-b138-01ed77137289",
+      "profileId": "paint-014-v1",
+      "blockedReason": null,
+      "priority": 178
+    },
+    {
+      "productId": "1aebc075-dcd4-56ef-9f06-9ae98a0e2049",
+      "profileId": "adhesive-v1",
+      "blockedReason": null,
+      "priority": 179
+    },
+    {
+      "productId": "3e9ebdd4-1efe-5c1f-985b-41c167976a12",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 180
+    },
+    {
+      "productId": "591dc41c-adae-5f51-9bbe-f72994f88dcb",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 181
+    },
+    {
+      "productId": "6b683cf9-6a48-549f-8415-93bb7b9fec6a",
+      "profileId": "paint-014-v1",
+      "blockedReason": null,
+      "priority": 182
+    },
+    {
+      "productId": "e0a39983-38ab-5bff-8041-109de8b3603c",
+      "profileId": "adhesive-v1",
+      "blockedReason": null,
+      "priority": 183
+    },
+    {
+      "productId": "9a5fbd83-0370-574f-80fa-7ca2e606e3af",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 184
+    },
+    {
+      "productId": "e582fe46-9baf-57a8-be68-81422efa795b",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 185
+    },
+    {
+      "productId": "25662310-3938-566f-9dc7-a965df2971a9",
+      "profileId": "paint-014-v1",
+      "blockedReason": null,
+      "priority": 186
+    },
+    {
+      "productId": "7c7a70eb-1c97-5fd6-84db-3721940ec17d",
+      "profileId": "adhesive-v1",
+      "blockedReason": null,
+      "priority": 187
+    },
+    {
+      "productId": "5b5c5e62-4a3e-557f-9f68-9c0dba74e39f",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 188
+    },
+    {
+      "productId": "75c54b74-46fe-5b78-a588-872057317bc3",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 189
+    },
+    {
+      "productId": "17cbc8ff-0748-52b2-9ad7-dfa908c4de34",
+      "profileId": "paint-014-v1",
+      "blockedReason": null,
+      "priority": 190
+    },
+    {
+      "productId": "55c05160-503a-56e8-990f-e65fd0cd555d",
+      "profileId": "adhesive-v1",
+      "blockedReason": null,
+      "priority": 191
+    },
+    {
+      "productId": "ff1c3842-52ce-5f3e-9a70-ed234b046630",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 192
+    },
+    {
+      "productId": "0245656f-a52d-59d5-93f9-890edab1014c",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 193
+    },
+    {
+      "productId": "e2e4037d-29b3-557b-a963-33c2edd02b83",
+      "profileId": "paint-014-v1",
+      "blockedReason": null,
+      "priority": 194
+    },
+    {
+      "productId": "2aed6d39-3112-5a48-b4ec-25afe248da0e",
+      "profileId": "adhesive-v1",
+      "blockedReason": null,
+      "priority": 195
+    },
+    {
+      "productId": "af2ffe22-45b1-53a2-af4a-b75ded9c900c",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 196
+    },
+    {
+      "productId": "ba338af2-ca0c-51e1-b453-bf548eac08b5",
+      "profileId": "covering-v1",
+      "blockedReason": null,
+      "priority": 197
+    },
+    {
+      "productId": "00027bda-53fd-526a-9c6b-c317917399c9",
+      "profileId": "paint-014-v1",
+      "blockedReason": null,
+      "priority": 198
+    },
+    {
+      "productId": "55aa0c70-5a4b-5288-8c3f-6aef6c1057eb",
+      "profileId": "adhesive-v1",
+      "blockedReason": null,
+      "priority": 199
+    },
+    {
+      "productId": "23c5deab-9fbd-515b-a06b-9bea1e0bc727",
+      "profileId": "primer-v1",
+      "blockedReason": null,
+      "priority": 200
+    }
+  ],
+  "laborTariffs": [
+    {
+      "code": "floor",
+      "unit": "м²",
+      "amount": 650,
+      "sourceId": "synthetic-labor-v1"
+    },
+    {
+      "code": "paint",
+      "unit": "м²",
+      "amount": 450,
+      "sourceId": "synthetic-labor-v1"
+    },
+    {
+      "code": "wallpaper",
+      "unit": "м²",
+      "amount": 400,
+      "sourceId": "synthetic-labor-v1"
+    },
+    {
+      "code": "socket",
+      "unit": "шт.",
+      "amount": 900,
+      "sourceId": "synthetic-labor-v1"
+    },
+    {
+      "code": "cable",
+      "unit": "м",
+      "amount": 100,
+      "sourceId": "synthetic-labor-v1"
+    }
+  ],
+  "kits": [
+    {
+      "work": "floor",
+      "kind": "covering",
+      "basis": "FLOOR",
+      "coveringFamily": null,
+      "warning": null
+    },
+    {
+      "work": "floor",
+      "kind": "adhesive",
+      "basis": "FLOOR",
+      "coveringFamily": "tile",
+      "warning": null
+    },
+    {
+      "work": "paint",
+      "kind": "paint",
+      "basis": "WALL",
+      "coveringFamily": null,
+      "warning": null
+    },
+    {
+      "work": "paint",
+      "kind": "primer",
+      "basis": "WALL",
+      "coveringFamily": null,
+      "warning": null
+    },
+    {
+      "work": "wallpaper",
+      "kind": "wallpaper",
+      "basis": "WALL",
+      "coveringFamily": null,
+      "warning": "Обойный клей не включён: в учебном каталоге нет подтверждённого профиля для него."
+    },
+    {
+      "work": "wallpaper",
+      "kind": "primer",
+      "basis": "WALL",
+      "coveringFamily": null,
+      "warning": null
+    },
+    {
+      "work": "electrical",
+      "kind": "socket",
+      "basis": "SOCKET",
+      "coveringFamily": null,
+      "warning": null
+    },
+    {
+      "work": "electrical",
+      "kind": "cable",
+      "basis": "CABLE",
+      "coveringFamily": null,
+      "warning": null
+    }
+  ]
+}
