@@ -542,6 +542,54 @@ class MongoWorkflowIT {
   }
 
   @Test
+  void classificationCanPublishWithoutPerLabelReviews() {
+    var p = products.create(draft(), "test", "create");
+    jobs.enqueue(p.id(), AdminProductService.etag(p), "test", "enqueue");
+    var claim = dispatcher.claim();
+    dispatcher.complete(claim, model(), null);
+    assertThat(reviews.list(p.id())).isEmpty();
+    assertThat(publications.readiness(p.id()).ready()).isTrue();
+    var publication = publications.publish(p.id(), AdminProductService.etag(p), "test", "publish");
+    assertThat(publication.path("review_id").asText()).isNotBlank();
+    assertThat(reviews.list(p.id()).getFirst().path("mode").asText())
+        .isEqualTo("automatic_model_mapping");
+    assertThat(reviews.list(p.id()).getFirst().path("mapping_version").asText())
+        .isEqualTo("classifier-java-auto-v1");
+    assertThat(read.listProducts()).extracting(ProductView::id).contains(p.id());
+  }
+
+  @Test
+  void classificationWithoutSurfaceCannotBeMappedToWallWork() {
+    var p = products.create(draft(), "test", "create");
+    jobs.enqueue(p.id(), AdminProductService.etag(p), "test", "enqueue");
+    var claim = dispatcher.claim();
+    var result = (ObjectNode) model().deepCopy();
+    ((ObjectNode) result.path("classification")).putArray("surface_locations");
+    dispatcher.complete(claim, result, null);
+    assertThat(publications.readiness(p.id()).ready()).isFalse();
+    assertThat(publications.readiness(p.id()).blockers())
+        .anyMatch(x -> x.contains("поверхность"));
+    assertThatThrownBy(() -> publications.publish(p.id(), AdminProductService.etag(p), "test", "publish"))
+        .isInstanceOf(AdminException.class);
+  }
+
+  @Test
+  void automaticPublicationRequiresCurrentClassificationAndConfirmedNorm() {
+    var d = draft();
+    d.remove("consumption");
+    var p = products.create(d, "test", "create");
+    jobs.enqueue(p.id(), AdminProductService.etag(p), "test", "enqueue");
+    var claim = dispatcher.claim();
+    dispatcher.complete(claim, model(), null);
+    assertThat(publications.readiness(p.id()).blockers())
+        .anyMatch(x -> x.contains("норму расхода"));
+    var updated = draft().put("sourceNamespace", p.sourceNamespace()).put("externalId", p.externalId());
+    var newVersion = products.update(p.id(), AdminProductService.etag(p), updated, "test", "edit");
+    assertThat(publications.readiness(newVersion.id()).blockers())
+        .anyMatch(x -> x.contains("текущей версии"));
+  }
+
+  @Test
   void publicationRollbackRetainsPreviousPairAndSeedDoesNotUndoPublishedContent() {
     var before = snapshots.resolve();
     var p = reviewed();

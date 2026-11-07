@@ -2371,7 +2371,8 @@
           "reviewId": {
             "type": "string",
             "format": "uuid",
-            "nullable": true
+            "nullable": true,
+            "description": "При автоматическом сопоставлении null: запись сопоставления создаётся атомарно при публикации, её ID возвращается в publication.review_id."
           },
           "baseReleaseId": {
             "type": "string",

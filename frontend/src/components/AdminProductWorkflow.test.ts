@@ -47,6 +47,53 @@ beforeEach(() => {
   vi.mocked(admin.classifications).mockResolvedValue([])
 })
 describe('classification and publication', () => {
+  it('uses a successful classification without asking for per-label decisions', async () => {
+    vi.mocked(admin.classifications).mockResolvedValue([
+      {
+        id: 'current',
+        versionId: product.versionId,
+        status: 'succeeded',
+        attempts: 1,
+        input: {},
+        result: {
+          taxonomy_version: 'v2',
+          model: 'test',
+          classification: {
+            scope: 'in_scope',
+            work_types: [{ label: 'paint', evidence: [] }],
+            surface_locations: [{ label: 'wall', evidence: [] }],
+            substrates: [],
+            properties: {},
+            needs_review: false,
+            review_reasons: [],
+          },
+        },
+        errorCode: null,
+        createdAt: '',
+        finishedAt: null,
+      },
+    ])
+    vi.mocked(admin.readiness).mockResolvedValue({
+      ready: true,
+      blockers: [],
+      reviewId: null,
+      baseReleaseId: product.id,
+    })
+    const wrapper = mount(AdminProductWorkflow, { props: { product, etag: '"current"' } })
+    await wrapper.find('button').trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain('Классификация выполнена')
+    expect(wrapper.text()).not.toContain('Основание решения')
+    expect(wrapper.findAll('select')).toHaveLength(0)
+    expect(
+      wrapper
+        .findAll('button')
+        .find((b) => b.text().startsWith('Опубликовать'))!
+        .attributes('disabled'),
+    ).toBeUndefined()
+    wrapper.unmount()
+  })
+
   it('disables using stale inference and publishing a product without a norm', async () => {
     vi.mocked(admin.classifications).mockResolvedValue([
       {

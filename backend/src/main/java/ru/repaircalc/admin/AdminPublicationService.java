@@ -5,7 +5,6 @@ import static ru.repaircalc.storage.MongoStore.*;
 import java.math.BigDecimal;
 import java.util.*;
 import org.bson.Document;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.*;
 import org.springframework.stereotype.Service;
 import ru.repaircalc.catalog.*;
@@ -17,17 +16,21 @@ import tools.jackson.databind.node.ObjectNode;
 
 @Service
 public class AdminPublicationService {
+  private static final String AUTOMATIC_MAPPING = "classifier-java-auto-v1";
   private final MongoStore store;
   private final AdminProductService products;
   private final JsonMapper json;
   private final RuleSetValidator validator;
+  private final AdminReviewService mapping;
 
   public AdminPublicationService(
-      MongoStore store, AdminProductService products, JsonMapper json, RuleSetValidator validator) {
+      MongoStore store, AdminProductService products, JsonMapper json, RuleSetValidator validator,
+      AdminReviewService mapping) {
     this.store = store;
     this.products = products;
     this.json = json;
     this.validator = validator;
+    this.mapping = mapping;
   }
 
   public Readiness readiness(UUID id) {
@@ -43,22 +46,9 @@ public class AdminPublicationService {
     if ("covering".equals(value(s, "kind")) && !confirmed(s, "materialFamily"))
       blockers.add("Подтвердите семейство напольного покрытия.");
     if (s.path("sources").isEmpty()) blockers.add("Добавьте источник карточки.");
-    var reviews =
-        store
-            .find(
-                "admin_label_review",
-                query("version_id", p.versionId().toString())
-                    .with(Sort.by(Sort.Direction.DESC, "created_at", "id"))
-                    .limit(1))
-            .stream()
-            .map(store::tree)
-            .toList();
-    JsonNode review = reviews.isEmpty() ? null : reviews.getFirst();
-    if (review == null) blockers.add("Нет проверки классификации для текущей версии.");
-    else if (review.path("java_works").isEmpty())
-      blockers.add("Нет проверенного сопоставления с Java-таксономией.");
     var base = base();
     if (base == null) blockers.add("Нет активной совместимой пары каталога и правил.");
+    JsonNode review = automaticMapping(p, base, blockers);
     if (base != null && review != null && blockers.isEmpty()) {
       try {
         var old = json.readValue(base.path("bundle").toString(), RuleSetBundle.class);
@@ -99,7 +89,7 @@ public class AdminPublicationService {
     return new Readiness(
         blockers.isEmpty(),
         blockers,
-        review == null ? null : UUID.fromString(review.path("id").asText()),
+        null,
         base == null ? null : UUID.fromString(base.path("id").asText()));
   }
 
@@ -119,7 +109,18 @@ public class AdminPublicationService {
                     .map(x -> new AdminException.Detail("readiness", "blocked", x))
                     .toList());
           var base = base();
-          var review = store.tree(store.id("admin_label_review", ready.reviewId()));
+          var mappingBlockers = new ArrayList<String>();
+          var review = (ObjectNode) automaticMapping(p, base, mappingBlockers);
+          if (review == null || !mappingBlockers.isEmpty())
+            throw new AdminException(422, "not_ready", "Классификация изменилась.");
+          String reviewId = UUID.randomUUID().toString();
+          review.put("id", reviewId).put("product_id", id.toString())
+              .put("version_id", p.versionId().toString()).put("mapping_version", AUTOMATIC_MAPPING)
+              .put("created_by", actor).put("created_at", java.time.Instant.now().toString())
+              .put("mode", "automatic_model_mapping");
+          var reviewDocument = store.document(review);
+          reviewDocument.put("_id", reviewId);
+          store.insert("admin_label_review", reviewDocument);
           var s = p.snapshot();
           String release = UUID.randomUUID().toString(),
               rules = UUID.randomUUID().toString(),
@@ -130,8 +131,8 @@ public class AdminPublicationService {
           manifest
               .put("baseReleaseId", ready.baseReleaseId().toString())
               .put("adminVersionId", p.versionId().toString())
-              .put("reviewId", ready.reviewId().toString())
-              .put("mappingVersion", AdminReviewService.MAPPING);
+              .put("reviewId", reviewId)
+              .put("mappingVersion", AUTOMATIC_MAPPING);
           store.insert(
               "catalog_release",
               new Document("_id", release)
@@ -167,7 +168,7 @@ public class AdminPublicationService {
                       + s.path("application").asText("")
                       + "\n"
                       + s.path("limitations").asText(""),
-                  "ТЕСТОВЫЕ / admin-reviewed:" + ready.reviewId(),
+                  "ТЕСТОВЫЕ / automatic-classification:" + reviewId,
                   decimal(s, "consumption"),
                   decimal(s, "rollWidth"),
                   decimal(s, "rollLength"),
@@ -244,7 +245,7 @@ public class AdminPublicationService {
                   .append("id", pubId)
                   .append("product_id", id.toString())
                   .append("version_id", p.versionId().toString())
-                  .append("review_id", ready.reviewId().toString())
+                  .append("review_id", reviewId)
                   .append("release_id", release)
                   .append("rule_set_id", rules)
                   .append("created_by", actor)
@@ -254,6 +255,80 @@ public class AdminPublicationService {
           products.audit(id, "publish", actor, requestId, new Document("publicationId", pubId));
           return store.tree(publication);
         });
+  }
+
+  private JsonNode automaticMapping(
+      AdminProductService.Product p, JsonNode base, List<String> blockers) {
+    var job = store.one("admin_classification_job", query("versionId", p.versionId().toString()));
+    if (job == null || !p.id().toString().equals(job.getString("productId"))
+        || !"succeeded".equals(job.getString("status")) || job.get("result") == null) {
+      blockers.add("Для текущей версии нужна успешная классификация.");
+      return null;
+    }
+    var result = store.tree(job.get("result", Document.class));
+    var classification = result.path("classification");
+    if (!AdminReviewService.TAXONOMY.equals(result.path("taxonomy_version").asText())
+        || !"in_scope".equals(classification.path("scope").asText())) {
+      blockers.add("Классификация не определила подходящий товар для расчёта.");
+      return null;
+    }
+    var approved = json.createObjectNode();
+    for (var group : List.of("work_types", "surface_locations", "substrates")) {
+      var labels = approved.putArray(group);
+      for (var label : classification.path(group)) labels.add(label.path("label").asText());
+    }
+    var properties = approved.putArray("properties");
+    for (var key : classification.path("properties").propertyNames())
+      properties.addObject().put("label", key)
+          .put("state", classification.path("properties").path(key).path("state").asText());
+    if (!confirmed(p.snapshot(), "kind") || !confirmed(p.snapshot(), "unit")) return null;
+    String productKind = value(p.snapshot(), "kind");
+    var works = mapping.mapWorks(approved, productKind);
+    if (works.isEmpty()) {
+      boolean needsSurface = Set.of("paint", "primer", "wallpaper", "covering", "adhesive")
+          .contains(productKind) && approved.path("surface_locations").isEmpty();
+      blockers.add(needsSurface
+          ? "Не удалось сопоставить товар с расчётом: укажите в описании подходящую поверхность и повторите классификацию."
+          : "Вид товара и назначение или поверхность из классификации несовместимы с поддерживаемым расчётом.");
+      return null;
+    }
+    if (base == null) return null;
+    var s = p.snapshot();
+    String kind = value(s, "kind"), unit = value(s, "unit");
+    BigDecimal consumption = decimal(s, "consumption");
+    if (Set.of("paint", "primer", "adhesive").contains(kind)
+        && (!confirmed(s, "consumption") || !confirmed(s, "consumptionUnit"))) {
+      blockers.add("Укажите норму расхода и её единицу с источником.");
+      return null;
+    }
+    var candidates = new ArrayList<RuleSetBundle.Profile>();
+    var bundle = json.readValue(base.path("bundle").toString(), RuleSetBundle.class);
+    for (var profile : bundle.profiles()) {
+      if (!profile.strategy().name().equalsIgnoreCase(kind) || !profile.unit().equals(unit)) continue;
+      if (profile.consumption() != null && (consumption == null
+          || profile.consumption().compareTo(consumption) != 0
+          || !profile.unit().equals(value(s, "consumptionUnit")))) continue;
+      candidates.add(profile);
+    }
+    if (candidates.isEmpty()) {
+      blockers.add("Нет расчётного профиля, совместимого с видом товара и нормой расхода.");
+      return null;
+    }
+    candidates.sort(Comparator.comparingInt((RuleSetBundle.Profile x) -> x.id().length())
+        .thenComparing(RuleSetBundle.Profile::id));
+    var profile = candidates.getFirst();
+    if (candidates.stream().anyMatch(x -> x.strategy() != profile.strategy()
+        || x.reservePolicy() != profile.reservePolicy() || x.layerPolicy() != profile.layerPolicy()
+        || !Objects.equals(x.trimAllowance(), profile.trimAllowance()))) {
+      blockers.add("Найдено несколько разных расчётных профилей; автоматический выбор невозможен.");
+      return null;
+    }
+    var review = json.createObjectNode().put("job_id", job.getString("id"))
+        .put("profile_id", profile.id());
+    review.set("approved", approved);
+    var javaWorks = review.putArray("java_works");
+    works.forEach(javaWorks::add);
+    return review;
   }
 
   private JsonNode base() {
