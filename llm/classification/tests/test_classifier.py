@@ -54,6 +54,20 @@ class SchemaTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate_evidence(Classification.model_validate(result), product())
 
+    def test_ellipsized_evidence_is_rejected_but_exact_fragment_is_accepted(self):
+        item = Product(source='test', source_id='primer', name='Грунтовка',
+                       description='Основания: бетон, газобетон, кирпич')
+        result = answer()
+        result['work_types'] = [{'label': 'priming', 'evidence': [
+            {'field': 'name', 'quote': 'Грунтовка'}]}]
+        result['surface_locations'] = []
+        result['substrates'] = [{'label': 'brick', 'evidence': [
+            {'field': 'description', 'quote': 'Основания: ... кирпич'}]}]
+        with self.assertRaisesRegex(ValueError, 'unsupported evidence'):
+            validate_evidence(Classification.model_validate(result), item)
+        result['substrates'][0]['evidence'][0]['quote'] = 'кирпич'
+        validate_evidence(Classification.model_validate(result), item)
+
     def test_duplicate_labels(self):
         result = answer()
         result['work_types'] *= 2
