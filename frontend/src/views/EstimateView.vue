@@ -381,7 +381,7 @@ async function replace(key: string, event: Event) {
             </button>
           </div>
         </form>
-        <MaterialRecommendations :project="inspirationProject" />
+        <MaterialRecommendations :project="inspirationProject" :products="products" />
       </template>
 
       <template v-else-if="step === 2">

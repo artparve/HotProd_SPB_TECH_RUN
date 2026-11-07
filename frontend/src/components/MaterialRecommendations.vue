@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
-import type { Estimate, Project } from '../domain/types'
+import type { Estimate, Project, Product } from '../domain/types'
 import { workLabels } from '../domain/types'
 import type {
   MaterialRecommendations,
@@ -8,8 +8,41 @@ import type {
 } from '../domain/materialRecommendations'
 import { service } from '../services/api'
 import EstimateResult from './EstimateResult.vue'
+import ProductSwatch from './ProductSwatch.vue'
+import { money } from '../domain/format'
 
-const props = defineProps<{ project: Project }>()
+const props = defineProps<{ project: Project; products?: Product[] }>()
+const loadedProducts = ref<Product[]>([])
+const catalog = computed(
+  () =>
+    new Map(
+      (loadedProducts.value.length ? loadedProducts.value : props.products || []).map((product) => [
+        product.id,
+        product,
+      ]),
+    ),
+)
+const expandedCategories = ref<Record<string, boolean>>({})
+const hasUnconfirmed = computed(() =>
+  result.value?.categories.some((category) =>
+    category.candidates.some(
+      (candidate) =>
+        candidate.compatibility !== 'pass' || candidate.calculationReadiness !== 'ready',
+    ),
+  ),
+)
+const hasModelComment = computed(() =>
+  Boolean(result.value?.references?.items.length || result.value?.explanation.items.length),
+)
+function sourceLabel(chunkIds: string[]) {
+  return [
+    ...new Set(
+      (result.value?.references?.fragments || [])
+        .filter((fragment) => chunkIds.includes(fragment.chunkId))
+        .map((fragment) => `${fragment.title} · стр. ${fragment.page}`),
+    ),
+  ].join('; ')
+}
 const conditions = reactive<MaterialRecommendationRequest['conditions']>({
   humidity: null,
   load: null,
@@ -43,6 +76,13 @@ const fieldLabels: Record<string, string> = {
   floorHeating: 'Тёплый пол',
   covering: 'Покрытие',
   baseState: 'Состояние основания',
+  evidence: 'Применимость',
+  conditions: 'Условия помещения',
+}
+const coveringLabels: Record<string, string> = {
+  tile: 'плитка',
+  laminate: 'ламинат',
+  vinyl: 'винил',
 }
 const kindLabels: Record<string, string> = {
   covering: 'Напольное покрытие',
@@ -79,21 +119,28 @@ async function search() {
     const normalized = { ...conditions }
     for (const key of ['substrate', 'waterContact', 'covering', 'baseState'] as const)
       normalized[key] = normalized[key]?.trim() || null
-    const response = await service.materialRecommendations(
-      {
-        works: [...room.value.works],
-        renovation: props.project.renovation,
-        object: props.project.object,
-        conditions: normalized,
-        query: query.value,
-        room: structuredClone(JSON.parse(JSON.stringify(room.value))),
-        designPreferences: design.value,
-        explain: explain.value,
-        referenceSearch: referenceSearch.value,
-      },
-      controller.signal,
-    )
+    const catalogRequest = props.products?.length
+      ? Promise.resolve(props.products)
+      : service.catalog(controller.signal).catch(() => [])
+    const [response, availableProducts] = await Promise.all([
+      service.materialRecommendations(
+        {
+          works: [...room.value.works],
+          renovation: props.project.renovation,
+          object: props.project.object,
+          conditions: normalized,
+          query: query.value,
+          room: structuredClone(JSON.parse(JSON.stringify(room.value))),
+          designPreferences: design.value,
+          explain: explain.value,
+          referenceSearch: referenceSearch.value,
+        },
+        controller.signal,
+      ),
+      catalogRequest,
+    ])
     if (current !== generation) return
+    loadedProducts.value = availableProducts
     result.value = response
     stale.value = false
   } catch (e) {
@@ -148,7 +195,7 @@ watch(
 
 <template>
   <section class="material-search" aria-label="Подбор материалов с источниками">
-    <h2>Подбор с источниками и ИИ-объяснением</h2>
+    <h2>Подбор материалов</h2>
     <p>
       Поиск для комнаты «{{ room.name }}». Расчёт включает только это помещение и поддержанные
       работы. Неизвестные условия можно оставить без ответа.
@@ -197,188 +244,466 @@ watch(
         placeholder="Название товара или описание задачи"
     /></label>
     <label class="field">Пожелания к дизайну<input v-model="design" maxlength="500" /></label>
-    <label
-      ><input v-model="explain" type="checkbox" /> Объяснить проверенные факты локальной
-      моделью</label
-    >
+    <label><input v-model="explain" type="checkbox" /> Добавить комментарий модели</label>
     <p>
       <label
-        ><input v-model="referenceSearch" type="checkbox" /> Искать в справочных PDF
-        (исследовательские черновики без подтверждения товаров)</label
+        ><input v-model="referenceSearch" type="checkbox" /> Учитывать инструкции
+        производителей</label
       >
     </p>
     <p>
       <button type="button" class="button secondary" :disabled="busy" @click="search">
-        {{ busy ? 'Выполняется…' : 'Найти товары и источники' }}
+        {{ busy ? 'Выполняется…' : 'Найти товары' }}
       </button>
     </p>
     <p v-if="error" class="alert error" role="alert">{{ error }}</p>
     <p v-if="stale" class="alert warning" role="status">
       Параметры изменились. Повторите подбор перед выбором товаров.
     </p>
-    <div v-if="result && !stale" aria-live="polite">
-      <p v-for="warning in result.warnings" :key="warning" class="alert warning">{{ warning }}</p>
-      <p v-for="question in result.questions" :key="question.field">
-        Уточните {{ fieldLabels[question.field] || question.field }}: {{ question.reason }}
+    <div v-if="result && !stale" class="search-results" aria-live="polite">
+      <div class="results-heading">
+        <div>
+          <span class="eyebrow">ВАШ ПОДБОР</span>
+          <h3>Материалы для комнаты «{{ room.name }}»</h3>
+        </div>
+        <span class="result-count"
+          >{{
+            result.categories.reduce((total, category) => total + category.candidates.length, 0)
+          }}
+          товаров</span
+        >
+      </div>
+      <p v-if="hasUnconfirmed" class="selection-notice">
+        Это предварительный подбор. Совместимость товаров ещё нужно проверить — до этого они
+        недоступны для расчёта.
       </p>
-      <p v-if="!result.categories.length">Поддержанные категории не найдены.</p>
+      <div v-if="result.questions.length" class="clarifications">
+        <strong>Уточните условия комнаты</strong>
+        <p v-for="question in result.questions" :key="question.field">
+          {{ fieldLabels[question.field] || 'Условия применения' }}: {{ question.reason }}
+        </p>
+      </div>
+      <p v-if="!result.categories.length" class="empty-message">
+        Подходящие категории не найдены. Уточните задачу.
+      </p>
       <section
-        v-if="result.references && referenceSearch"
-        aria-label="Справочные PDF"
-        class="reference-results"
+        v-for="category in result.categories"
+        :key="`${category.work}:${category.kind}:${category.coveringFamily}`"
+        class="product-category"
+        :aria-label="kindLabels[category.kind] || 'Материалы'"
       >
-        <h3>Справочные документы производителей</h3>
-        <p class="alert warning">
-          Черновые источники не подтверждают характеристики учебных товаров и не разрешают их
-          применение или расчёт.
+        <header class="category-heading">
+          <h4>{{ kindLabels[category.kind] || 'Материалы' }}</h4>
+          <span>{{ workLabels[category.work] }}</span>
+        </header>
+        <p v-if="category.coveringFamily" class="muted">
+          Для покрытия: {{ coveringLabels[category.coveringFamily] || 'по условиям подбора' }}
+        </p>
+        <p v-if="!category.candidates.length" class="empty-message">
+          Подходящих товаров пока нет. Попробуйте уточнить условия.
+        </p>
+        <div class="product-grid">
+          <article
+            v-for="candidate in category.candidates.slice(
+              0,
+              expandedCategories[`${category.work}:${category.kind}`] ? undefined : 4,
+            )"
+            :key="candidate.productId"
+            class="product-card"
+          >
+            <div class="product-card-main">
+              <ProductSwatch
+                v-if="catalog.get(candidate.productId)"
+                :product="catalog.get(candidate.productId)!"
+              />
+              <div class="product-description">
+                <span
+                  class="compatibility-badge"
+                  :class="{
+                    ready:
+                      candidate.compatibility === 'pass' &&
+                      candidate.calculationReadiness === 'ready',
+                  }"
+                  >{{
+                    candidate.compatibility === 'pass' && candidate.calculationReadiness === 'ready'
+                      ? 'Подходит для расчёта'
+                      : 'Требует проверки'
+                  }}</span
+                >
+                <label class="product-choice"
+                  ><input
+                    v-model="selected[`${room.id}:${category.kind}`]"
+                    type="radio"
+                    :name="`${room.id}:${category.kind}`"
+                    :value="candidate.productId"
+                    :disabled="
+                      busy ||
+                      candidate.compatibility !== 'pass' ||
+                      candidate.calculationReadiness !== 'ready'
+                    "
+                  />{{ candidate.name }}</label
+                >
+                <p v-if="catalog.get(candidate.productId)" class="product-price">
+                  {{ money(catalog.get(candidate.productId)!.price) }}
+                  <span>/ {{ catalog.get(candidate.productId)!.saleUnit }}</span>
+                </p>
+                <p v-else class="muted">Цена уточняется</p>
+              </div>
+            </div>
+            <details
+              v-if="candidate.checks.length || candidate.sources.length"
+              class="product-details"
+            >
+              <summary>Условия применения</summary>
+              <p v-for="check in candidate.checks" :key="check.property">
+                {{ fieldLabels[check.property] || 'Проверка применения' }}: {{ check.reason }}
+              </p>
+              <p v-for="source in candidate.sources" :key="source.chunkId">
+                <a :href="source.url" target="_blank" rel="noopener noreferrer">{{
+                  source.title
+                }}</a>
+                · {{ source.section }}
+              </p>
+            </details>
+          </article>
+        </div>
+        <button
+          v-if="category.candidates.length > 4"
+          type="button"
+          class="show-more"
+          @click="
+            expandedCategories[`${category.work}:${category.kind}`] =
+              !expandedCategories[`${category.work}:${category.kind}`]
+          "
+        >
+          {{
+            expandedCategories[`${category.work}:${category.kind}`]
+              ? 'Свернуть список'
+              : `Показать ещё ${category.candidates.length - 4}`
+          }}
+        </button>
+      </section>
+      <section class="cost-panel" aria-label="Стоимость подбора">
+        <h3>Стоимость</h3>
+        <template v-if="!estimate"
+          ><p>
+            {{
+              hasUnconfirmed
+                ? 'Итоговую стоимость можно рассчитать после проверки применимости и выбора товаров. Цены в карточках указаны за единицу продажи по каталогу.'
+                : 'Выберите товары и подтвердите условия — рассчитаем количество упаковок и общую стоимость для этой комнаты.'
+            }}
+          </p>
+          <label class="confirmation"
+            ><input
+              v-model="confirmed"
+              type="checkbox"
+              :disabled="busy || !Object.keys(selected).length"
+            />Подтверждаю условия и явно выбранные товары для расчёта этой комнаты</label
+          >
+          <button
+            type="button"
+            class="button primary"
+            :disabled="busy || !confirmed"
+            @click="apply"
+          >
+            Рассчитать выбранные товары
+          </button>
+        </template>
+        <EstimateResult v-else :estimate="estimate" />
+      </section>
+      <section v-if="hasModelComment" class="model-comment" aria-label="Комментарий модели">
+        <header>
+          <span class="eyebrow">ПОМОЩНИК ПО РЕМОНТУ</span>
+          <h3>Комментарий модели</h3>
+        </header>
+        <p class="model-note">
+          Непроверенный текст модели: рекомендации стоит сверить с инструкцией производителя.
+          Справочные документы не подтверждают характеристики учебных товаров.
+        </p>
+        <div v-for="item in result.explanation.items" :key="item.productId" class="comment-item">
+          <strong>{{
+            result.categories
+              .flatMap((category) => category.candidates)
+              .find((candidate) => candidate.productId === item.productId)?.name
+          }}</strong>
+          <p>{{ item.text }}</p>
+        </div>
+        <div
+          v-for="(item, index) in result.references?.items || []"
+          :key="index"
+          class="comment-item"
+        >
+          <p>{{ item.text }}</p>
+          <small v-if="sourceLabel(item.chunkIds)">{{ sourceLabel(item.chunkIds) }}</small>
+        </div>
+      </section>
+      <p v-else-if="explain" class="muted" role="status">
+        Комментарий модели пока недоступен. Найденные товары и результаты проверок сохранены.
+      </p>
+      <details v-if="referenceSearch && result.references" class="sources-panel">
+        <summary>
+          Источники рекомендаций <span>{{ result.references.fragments.length }} фрагментов</span>
+        </summary>
+        <p class="muted">
+          Документы производителей используются как справочная информация и не подтверждают
+          характеристики учебных товаров.
         </p>
         <p v-if="result.references.status === 'disabled'">Справочный поиск отключён на сервере.</p>
         <p v-else-if="result.references.status === 'unavailable'">
-          Индекс справочных документов недоступен или не прошёл проверку.
+          Источники временно недоступны. Попробуйте повторить поиск позже.
         </p>
         <p v-else-if="result.references.status === 'empty'">
-          Релевантные фрагменты не найдены. Уточните запрос.
+          Источники по этому запросу не найдены. Уточните задачу.
         </p>
-        <div v-if="result.references.items.length" class="alert info">
-          <p>Непроверенный текст модели по черновым источникам:</p>
-          <p v-for="(item, index) in result.references.items" :key="index">
-            {{ item.text }} <small>Фрагменты: {{ item.chunkIds.join(', ') }}</small>
-          </p>
-        </div>
-        <p v-if="result.references.status === 'deterministic'">
-          Показаны найденные фрагменты. Модельное объяснение не получено или выключено.
-        </p>
-        <details v-for="fragment in result.references.fragments" :key="fragment.chunkId">
-          <summary>{{ fragment.title }} · страница {{ fragment.page }}</summary>
-          <p class="reference-text">{{ fragment.text }}</p>
-          <p>
-            {{ fragment.publisher }} · {{ fragment.version }} · статус: {{ fragment.reviewStatus }}
-          </p>
-          <p v-if="fragment.versionNote">{{ fragment.versionNote }}</p>
-          <a v-if="fragment.url" :href="fragment.url" target="_blank" rel="noopener noreferrer"
-            >Ссылка на источник</a
-          >
-          <p v-else>Ссылка на фактически полученный PDF не подтверждена.</p>
-          <small>{{ fragment.chunkId }} · SHA-256: {{ fragment.sha256 }}</small>
-        </details>
-        <small v-if="result.references.indexId"
-          >Исследовательский индекс: {{ result.references.indexId }}</small
-        >
-      </section>
-      <fieldset
-        v-for="category in result.categories"
-        :key="`${category.work}:${category.kind}:${category.coveringFamily}`"
-      >
-        <legend>
-          {{ workLabels[category.work] }} · {{ kindLabels[category.kind] || category.kind }}
-        </legend>
-        <p v-if="category.coveringFamily">Условие: покрытие {{ category.coveringFamily }}</p>
-        <p v-if="!category.candidates.length">
-          Кандидатов нет. Совместимые товары не подтверждены.
-        </p>
-        <article
-          v-for="candidate in category.candidates"
-          :key="candidate.productId"
-          class="search-candidate"
-        >
-          <label
-            ><input
-              v-model="selected[`${room.id}:${category.kind}`]"
-              type="radio"
-              :name="`${room.id}:${category.kind}`"
-              :value="candidate.productId"
-              :disabled="
-                busy ||
-                candidate.compatibility !== 'pass' ||
-                candidate.calculationReadiness !== 'ready'
-              "
-            />
-            {{ candidate.name }}</label
-          >
-          <p>
-            {{ candidate.reason }}
-            {{
-              candidate.calculationReadiness === 'unavailable'
-                ? 'Расчёт этой позиции недоступен.'
-                : ''
-            }}
-          </p>
-          <ul>
-            <li v-for="check in candidate.checks" :key="check.property">
-              {{ fieldLabels[check.property] || check.property }}: {{ check.reason }}
-            </li>
-          </ul>
-          <details v-if="candidate.sources.length">
-            <summary>Проверенные источники и ограничения</summary>
-            <div v-for="source in candidate.sources" :key="source.chunkId">
-              <p>{{ source.text }}</p>
-              <a :href="source.url" target="_blank" rel="noopener noreferrer">{{ source.title }}</a>
-              · {{ source.version }} · {{ source.section }}
-            </div>
-          </details>
-        </article>
-      </fieldset>
-      <div v-if="result.explanation.items.length" class="alert info">
-        <p>
-          {{
-            result.explanation.status === 'unverified_model_text'
-              ? 'Непроверенный текст модели. Характеристики сверяйте с источниками выше.'
-              : 'Объяснение по результатам серверных проверок.'
-          }}
-        </p>
-        <p v-for="item in result.explanation.items" :key="item.productId">
-          {{ item.text }} <small>Фрагменты: {{ item.chunkIds.join(', ') }}</small>
-        </p>
-      </div>
-      <p v-if="explain && result.explanation.status === 'deterministic'" role="status">
-        ИИ-объяснение не получено. Результаты проверок сохранены.
-      </p>
-      <label
-        ><input
-          v-model="confirmed"
-          type="checkbox"
-          :disabled="busy || !Object.keys(selected).length"
-        />
-        Подтверждаю условия и явно выбранные товары для расчёта этой комнаты</label
-      >
-      <p>
-        <button type="button" class="button primary" :disabled="busy || !confirmed" @click="apply">
-          Рассчитать выбранные товары
-        </button>
-      </p>
-      <small
-        >Каталог: {{ result.catalogReleaseId }} · Правила: {{ result.ruleSetId }} · Знания:
-        {{ result.knowledgeReleaseId || 'не опубликованы' }}</small
-      >
+        <ul class="source-list">
+          <li v-for="fragment in result.references.fragments" :key="fragment.chunkId">
+            <a v-if="fragment.url" :href="fragment.url" target="_blank" rel="noopener noreferrer">{{
+              fragment.title
+            }}</a
+            ><span v-else>{{ fragment.title }}</span
+            ><span class="muted"> · страница {{ fragment.page }}</span>
+          </li>
+        </ul>
+      </details>
+      <details v-if="result.warnings.length" class="sources-panel">
+        <summary>Что важно учесть</summary>
+        <ul>
+          <li v-for="warning in result.warnings" :key="warning">{{ warning }}</li>
+        </ul>
+      </details>
     </div>
-    <EstimateResult v-if="estimate" :estimate="estimate" />
   </section>
 </template>
 
 <style scoped>
 .material-search {
   margin-top: 1.5rem;
-  padding: 1rem;
-  border: 1px solid var(--border, #ddd);
-  border-radius: 12px;
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 1px solid #e1e7de;
+  border-radius: 18px;
+  background: #fff;
+  min-width: 0;
+}
+.material-search h2 {
+  margin: 0 0 0.5rem;
+}
+.material-search h3,
+.material-search h4 {
+  margin: 0;
 }
 .search-fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 0.75rem;
 }
-.reference-text {
-  white-space: pre-wrap;
+.search-results {
+  margin-top: 2rem;
+  display: grid;
+  gap: 1.5rem;
 }
-.search-candidate {
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #ddd;
+.results-heading,
+.category-heading {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
 }
-fieldset {
-  margin: 1rem 0;
+.eyebrow {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  color: #72816e;
+  margin-bottom: 0.5rem;
+}
+.result-count,
+.category-heading > span {
+  font-size: 0.8rem;
+  color: #71806e;
+}
+.selection-notice,
+.clarifications {
+  background: #faf6ed;
+  color: #795f32;
   padding: 1rem;
+  border-radius: 10px;
+  margin: 0;
+  line-height: 1.6;
 }
-small {
+.clarifications p {
+  margin: 0.5rem 0 0;
+}
+.product-category {
+  min-width: 0;
+}
+.category-heading {
+  margin-bottom: 0.8rem;
+}
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: 0.85rem;
+}
+.product-card {
+  border: 1px solid #e2e7df;
+  border-radius: 12px;
+  padding: 1rem;
+  min-width: 0;
+}
+.product-card-main {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+.product-description {
+  min-width: 0;
+  flex: 1;
+}
+.product-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  font-weight: 600;
+  margin-top: 0.6rem;
   overflow-wrap: anywhere;
+}
+.product-choice input {
+  flex: 0 0 auto;
+  margin-top: 0.3rem;
+}
+.compatibility-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  background: #f6f1e6;
+  color: #876b37;
+  font-size: 0.65rem;
+  border-radius: 5px;
+}
+.compatibility-badge.ready {
+  background: #edf4ea;
+  color: #456541;
+}
+.product-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0.8rem 0 0;
+  color: #304e42;
+}
+.product-price span {
+  font-size: 0.75rem;
+  color: #768174;
+  font-weight: 400;
+}
+.product-details {
+  margin-top: 0.9rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid #eef0eb;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+.product-details summary,
+.sources-panel summary {
+  cursor: pointer;
+  color: #526750;
+}
+.show-more {
+  border: 0;
+  background: transparent;
+  color: #426951;
+  padding: 0.8rem 0 0;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.cost-panel {
+  padding: 1.25rem;
+  background: #f6f8f3;
+  border: 1px solid #e4eadd;
+  border-radius: 12px;
+}
+.cost-panel p {
+  line-height: 1.7;
+  font-size: 0.85rem;
+  color: #64705f;
+}
+.confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  margin: 1rem 0;
+}
+.confirmation input {
+  flex: 0 0 auto;
+  margin-top: 0.3rem;
+}
+.model-comment {
+  border-left: 3px solid #70936e;
+  background: #f7f9f4;
+  padding: 1.4rem;
+  border-radius: 0 12px 12px 0;
+  min-width: 0;
+}
+.model-note {
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: #75806e;
+  margin: 0.75rem 0 1rem;
+}
+.comment-item {
+  display: block;
+  margin-top: 1rem;
+  max-width: 75ch;
+}
+.comment-item p {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  margin: 0 0 0.4rem;
+  overflow-wrap: anywhere;
+}
+.comment-item small {
+  color: #74836c;
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+.sources-panel {
+  border-top: 1px solid #e4e9e0;
+  padding-top: 1rem;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  min-width: 0;
+}
+.sources-panel summary span {
+  color: #7d8977;
+  margin-left: 0.5rem;
+  font-size: 0.7rem;
+}
+.source-list {
+  padding-left: 1.2rem;
+}
+.source-list li {
+  margin: 0.6rem 0;
+  overflow-wrap: anywhere;
+}
+.muted,
+.empty-message {
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: #7d8776;
+}
+@media (max-width: 700px) {
+  .product-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .material-search {
+    padding: 1rem;
+  }
+  .model-comment,
+  .cost-panel {
+    padding: 1rem;
+  }
 }
 </style>

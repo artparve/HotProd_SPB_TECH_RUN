@@ -2,14 +2,34 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import MaterialRecommendations from './MaterialRecommendations.vue'
 import { service } from '../services/api'
-import { newRoom, type Project, type Estimate } from '../domain/types'
+import { newRoom, type Project, type Estimate, type Product } from '../domain/types'
 import type { MaterialRecommendations as Result } from '../domain/materialRecommendations'
 
 vi.mock('../services/api', () => ({
-  service: { materialRecommendations: vi.fn(), applyMaterialRecommendations: vi.fn() },
+  service: {
+    catalog: vi.fn(),
+    materialRecommendations: vi.fn(),
+    applyMaterialRecommendations: vi.fn(),
+  },
 }))
 const id = '00000000-0000-0000-0000-000000000001'
 const requestId = '00000000-0000-0000-0000-000000000002'
+const pricedProduct: Product = {
+  id,
+  name: 'Краска',
+  category: 'Краска',
+  kind: 'paint',
+  price: '1290.50',
+  packageSize: 5,
+  unit: 'л',
+  saleUnit: 'банка',
+  works: ['paint'],
+  wet: null,
+  highLoad: null,
+  unheated: null,
+  description: '',
+  source: 'fixture',
+}
 function project(): Project {
   return {
     object: 'apartment',
@@ -59,7 +79,7 @@ async function setup(confirmed: boolean) {
   vi.mocked(service.materialRecommendations).mockResolvedValue(result(confirmed))
   const snapshot = project()
   const wrapper = mount(MaterialRecommendations, {
-    props: { project: snapshot },
+    props: { project: snapshot, products: [pricedProduct] },
     global: { stubs: { EstimateResult: true } },
   })
   const selects = wrapper.findAll('select')
@@ -73,7 +93,10 @@ async function setup(confirmed: boolean) {
   await flushPromises()
   return { wrapper, snapshot }
 }
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => {
+  vi.clearAllMocks()
+  vi.mocked(service.catalog).mockResolvedValue([])
+})
 describe('Material recommendations', () => {
   it('prevents applying unknown compatibility and renders model text as plain text', async () => {
     const { wrapper } = await setup(false)
@@ -81,6 +104,9 @@ describe('Material recommendations', () => {
     expect(wrapper.find('script').exists()).toBe(false)
     expect(wrapper.text()).toContain('Непроверенный текст модели')
     expect(wrapper.text()).toContain('<script>unsafe()</script>')
+    expect(wrapper.find('.product-price').text()).toMatch(/1\s*290,5/)
+    expect(wrapper.find('.product-price').text()).toContain('банка')
+    expect(wrapper.text()).toContain('Итоговую стоимость можно рассчитать после проверки')
     expect(service.applyMaterialRecommendations).not.toHaveBeenCalled()
   })
   it('requires explicit selection and confirmation before requesting the Java estimate', async () => {
@@ -104,6 +130,7 @@ describe('Material recommendations', () => {
   })
   it('shows draft PDF references without enabling an unknown SKU', async () => {
     const response = result(false)
+    vi.mocked(service.catalog).mockResolvedValue([pricedProduct])
     response.references = {
       status: 'unverified_model_text',
       indexId: 'a'.repeat(64),
@@ -137,7 +164,7 @@ describe('Material recommendations', () => {
     })
     await wrapper
       .findAll('label')
-      .find((l) => l.text().includes('Искать в справочных PDF'))!
+      .find((l) => l.text().includes('Учитывать инструкции производителей'))!
       .find('input')
       .setValue(true)
     await wrapper
@@ -146,8 +173,17 @@ describe('Material recommendations', () => {
       .trigger('click')
     await flushPromises()
     expect(wrapper.text()).toContain('Черновое объяснение')
+    expect(service.catalog).toHaveBeenCalledWith(expect.any(AbortSignal))
+    expect(wrapper.find('.product-price').text()).toMatch(/1\s*290,5/)
     expect(wrapper.text()).toContain('не подтверждают характеристики учебных товаров')
     expect(wrapper.text()).toContain('страница 1')
+    expect(wrapper.text()).not.toContain('a'.repeat(64))
+    expect(wrapper.text()).not.toContain('pdf:p1')
+    expect(wrapper.text()).not.toContain('SHA-256')
+    expect(wrapper.text()).not.toContain('Исследовательский индекс')
+    expect(wrapper.text()).not.toContain('Черновой фрагмент')
+    expect(wrapper.find('.model-comment').text()).toContain('Инструкция производителя · стр. 1')
+    expect(wrapper.find('.sources-panel').attributes('open')).toBeUndefined()
     expect(wrapper.find('input[type=radio]').attributes('disabled')).toBeDefined()
     expect(service.applyMaterialRecommendations).not.toHaveBeenCalled()
   })
