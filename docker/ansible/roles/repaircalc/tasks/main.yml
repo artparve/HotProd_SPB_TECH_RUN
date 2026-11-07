@@ -172,6 +172,32 @@
           changed_when: true
           no_log: true
 
+        # Re-extract every PDF on the target host, even when its checksum is unchanged.
+        # A failed build leaves the previous release, index and database untouched.
+        - name: Rebuild research PDF index on the server before restarting applications
+          ansible.builtin.command:
+            argv: "{{ release_compose + ['run', '--rm', '--no-deps', '--pull', 'never', 'rag-index'] }}"
+          when: release_llm_enabled | default(false) | bool
+          register: reference_index_build
+          failed_when: false
+          changed_when: true
+          no_log: true
+
+        - name: Save private index build result with the release
+          ansible.builtin.copy:
+            dest: "{{ release_path }}/reference-index-build.json"
+            content: "{{ {'rc': reference_index_build.rc | default(-1), 'stdout': (reference_index_build.stdout | default(''))[-16384:], 'stderr': (reference_index_build.stderr | default(''))[-16384:]} | to_json }}"
+            mode: "0600"
+          when: release_llm_enabled | default(false) | bool
+          no_log: true
+          diff: false
+
+        - name: Require a successfully rebuilt PDF index before updating applications
+          ansible.builtin.assert:
+            that: reference_index_build.rc | default(1) == 0
+            fail_msg: "Server PDF index build failed; applications were not restarted. See private reference-index-build.json in this release."
+          when: release_llm_enabled | default(false) | bool
+
         - name: Back up the existing database and check the archive before changing services
           ansible.builtin.script:
             cmd: "{{ (playbook_dir ~ '/../../scripts/deploy_target.py') | quote }} backup --path {{ release_path | quote }}"

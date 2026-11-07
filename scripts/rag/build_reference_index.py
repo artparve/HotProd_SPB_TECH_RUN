@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -111,14 +112,28 @@ def build(manifests, output, allow_draft=False):
     return version, manifest
 
 
+def activate(version):
+    """Atomically publish only an already validated build; old versions stay for rollback."""
+    version = Path(version).resolve()
+    with tempfile.TemporaryDirectory(prefix=".activate-", dir=version.parent) as temporary:
+        pointer = Path(temporary) / "current"
+        pointer.symlink_to(version.name, target_is_directory=True)
+        os.replace(pointer, version.parent / "current")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", action="append", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--allow-draft", action="store_true")
+    parser.add_argument("--activate", action="store_true", help="Atomically point current at the completed index")
     args = parser.parse_args()
+    tool = subprocess.run(["pdftotext", "-v"], capture_output=True, text=True, check=True, timeout=5)
+    extractor = (tool.stderr or tool.stdout).splitlines()[0][:256]
     version, manifest = build(args.manifest, args.output, args.allow_draft)
-    print(json.dumps({"directory": str(version), **manifest}, ensure_ascii=False))
+    if args.activate:
+        activate(version)
+    print(json.dumps({"directory": str(version), "extractorVersion": extractor, **manifest}, ensure_ascii=False))
 
 
 if __name__ == "__main__":

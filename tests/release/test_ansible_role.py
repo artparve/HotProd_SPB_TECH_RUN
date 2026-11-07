@@ -113,6 +113,9 @@ elif "logs" in args:
 elif args[0] == 'run' and os.environ.get('FAKE_KERNEL_FAIL') == '1':
     pathlib.Path(os.environ["FAKE_DOCKER_LOG"]).with_name('probe-owner').write_text(args[args.index('--label')+1].split('=',1)[1])
     sys.exit(1)
+elif "run" in args and "rag-index" in args and os.environ.get("FAKE_INDEX_FAIL") == "1":
+    print("PDF checksum mismatch", file=sys.stderr)
+    sys.exit(1)
 elif "up" in args and os.environ.get("FAKE_DOCKER_FAIL") == "1":
     print("private-test-registry-password", file=sys.stderr)
     sys.exit(23)
@@ -241,9 +244,29 @@ elif "up" in args:
         self.assertEqual(up["profiles"], "llm")
         self.assertIn("ollama", up["args"])
         self.assertTrue(any(arg.endswith("docker-compose.gpu.yml") for arg in up["args"]))
+        index = next(item for item in commands if "run" in item["args"] and "rag-index" in item["args"])
+        self.assertIn("--no-deps", index["args"])
+        self.assertLess(commands.index(index), commands.index(up))
         model = next(item for item in commands if "--pull" in item["args"] and "exec" in item["args"])
         self.assertEqual(model["args"][-4:], ["llm", "python", "-", "--pull"])
         self.assertTrue((self.directory / "stand/current").is_symlink())
+
+    def test_failed_index_keeps_previous_release_and_does_not_restart_applications(self):
+        self.variables["release_llm_enabled"] = True
+        (self.directory / "vars.json").write_text(json.dumps(self.variables))
+        previous = self.directory / "previous-release"
+        previous.mkdir()
+        (self.directory / "stand").mkdir()
+        current = self.directory / "stand/current"
+        current.symlink_to(previous, target_is_directory=True)
+        self.environ["FAKE_INDEX_FAIL"] = "1"
+        result = self.deploy()
+        self.assertNotEqual(result.returncode, 0)
+        commands = self.assert_cleaned()
+        self.assertEqual(current.resolve(), previous)
+        self.assertFalse(any("up" in c["args"] or "stop" in c["args"] for c in commands))
+        self.assertIn("Server PDF index build failed", result.stdout)
+        self.assertNotIn("private-test", result.stdout + result.stderr)
 
     def test_missing_or_unloadable_model_does_not_accept_ai_release(self):
         self.variables["release_llm_enabled"] = True

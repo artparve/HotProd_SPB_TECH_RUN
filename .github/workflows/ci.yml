@@ -95,6 +95,7 @@ jobs:
         env:
           PYTHONPATH: llm:llm/estimation:llm/classification
       - run: python -m unittest discover -s tests/release
+      - run: python -m unittest discover -s scripts/rag -p 'test_*.py'
       - run: python -B -m unittest discover -s tests -p test_catalog_assets.py
       - run: ansible-playbook -i localhost, docker/ansible/deploy.yml --syntax-check
       - name: Validate release Compose without real credentials

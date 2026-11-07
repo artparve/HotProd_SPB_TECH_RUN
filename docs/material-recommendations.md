@@ -88,18 +88,22 @@ python3 scripts/rag/build_reference_index.py \
 
 Локальный inference: `live_probe.py --local --directory <staging-каталог в рабочем проекте>` использует существующий `repaircalc-ollama-1`, образы `repaircalc-backend:local`, `repaircalc-estimator:room-plan-v1` и `mongo:7.0`. При локальном запуске тест задаёт `RAG_REFERENCE_TIMEOUT_SECONDS=600`, чтобы CPU-inference не ограничивался GPU-лимитом по умолчанию. Параметр поддержан Java и LLM-шлюзом; диапазон 1–1800 секунд, default 60. Общие `LLM_REQUEST_TIMEOUT_SECONDS` и `OLLAMA_TIMEOUT_SECONDS` также должны быть достаточны. Для браузера на таком стенде можно задать `VITE_REFERENCE_TIMEOUT_MS=650000`; по умолчанию ожидание остаётся 110000 мс. Увеличение таймаута не считается прохождением нагрузочной приёмки.
 
-## Удалённый сервер: контекст и индекс
+## Удалённый сервер: контекст и пересборка индекса
 
-Для CD и `scripts/release.py` контекст по умолчанию увеличен до **32768 токенов** (`env/rag.env.example`). Это полный бюджет входа и генерации, а не количество извлекаемых фрагментов. Локальный Compose сохраняет 16384, CPU-проба использовала 8192. Переменная GitHub Environment `OLLAMA_CONTEXT_LENGTH`, если уже задана, имеет приоритет; при обновлении сервера задавайте 32768 явно. Readiness проверяет фактический `context_length` через Ollama `/api/ps` и блокирует деплой при меньшем контексте.
+CD и `scripts/release.py` задают контекст **32768 токенов** (`env/rag.env.example`). Это полный бюджет входа и генерации. Локальный Compose сохраняет 16384, CPU-проба использовала 8192. Явно заданные GitHub Environment variables имеют приоритет. Readiness проверяет фактический `context_length` через Ollama `/api/ps` и блокирует деплой при меньшем контексте.
 
-Скопируйте неизменяемый каталог индекса на сервер, например в `/opt/repaircalc/reference-index/<hash>`, и задайте в GitHub Environment:
+При каждом AI-деплое Ansible запускает на целевом сервере отдельный одноразовый контейнер `rag-index` из LLM-образа того же commit. Образ содержит исходные PDF, реестры, Poppler и сборщик. Готовый индекс с рабочей машины не передаётся. Контейнер работает без сети, БД, Ollama и секретов, проверяет SHA-256 документов и заново извлекает все страницы. Даже при неизменившемся хеше выполняется повторное извлечение и сравнение результата. Сборка завершается до резервного копирования БД и перезапуска приложений; ошибка PDF или индекса останавливает деплой, сохраняя предыдущий релиз.
+
+Каждый релиз по умолчанию имеет собственный `docker/reference-index/`: неизменяемые версии по SHA-256 и атомарную ссылку `current`. Backend получает индекс только для чтения. Переключение `current` выполняется после успешной полной сборки. Старые версии сохраняются для отката. Приватный результат шага записывается в `reference-index-build.json` релиза.
+
+Настройки CD по умолчанию:
 
 ```text
 OLLAMA_CONTEXT_LENGTH=32768
 RAG_REFERENCE_SEARCH_ENABLED=true
-RAG_REFERENCE_INDEX_HOST_PATH=/opt/repaircalc/reference-index
-RAG_REFERENCE_INDEX=/app/reference-index/<hash>
+RAG_REFERENCE_INDEX_HOST_PATH=./reference-index
+RAG_REFERENCE_INDEX=/app/reference-index/current
 RAG_REFERENCE_TIMEOUT_SECONDS=60
 ```
 
-Compose монтирует корневой каталог индексов в backend только для чтения. Все пять параметров передаются CD в runtime; секретов среди них нет. До настройки индекс выключен. Для CPU можно увеличить таймаут отдельно; увеличенный контекст сам по себе не ускоряет инференс. После обновления обязательна реальная проверка `POST /api/v1/material-recommendations` с `referenceSearch=true`, `explain=true`, проверкой статуса и ссылок ответа.
+Справочный путь явно помечен `research_draft`, `usableForDecisions=false`, `productLinks=0`; сборка не подтверждает права, актуальность документов или свойства SKU. Локальный Compose по умолчанию не включает поиск: для ручной проверки задайте параметры из примера, выполните `docker compose ... --profile llm run --rm --no-deps rag-index`, затем запустите backend. Для CPU таймаут можно увеличить отдельно. После деплоя проверьте `POST /api/v1/material-recommendations` с `referenceSearch=true`, `explain=true`, статус и ссылки ответа.

@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
-from scripts.rag.build_reference_index import build, page_chunks
+from scripts.rag.build_reference_index import activate, build, page_chunks
 
 
 class ReferenceIndexTest(unittest.TestCase):
@@ -30,10 +30,24 @@ class ReferenceIndexTest(unittest.TestCase):
                 corpus = json.loads((path / 'corpus.json').read_text())
                 self.assertEqual([c['page'] for c in corpus['chunks']], [1, 2])
                 self.assertIsNone(corpus['documents'][0]['url'])
+                activate(path)
+                self.assertEqual((root / 'index/current').resolve(), path)
                 self.assertEqual(build([manifest], root / 'index', True)[0], path)
                 pdf.write_bytes(b'%PDF-changed')
                 with self.assertRaises(ValueError):
                     build([manifest], root / 'index', True)
+                self.assertEqual((root / 'index/current').resolve(), path)
+
+    def test_activation_replaces_pointer_and_retains_previous_version(self):
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            first, second = root / ('a' * 64), root / ('b' * 64)
+            first.mkdir()
+            second.mkdir()
+            activate(first)
+            activate(second)
+            self.assertEqual((root / 'current').resolve(), second)
+            self.assertTrue(first.is_dir())
 
     def test_chunks_are_bounded_even_for_long_lines(self):
         chunks = list(page_chunks(('длинная строка ' * 1000) + '\nконец', 1200))

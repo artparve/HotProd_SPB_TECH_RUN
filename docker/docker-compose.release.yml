@@ -6,5 +6,7 @@ services:
     image: ${IMAGE_PREFIX:?Set IMAGE_PREFIX}/backend:${IMAGE_TAG:?Set IMAGE_TAG}
   llm:
     image: ${IMAGE_PREFIX:?Set IMAGE_PREFIX}/llm:${IMAGE_TAG:?Set IMAGE_TAG}
+  rag-index:
+    image: ${IMAGE_PREFIX:?Set IMAGE_PREFIX}/llm:${IMAGE_TAG:?Set IMAGE_TAG}
   frontend:
     image: ${IMAGE_PREFIX:?Set IMAGE_PREFIX}/frontend:${IMAGE_TAG:?Set IMAGE_TAG}

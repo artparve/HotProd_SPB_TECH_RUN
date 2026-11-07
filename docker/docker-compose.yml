@@ -204,6 +204,26 @@ services:
       retries: ${HEALTH_RETRIES:-12}
     logging: *logging
 
+  rag-index:
+    image: repaircalc-llm:${IMAGE_TAG:-local}
+    profiles: [llm]
+    entrypoint:
+      [python, /app/scripts/rag/build_reference_index.py, --manifest, /app/data/rag/documents-v1/manifest.json, --manifest, /app/data/rag/coverage-v1/manifest.json, --output, /index, --allow-draft, --activate]
+    # Docker creates bind directories as root; this isolated one-shot job only writes /index.
+    user: "0:0"
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cpus: "1.0"
+    mem_limit: 512m
+    memswap_limit: 512m
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=32m,mode=1777"]
+    volumes:
+      - ${RAG_REFERENCE_INDEX_HOST_PATH:-./reference-index}:/index:rw
+    restart: "no"
+    logging: *logging
+
   frontend:
     image: repaircalc-frontend:${IMAGE_TAG:-local}
     build:
