@@ -73,6 +73,34 @@ afterEach(() => {
 })
 
 describe('RoomPlanImport', () => {
+  it('allows confirmed manual dimensions when the plan is unsupported', async () => {
+    prepareBrowser()
+    const unsupported = response()
+    unsupported.draft.shape = 'multiple'
+    vi.mocked(service.extractPlan).mockResolvedValue(unsupported as never)
+    const room = newRoom()
+    const wrapper = mount(RoomPlanImport, { props: { room } })
+    await load(wrapper)
+    await wrapper.get('.plan-review-fields > button').trigger('click')
+    await flushPromises()
+    const fields = wrapper.findAll('input[type="text"]')
+    expect(fields.map((field) => (field.element as HTMLInputElement).value)).toEqual([
+      '',
+      '',
+      '',
+      '',
+    ])
+    expect(fields.every((field) => !field.attributes('disabled'))).toBe(true)
+    for (const [index, value] of ['4', '3', '2.7', '0'].entries()) {
+      await fields[index]!.setValue(value)
+    }
+    expect(wrapper.get('button.button.primary').attributes('disabled')).toBeDefined()
+    await wrapper.get('input[type="checkbox"]').setValue(true)
+    await wrapper.get('button.button.primary').trigger('click')
+    expect(room).toMatchObject({ length: 4, width: 3, height: 2.7, openings: 0 })
+    expect(wrapper.emitted('applied')).toHaveLength(1)
+  })
+
   it('requires explicit missing values and confirmation before applying', async () => {
     prepareBrowser()
     vi.mocked(service.extractPlan).mockResolvedValue(response() as never)

@@ -43,8 +43,7 @@ const box = computed(() =>
   selected.value === 'openings' ? null : result.value?.draft[selected.value].bbox,
 )
 const canApply = computed(() => {
-  if (!result.value || busy.value || stale.value || unsupported.value || !verified.value)
-    return false
+  if (!result.value || busy.value || stale.value || !verified.value) return false
   try {
     applyPlanDimensions(props.room, fingerprint.value, values.value)
     return true
@@ -147,10 +146,11 @@ async function extract() {
     const response = await service.extractPlan(imageBase64.value)
     if (attempt !== generation) return
     result.value = response
+    const useRecognizedDimensions = response.draft.shape === 'rectangle'
     values.value = {
-      length: response.dimensionsMetres.length?.toString() || '',
-      width: response.dimensionsMetres.width?.toString() || '',
-      height: response.dimensionsMetres.height?.toString() || '',
+      length: useRecognizedDimensions ? response.dimensionsMetres.length?.toString() || '' : '',
+      width: useRecognizedDimensions ? response.dimensionsMetres.width?.toString() || '' : '',
+      height: useRecognizedDimensions ? response.dimensionsMetres.height?.toString() || '' : '',
       openings: '',
     }
   } catch (cause) {
@@ -255,8 +255,8 @@ function apply() {
               значение по плану.
             </p>
             <p v-if="unsupported" class="alert error" role="alert">
-              Нужна одна прямоугольная комната. Выделите её на исходном плане или используйте ручной
-              ввод ниже.
+              План не удалось распознать как одну прямоугольную комнату. Введите размеры нужной
+              комнаты вручную в поля ниже и подтвердите их.
             </p>
             <label v-for="key in dimensionKeys" :key="key" class="field plan-dimension">
               {{ labels[key] }}{{ key === 'openings' ? ', м²' : ', м' }}
@@ -268,11 +268,11 @@ function apply() {
                 :placeholder="
                   key === 'openings' ? 'Введите явно, включая 0' : 'Неизвестно — введите значение'
                 "
-                :disabled="!!unsupported || stale"
+                :disabled="stale"
                 @focus="selected = key"
                 @input="verified = false"
               />
-              <small v-if="key !== 'openings'"
+              <small v-if="key !== 'openings' && !unsupported"
                 >{{ result.draft[key].label || 'Подпись не найдена' }} ·
                 {{
                   { found: 'найдено', unknown: 'неизвестно', conflict: 'конфликт' }[
@@ -286,8 +286,8 @@ function apply() {
               вручную; отсутствие проёмов подтвердите числом 0.
             </p>
             <label class="plan-confirm"
-              ><input v-model="verified" type="checkbox" :disabled="stale || !!unsupported" /> Я
-              проверил размеры, единицы и площадь проёмов</label
+              ><input v-model="verified" type="checkbox" :disabled="stale" /> Я проверил размеры,
+              единицы и площадь проёмов</label
             >
             <button type="button" class="button primary" :disabled="!canApply" @click="apply">
               Применить параметры
