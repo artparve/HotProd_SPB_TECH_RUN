@@ -47,7 +47,7 @@ def classify(product, chain, *, model, base_url, monitor=None):
                        metadata=raw.response_metadata if raw is not None else {})
     envelope = {
         'source': product.source, 'source_id': product.source_id, 'cod_good': product.cod_good,
-        'taxonomy_version': TAXONOMY['version'], 'prompt_version': 'repair-classifier-prompt-v3',
+        'taxonomy_version': TAXONOMY['version'], 'prompt_version': 'repair-classifier-prompt-v4',
         'prompt_sha256': hashlib.sha256(PROMPT.encode()).hexdigest(),
         'taxonomy_sha256': hashlib.sha256(json.dumps(TAXONOMY, sort_keys=True, ensure_ascii=False).encode()).hexdigest(),
         'input_sha256': hashlib.sha256(json.dumps(normalized, sort_keys=True, ensure_ascii=False).encode()).hexdigest(),
