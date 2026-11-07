@@ -52,10 +52,15 @@ public class LlmClient {
   }
 
   public JsonNode call(String operation, Object body) {
+    return call(operation, body, timeout);
+  }
+
+  public JsonNode call(String operation, Object body, Duration deadline) {
+    if (deadline.isNegative() || deadline.isZero() || deadline.compareTo(timeout) > 0) deadline = timeout;
     if (!configured()) throw new Failure(503, "llm_unavailable");
     var request =
         HttpRequest.newBuilder(base.resolve("internal/v1/" + operation))
-            .timeout(timeout)
+            .timeout(deadline)
             .header("Authorization", "Bearer " + token)
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body)))
@@ -75,7 +80,7 @@ public class LlmClient {
     try {
       // A streaming InputStream completes at headers, so its reads escape HttpRequest.timeout.
       // Wait for the bounded body consumer under one deadline covering headers and body.
-      var response = pending.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+      var response = pending.get(deadline.toMillis(), TimeUnit.MILLISECONDS);
       JsonNode result = json.readTree(bytes.toByteArray());
       if (response.statusCode() != 200) {
         String code =

@@ -27,6 +27,7 @@ class Settings:
     predict: int = 4096
     threads: int = 8
     socket_timeout: int = 30
+    reference_timeout: int = 60
 
     @classmethod
     def environment(cls):
@@ -51,4 +52,5 @@ class Settings:
                    context=integer("OLLAMA_CONTEXT_LENGTH", 16384),
                    predict=integer("OLLAMA_NUM_PREDICT", 4096),
                    threads=integer("OLLAMA_NUM_THREADS", 8, maximum=256),
+                   reference_timeout=integer("RAG_REFERENCE_TIMEOUT_SECONDS", 60, maximum=1800),
                    socket_timeout=integer("LLM_SOCKET_TIMEOUT_SECONDS", 30, maximum=300))

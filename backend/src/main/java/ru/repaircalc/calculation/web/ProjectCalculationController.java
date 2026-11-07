@@ -11,9 +11,25 @@ import ru.repaircalc.common.web.ServiceUnavailableException;
 @RequestMapping("/api/v1")
 public class ProjectCalculationController {
   private final ProjectCalculationService service;
+  private final MaterialRecommendationService materialRecommendations;
+  private final MaterialSelectionService materialSelections;
 
-  public ProjectCalculationController(ProjectCalculationService service) {
+  public ProjectCalculationController(ProjectCalculationService service, MaterialRecommendationService materialRecommendations, MaterialSelectionService materialSelections) {
     this.service = service;
+    this.materialRecommendations = materialRecommendations;
+    this.materialSelections = materialSelections;
+  }
+
+  @PostMapping("/material-recommendations")
+  public MaterialRecommendationService.Result materialRecommendations(
+      @Valid @RequestBody MaterialRecommendationService.Request request) {
+    return materialRecommendations.recommend(request);
+  }
+
+  @PostMapping("/material-recommendations/{id}/estimate")
+  public ProductEstimate applyMaterials(@PathVariable UUID id,
+      @Valid @RequestBody MaterialSelectionService.Apply request) {
+    return materialSelections.apply(id, request);
   }
 
   @PostMapping("/estimate")

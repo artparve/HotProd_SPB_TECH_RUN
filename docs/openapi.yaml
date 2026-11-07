@@ -258,6 +258,178 @@ paths:
           $ref: '#/components/responses/Unavailable'
         default:
           $ref: '#/components/responses/Error'
+  /material-recommendations:
+    post:
+      operationId: recommendMaterialsWithEvidence
+      tags:
+      - Recommendations
+      summary: Подбор материалов по проверенным источникам с необязательным объяснением Ollama
+      description: Локальный BM25 baseline. При отсутствии актуальной опубликованной базы знаний кандидаты имеют compatibility=unknown.
+        explain=true вызывает локальный LLM-шлюз только при наличии подтверждённых кандидатов. Модельный текст всегда непроверенный;
+        ошибка модели не меняет результаты проверок. Геометрия необязательна для поиска; room необходим для последующего применения
+        выбора.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialRecommendationRequest'
+      responses:
+        '200':
+          description: Результат операции
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialRecommendations'
+        '422':
+          $ref: '#/components/responses/NeedsClarification'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        default:
+          $ref: '#/components/responses/Error'
+  /material-recommendations/{id}/estimate:
+    post:
+      operationId: applyMaterialRecommendations
+      tags:
+      - Estimates
+      summary: Применить явно выбранные подтверждённые товары к расчёту одной комнаты
+      description: Сервер хранит исходный подбор один час. Повторно проверяет комнату, условия, каталог, правила, базу знаний,
+        товары и связки. Все строки требуют явного выбора. Автоматическая замена запрещена. 409 stale_recommendation требует
+        нового подбора; 422 сообщает о недостающем выборе или неподтверждённой связке.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - project
+              - selections
+              properties:
+                project:
+                  $ref: '#/components/schemas/Project'
+                selections:
+                  type: object
+                  maxProperties: 7
+                  additionalProperties:
+                    type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Estimate'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/NeedsClarification'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        default:
+          $ref: '#/components/responses/Error'
+  /admin/knowledge-releases:
+    post:
+      operationId: publishKnowledge
+      tags:
+      - Admin
+      summary: Явная административная публикация проверенной базы знаний
+      description: Требуются существующая admin-сессия и X-CSRF-Token. Права и технические факты проверяет человек до отправки.
+        Точные ID версий товаров имеют вид catalogReleaseId:productId. Требования ссылаются только на существующие категории
+        kits. Нельзя использовать черновые источники. Полный корпус сохраняется неизменно; указатель переключается атомарно,
+        старые версии сохраняются.
+      parameters:
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KnowledgeBundle'
+      responses:
+        '200':
+          description: Результат операции
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeRelease'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/NeedsClarification'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        default:
+          $ref: '#/components/responses/Error'
+  /admin/knowledge-releases/{id}/activate:
+    post:
+      operationId: activateKnowledgeRelease
+      tags:
+      - Admin
+      summary: Активировать сохранённую версию базы знаний
+      description: Требуются admin-сессия и CSRF. Отозванная версия не может быть активирована. При откате повторно проверяются
+        версии каталога/правил и сроки источников.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Результат операции
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeRelease'
+        '422':
+          $ref: '#/components/responses/NeedsClarification'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        default:
+          $ref: '#/components/responses/Error'
+  /admin/knowledge-releases/{id}/revoke:
+    post:
+      operationId: revokeKnowledgeRelease
+      tags:
+      - Admin
+      summary: Отозвать базу знаний
+      description: Требуются admin-сессия и CSRF. Отозванная версия не может быть активирована. При откате повторно проверяются
+        версии каталога/правил и сроки источников.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: X-CSRF-Token
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Версия отозвана
+        '422':
+          $ref: '#/components/responses/NeedsClarification'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        default:
+          $ref: '#/components/responses/Error'
   /recommendations:
     post:
       operationId: recommendProducts
@@ -1228,6 +1400,702 @@ components:
         message: Не подтверждена норма расхода
         fields:
         - consumption
+    MaterialConditions:
+      type: object
+      required:
+      - humidity
+      - load
+      - heated
+      properties:
+        humidity:
+          type: string
+          enum:
+          - normal
+          - high
+          nullable: true
+        load:
+          type: string
+          enum:
+          - normal
+          - high
+          nullable: true
+        heated:
+          type: boolean
+          nullable: true
+        substrate:
+          type: string
+          minLength: 1
+          maxLength: 100
+          nullable: true
+        waterContact:
+          type: string
+          minLength: 1
+          maxLength: 100
+          nullable: true
+        covering:
+          type: string
+          minLength: 1
+          maxLength: 100
+          nullable: true
+        baseState:
+          type: string
+          minLength: 1
+          maxLength: 100
+          nullable: true
+        floorHeating:
+          type: boolean
+          nullable: true
+    MaterialRecommendationRequest:
+      type: object
+      required:
+      - works
+      properties:
+        works:
+          type: array
+          items:
+            type: string
+            enum:
+            - floor
+            - paint
+            - wallpaper
+            - electrical
+          minItems: 1
+          maxItems: 4
+        conditions:
+          $ref: '#/components/schemas/MaterialConditions'
+        query:
+          type: string
+          maxLength: 500
+          nullable: true
+        room:
+          $ref: '#/components/schemas/Room'
+        designPreferences:
+          type: string
+          maxLength: 500
+          nullable: true
+        explain:
+          type: boolean
+          default: false
+        renovation:
+          type: string
+          enum:
+          - cosmetic
+          - capital
+          - designer
+        object:
+          type: string
+          enum:
+          - apartment
+          - house
+          - studio
+        referenceSearch:
+          type: boolean
+          default: false
+          description: Явный запрос исследовательских PDF; требует серверного RAG_REFERENCE_SEARCH_ENABLED=true. Не подтверждает
+            SKU.
+    MaterialCandidate:
+      type: object
+      required:
+      - productId
+      - productVersionId
+      - name
+      - compatibility
+      - calculationReadiness
+      - reason
+      - checks
+      - sources
+      properties:
+        productId:
+          type: string
+          format: uuid
+        productVersionId:
+          type: string
+        name:
+          type: string
+        compatibility:
+          type: string
+          enum:
+          - pass
+          - unknown
+        calculationReadiness:
+          type: string
+          enum:
+          - ready
+          - unavailable
+        reason:
+          type: string
+        checks:
+          type: array
+          items:
+            type: object
+            required:
+            - property
+            - status
+            - reason
+            properties:
+              property:
+                type: string
+              status:
+                type: string
+                enum:
+                - pass
+                - fail
+                - unknown
+              reason:
+                type: string
+        sources:
+          type: array
+          items:
+            type: object
+            required:
+            - chunkId
+            - sourceId
+            - title
+            - url
+            - version
+            - sha256
+            - section
+            - text
+            properties:
+              chunkId:
+                type: string
+              sourceId:
+                type: string
+              title:
+                type: string
+              url:
+                type: string
+                format: uri
+                pattern: ^https://
+              version:
+                type: string
+              sha256:
+                type: string
+              section:
+                type: string
+              text:
+                type: string
+    MaterialRecommendations:
+      type: object
+      required:
+      - requestId
+      - status
+      - catalogReleaseId
+      - ruleSetId
+      - knowledgeReleaseId
+      - indexVersion
+      - retrievalVersion
+      - questions
+      - categories
+      - warnings
+      - explanation
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - ready
+          - needs_clarification
+          - partial
+        catalogReleaseId:
+          type: string
+          format: uuid
+        ruleSetId:
+          type: string
+          format: uuid
+        knowledgeReleaseId:
+          type: string
+          nullable: true
+        indexVersion:
+          type: string
+          nullable: true
+        retrievalVersion:
+          type: string
+          enum:
+          - bm25-v1
+        questions:
+          type: array
+          items:
+            type: object
+            required:
+            - field
+            - reason
+            - options
+            properties:
+              field:
+                type: string
+              reason:
+                type: string
+              options:
+                type: array
+                items:
+                  type: string
+        categories:
+          type: array
+          items:
+            type: object
+            required:
+            - work
+            - kind
+            - candidates
+            properties:
+              work:
+                type: string
+                enum:
+                - floor
+                - paint
+                - wallpaper
+                - electrical
+              kind:
+                type: string
+              coveringFamily:
+                type: string
+                nullable: true
+              candidates:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaterialCandidate'
+        warnings:
+          type: array
+          items:
+            type: string
+        explanation:
+          type: object
+          required:
+          - status
+          - items
+          properties:
+            status:
+              type: string
+              enum:
+              - deterministic
+              - unverified_model_text
+            model:
+              type: string
+              nullable: true
+            fallbackReason:
+              type: string
+              nullable: true
+            items:
+              type: array
+              items:
+                type: object
+                required:
+                - productId
+                - text
+                - chunkIds
+                properties:
+                  productId:
+                    type: string
+                    format: uuid
+                  text:
+                    type: string
+                    maxLength: 1500
+                  chunkIds:
+                    type: array
+                    items:
+                      type: string
+        references:
+          $ref: '#/components/schemas/ReferenceAnswer'
+    KnowledgeSource:
+      type: object
+      required:
+      - id
+      - title
+      - publisher
+      - url
+      - version
+      - retrievedOn
+      - validUntil
+      - sha256
+      - rightsStatus
+      - reviewStatus
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 80
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        publisher:
+          type: string
+          minLength: 1
+          maxLength: 200
+        url:
+          type: string
+          format: uri
+          pattern: ^https://
+          maxLength: 1000
+        version:
+          type: string
+          minLength: 1
+          maxLength: 100
+        retrievedOn:
+          type: string
+          format: date
+        validUntil:
+          type: string
+          format: date
+        sha256:
+          type: string
+          pattern: ^[a-f0-9]{64}$
+        rightsStatus:
+          type: string
+          enum:
+          - approved
+        reviewStatus:
+          type: string
+          enum:
+          - confirmed
+    KnowledgeChunk:
+      type: object
+      required:
+      - id
+      - productId
+      - productVersionId
+      - sourceId
+      - section
+      - text
+      properties:
+        id:
+          type: string
+          minLength: 1
+          maxLength: 80
+        productId:
+          type: string
+          format: uuid
+        productVersionId:
+          type: string
+          minLength: 1
+          maxLength: 100
+        sourceId:
+          type: string
+          minLength: 1
+          maxLength: 80
+        section:
+          type: string
+          minLength: 1
+          maxLength: 200
+        text:
+          type: string
+          minLength: 1
+          maxLength: 1500
+    KnowledgeClaim:
+      type: object
+      required:
+      - productId
+      - property
+      - value
+      - status
+      - chunkIds
+      properties:
+        productId:
+          type: string
+          format: uuid
+        property:
+          type: string
+          enum:
+          - work
+          - wet
+          - highLoad
+          - unheated
+          - substrate
+          - waterContact
+          - floorHeating
+          - covering
+          - baseState
+        value:
+          type: string
+          minLength: 1
+          maxLength: 100
+        status:
+          type: string
+          enum:
+          - confirmed
+          - unknown
+          - conflict
+        chunkIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 80
+          minItems: 1
+          maxItems: 10
+    KnowledgeRequirement:
+      type: object
+      required:
+      - work
+      - kind
+      - conditions
+      properties:
+        work:
+          type: string
+          enum:
+          - floor
+          - paint
+          - wallpaper
+          - electrical
+        kind:
+          type: string
+          minLength: 1
+          maxLength: 50
+        conditions:
+          type: array
+          items:
+            type: string
+            enum:
+            - humidity
+            - load
+            - heated
+            - substrate
+            - waterContact
+            - floorHeating
+            - covering
+            - baseState
+          minItems: 1
+          maxItems: 8
+    KnowledgeCombination:
+      type: object
+      required:
+      - first
+      - second
+      - status
+      - chunkIds
+      properties:
+        first:
+          type: string
+          format: uuid
+        second:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - pass
+          - fail
+          - unknown
+        chunkIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 80
+          minItems: 1
+          maxItems: 20
+    KnowledgeBundle:
+      type: object
+      required:
+      - catalogReleaseId
+      - ruleSetId
+      - sources
+      - chunks
+      - claims
+      - requirements
+      - combinations
+      properties:
+        catalogReleaseId:
+          type: string
+          format: uuid
+        ruleSetId:
+          type: string
+          format: uuid
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/KnowledgeSource'
+          minItems: 1
+          maxItems: 100
+        chunks:
+          type: array
+          items:
+            $ref: '#/components/schemas/KnowledgeChunk'
+          minItems: 1
+          maxItems: 500
+        claims:
+          type: array
+          items:
+            $ref: '#/components/schemas/KnowledgeClaim'
+          minItems: 1
+          maxItems: 500
+        requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/KnowledgeRequirement'
+          minItems: 1
+          maxItems: 30
+        combinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/KnowledgeCombination'
+          maxItems: 500
+    KnowledgeRelease:
+      type: object
+      required:
+      - id
+      - bundle
+      - checksum
+      - retrievalVersion
+      - publishedAt
+      - reviewedBy
+      - manifest
+      properties:
+        id:
+          type: string
+          format: uuid
+        bundle:
+          $ref: '#/components/schemas/KnowledgeBundle'
+        checksum:
+          type: string
+        retrievalVersion:
+          type: string
+          enum:
+          - bm25-v1
+        publishedAt:
+          type: string
+          format: date-time
+        reviewedBy:
+          type: string
+        manifest:
+          type: object
+          required:
+          - embeddingModel
+          - dimension
+          - normalizationVersion
+          - chunkingVersion
+          - documentCount
+          - productCount
+          properties:
+            embeddingModel:
+              type: string
+              enum:
+              - none
+            dimension:
+              type: integer
+              enum:
+              - 0
+            normalizationVersion:
+              type: string
+              enum:
+              - unicode-lower-yo-v1
+            chunkingVersion:
+              type: string
+              enum:
+              - operator-v1
+            documentCount:
+              type: integer
+              minimum: 0
+            productCount:
+              type: integer
+              minimum: 0
+    ReferenceAnswer:
+      type: object
+      required:
+      - status
+      - indexId
+      - corpusMode
+      - usableForDecisions
+      - fragments
+      - items
+      - model
+      - fallbackReason
+      properties:
+        status:
+          type: string
+          enum:
+          - disabled
+          - unavailable
+          - empty
+          - deterministic
+          - unverified_model_text
+        indexId:
+          type: string
+          nullable: true
+        corpusMode:
+          type: string
+          enum:
+          - research_draft
+        usableForDecisions:
+          type: boolean
+          enum:
+          - false
+        fragments:
+          type: array
+          items:
+            type: object
+            required:
+            - chunkId
+            - sourceId
+            - title
+            - publisher
+            - url
+            - sha256
+            - version
+            - versionNote
+            - page
+            - text
+            - reviewStatus
+            - rightsStatus
+            - usableForDecisions
+            properties:
+              chunkId:
+                type: string
+              sourceId:
+                type: string
+              title:
+                type: string
+              publisher:
+                type: string
+              url:
+                type: string
+                format: uri
+                nullable: true
+              sha256:
+                type: string
+                pattern: ^[a-f0-9]{64}$
+              version:
+                type: string
+              versionNote:
+                type: string
+              page:
+                type: integer
+                minimum: 1
+              text:
+                type: string
+                maxLength: 1200
+              reviewStatus:
+                type: string
+              rightsStatus:
+                type: string
+              usableForDecisions:
+                type: boolean
+                enum:
+                - false
+        items:
+          type: array
+          items:
+            type: object
+            required:
+            - text
+            - chunkIds
+            properties:
+              text:
+                type: string
+                maxLength: 1500
+              chunkIds:
+                type: array
+                items:
+                  type: string
+        model:
+          type: string
+          nullable: true
+        fallbackReason:
+          type: string
+          nullable: true
   responses:
     Estimate:
       description: Смета материалов и работ с формулами и источниками

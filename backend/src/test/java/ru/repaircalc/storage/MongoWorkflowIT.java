@@ -82,6 +82,9 @@ class MongoWorkflowIT {
   @Autowired CalculationSnapshotService snapshots;
   @Autowired ProjectCalculationService projects;
   @Autowired ProductCalculationService calculator;
+  @Autowired ru.repaircalc.materials.KnowledgeService knowledge;
+  @Autowired MaterialRecommendationService materials;
+  @Autowired MaterialSelectionService materialSelections;
 
   @BeforeEach
   void seed() {
@@ -740,6 +743,61 @@ class MongoWorkflowIT {
 "surface_locations":[{"label":"wall","evidence":[{"field":"description","quote":"стен"}]}],
 "substrates":[],"properties":{},"needs_review":true,"review_reasons":[]}}
 """);
+  }
+
+  @Test
+  void reviewedKnowledgeRetrievalSelectionRollbackAndRevocationUseImmutableVersions() {
+    var snapshot = snapshots.resolve();
+    var target = room("rag-room", List.of("paint"));
+    var candidates = projects.candidates(target, snapshot);
+    var paint = candidates.stream().filter(p -> p.kind().equals("paint")).findFirst().orElseThrow();
+    var primer = candidates.stream().filter(p -> p.kind().equals("primer")).findFirst().orElseThrow();
+    var request = new MaterialRecommendationService.Request(List.of("paint"),
+        new MaterialRecommendationService.Conditions("normal", "normal", true), "краска", target, null, false, "cosmetic", "apartment");
+    assertThat(materials.recommend(request).categories().stream().flatMap(c -> c.candidates().stream()))
+        .allMatch(c -> c.compatibility().equals("unknown"));
+    var today = java.time.LocalDate.now(java.time.ZoneOffset.UTC);
+    var source = new ru.repaircalc.materials.KnowledgeBundle.Source("test-source", "Учебный источник для интеграционного теста", "Test",
+        "https://example.test/fixture", "test-v1", today, today.plusDays(1), "a".repeat(64), "approved", "confirmed");
+    var chunks = List.of(paint, primer).stream().map(p -> new ru.repaircalc.materials.KnowledgeBundle.Chunk(
+        p.kind(), p.id(), ru.repaircalc.materials.KnowledgeService.revision(snapshot.catalog().releaseId(), p.id()),
+        source.id(), "Тест", "Искусственное доказательство только для автоматического теста.")).toList();
+    var claims = List.of(paint, primer).stream().map(p -> new ru.repaircalc.materials.KnowledgeBundle.Claim(
+        p.id(), "work", "paint", "confirmed", List.of(p.kind()))).toList();
+    var requirements = List.of("paint", "primer").stream().map(k -> new ru.repaircalc.materials.KnowledgeBundle.Requirement(
+        "paint", k, List.of("humidity", "load", "heated"))).toList();
+    var combinations = List.of(new ru.repaircalc.materials.KnowledgeBundle.Combination(paint.id(), primer.id(), "pass", List.of("paint", "primer")));
+    var bundle = new ru.repaircalc.materials.KnowledgeBundle(snapshot.catalog().releaseId(), snapshot.rules().id(),
+        List.of(source), chunks, claims, requirements, combinations);
+    var first = knowledge.publish(bundle, "test-expert");
+    assertThat(knowledge.active(snapshot).id()).isEqualTo(first.id());
+    var recommendation = materials.recommend(request);
+    assertThat(recommendation.status()).isEqualTo("ready");
+    assertThat(recommendation.explanation().status()).isEqualTo("deterministic");
+    var selected = Map.of("rag-room:paint", paint.id().toString(), "rag-room:primer", primer.id().toString());
+    var project = new ProjectInput("apartment", "cosmetic", List.of(target));
+    var estimate = materialSelections.apply(recommendation.requestId(), new MaterialSelectionService.Apply(project, selected));
+    assertThat(estimate.lines()).hasSize(2);
+    assertThat(estimate.lines().stream().map(l -> l.product().id())).containsExactlyInAnyOrder(paint.id(), primer.id());
+    assertThatThrownBy(() -> materialSelections.apply(recommendation.requestId(), new MaterialSelectionService.Apply(project,
+        Map.of("rag-room:paint", paint.id().toString())))).isInstanceOfSatisfying(ru.repaircalc.common.web.ApiStatusException.class,
+            e -> assertThat(e.status).isEqualTo(422));
+    var changedRoom = new ProjectInput.Room(target.id(), target.name(), target.type(), new BigDecimal("6"),
+        target.width(), target.height(), target.openings(), target.humidity(), target.load(), target.heated(), target.works(),
+        target.reserve(), target.layers(), target.sockets(), target.cableLength());
+    assertThatThrownBy(() -> materialSelections.apply(recommendation.requestId(), new MaterialSelectionService.Apply(
+        new ProjectInput("apartment", "cosmetic", List.of(changedRoom)), selected)))
+        .isInstanceOfSatisfying(ru.repaircalc.common.web.ApiStatusException.class, e -> assertThat(e.code).isEqualTo("stale_recommendation"));
+    var second = knowledge.publish(bundle, "test-expert");
+    assertThatThrownBy(() -> materialSelections.apply(recommendation.requestId(), new MaterialSelectionService.Apply(project, selected)))
+        .isInstanceOfSatisfying(ru.repaircalc.common.web.ApiStatusException.class, e -> assertThat(e.code).isEqualTo("stale_recommendation"));
+    knowledge.activate(first.id());
+    assertThat(knowledge.active(snapshot).id()).isEqualTo(first.id());
+    assertThat(materialSelections.apply(recommendation.requestId(), new MaterialSelectionService.Apply(project, selected)).lines()).hasSize(2);
+    knowledge.revoke(first.id(), "test-expert");
+    assertThat(knowledge.active(snapshot)).isNull();
+    assertThatThrownBy(() -> knowledge.activate(first.id())).isInstanceOf(ru.repaircalc.common.web.ApiStatusException.class);
+    assertThat(knowledge.activate(second.id()).id()).isEqualTo(second.id());
   }
 
   public static ProjectInput.Room room(String id, List<String> works) {

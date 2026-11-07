@@ -13,8 +13,12 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(assignableTypes = {AdminProductController.class, AdminAuthController.class, AdminClassificationController.class, AdminWorkflowController.class})
+@RestControllerAdvice(assignableTypes = {AdminProductController.class, AdminAuthController.class, AdminClassificationController.class, AdminWorkflowController.class, AdminKnowledgeController.class})
 public class AdminErrorHandler extends ResponseEntityExceptionHandler {
+    @ExceptionHandler(ru.repaircalc.common.web.ApiStatusException.class)
+    ResponseEntity<Error> knowledge(ru.repaircalc.common.web.ApiStatusException exception, HttpServletResponse response) {
+        return ResponseEntity.status(exception.status).body(new Error(exception.code, exception.getMessage(), response.getHeader("X-Request-ID"), List.of()));
+    }
     @ExceptionHandler(AdminException.class)
     ResponseEntity<Error> admin(AdminException exception, HttpServletResponse response) {
         if (exception.status() == 429) response.setHeader("Retry-After", "60");

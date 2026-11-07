@@ -164,7 +164,7 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn("REGISTRY_PASSWORD: ${{ github.token }}", workflow)
 
     def test_shared_templates_separate_secret_keys_and_cover_release_settings(self):
-        public_text = (release.ROOT / "env/.env").read_text(encoding="utf-8")
+        public_text = (release.ROOT / "env/.env").read_text(encoding="utf-8") + "\n" + (release.ROOT / "env/rag.env.example").read_text(encoding="utf-8")
         secret_text = (release.ROOT / "env/secret.env.example").read_text(encoding="utf-8")
         public_keys = set(re.findall(r"^([A-Z][A-Z0-9_]*)=", public_text, re.MULTILINE))
         secret_keys = set(re.findall(r"^([A-Z][A-Z0-9_]*)=", secret_text, re.MULTILINE))

@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminProductForm from '../components/AdminProductForm.vue'
+import AdminKnowledge from '../components/AdminKnowledge.vue'
 import AdminProductWorkflow from '../components/AdminProductWorkflow.vue'
 import { admin, AdminApiError } from '../services/admin'
 import type { AdminDraft, AdminProduct } from '../domain/admin'
@@ -255,6 +256,7 @@ onMounted(initialize)
         ><RouterLink to="/admin/products/new">Новая карточка</RouterLink>
       </nav>
       <p v-if="busy" role="status">Выполняем запрос…</p>
+      <AdminKnowledge v-if="!isCard" />
       <template v-if="!isCard">
         <form class="admin-filters" @submit.prevent="search()">
           <label>Название или внешний ID<input v-model="filters.q" maxlength="500" /></label>

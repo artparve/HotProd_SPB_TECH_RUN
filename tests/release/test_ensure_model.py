@@ -15,7 +15,7 @@ class EnsureModelTests(unittest.TestCase):
         calls = []
 
         def transport(request, timeout):
-            calls.append((request.full_url, json.loads(request.data)))
+            calls.append((request.full_url, json.loads(request.data) if request.data else None))
             value = responses.pop(0)
             if isinstance(value, Exception):
                 raise value
@@ -30,14 +30,20 @@ class EnsureModelTests(unittest.TestCase):
         return HTTPError("http://ollama/api/show", 404, "missing", {}, None)
 
     def test_existing_model_is_loaded_without_repull(self):
-        calls = self.execute([{"details": {}}, {"done": True}], pull=True)
-        self.assertEqual([url.rsplit("/", 1)[-1] for url, _ in calls], ["show", "generate"])
-        self.assertEqual(calls[-1][1]["options"]["num_ctx"], 16384)
+        calls = self.execute([{"details": {}}, {"done": True}, {"models": [{"name": "test:1", "context_length": 16384}]}], pull=True)
+        self.assertEqual([url.rsplit("/", 1)[-1] for url, _ in calls], ["show", "generate", "ps"])
+        self.assertEqual(calls[1][1]["options"]["num_ctx"], 16384)
 
     def test_missing_local_model_is_downloaded_then_rechecked(self):
         calls = self.execute([self.missing(), b'{"status":"pulling"}\n{"status":"success"}\n',
-                              {"details": {}}, {"done": True}], pull=True)
-        self.assertEqual([url.rsplit("/", 1)[-1] for url, _ in calls], ["show", "pull", "show", "generate"])
+                              {"details": {}}, {"done": True}, {"models": [{"name": "test:1", "context_length": 16384}]}], pull=True)
+        self.assertEqual([url.rsplit("/", 1)[-1] for url, _ in calls], ["show", "pull", "show", "generate", "ps"])
+
+    def test_smaller_or_missing_context_blocks_deployment(self):
+        for state in ({"models": []}, {"models": [{"name": "test:1", "context_length": 8192}]},
+                      {"models": [{"name": "other:1", "context_length": 32768}]}):
+            with self.subTest(state=state), self.assertRaisesRegex(RuntimeError, "context"):
+                self.execute([{"details": {}}, {"done": True}, state])
 
     def test_missing_external_model_is_not_downloaded(self):
         with self.assertRaisesRegex(RuntimeError, "unavailable"):

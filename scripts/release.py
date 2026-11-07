@@ -26,6 +26,10 @@ for _line in (ROOT / 'env/.env').read_text(encoding='utf-8').splitlines():
         _name, _value = _line.split('=', 1)
         if not _name.startswith(('VITE_', 'DEV_', 'LOCAL_')) and _name not in {'MONGO_URI', 'API_UPSTREAM', 'LLM_SERVICE_URL', 'SERVER_ADDRESS', 'SERVER_PORT', 'SPRING_PROFILES_ACTIVE'}:
             DEPLOYMENT_PUBLIC_DEFAULTS[_name] = _value
+for _line in (ROOT / 'env/rag.env.example').read_text(encoding='utf-8').splitlines():
+    if _line and not _line.lstrip().startswith('#') and '=' in _line:
+        _name, _value = _line.split('=', 1)
+        DEPLOYMENT_PUBLIC_DEFAULTS[_name] = _value
 DEPLOYMENT_SECRET_DEFAULTS = {'MONGO_ROOT_PASSWORD': None, 'MONGO_PASSWORD': None, 'MONGO_KEYFILE_SECRET': None,
                               'INTERNAL_SERVICE_TOKEN': '', 'ADMIN_PASSWORD_HASH': ''}
 DEPLOYMENT_ENV_DEFAULTS = {**DEPLOYMENT_PUBLIC_DEFAULTS, **DEPLOYMENT_SECRET_DEFAULTS}

@@ -1,0 +1,185 @@
+{
+  "documentCount": 19,
+  "pageCount": 544,
+  "chunkCount": 2767,
+  "emptyPageCount": 2,
+  "usableForDecisions": false,
+  "productLinks": 0,
+  "documents": [
+    {
+      "id": "knauf-catalog-2026",
+      "title": "Сухие строительные смеси и готовые составы КНАУФ: сборник информационных листов 2025",
+      "pages": 164,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": "На обложке указан 2025 год; не подтверждено соответствие запрошенному каталогу 2026."
+    },
+    {
+      "id": "knauf-betogrund-2026",
+      "title": "КНАУФ-Бетогрунд: информационный лист 05/2026",
+      "pages": 2,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "knauf-tifengrund-2025",
+      "title": "КНАУФ-Тифенгрунд: информационный лист 06/2026",
+      "pages": 2,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": "Имя файла и идентификатор сохранили для связи с исходным запросом; фактическая редакция 06/2026."
+    },
+    {
+      "id": "knauf-binder-2026",
+      "title": "Вяжущее КНАУФ: информационный лист 04/2026",
+      "pages": 4,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": "Получена редакция 04/2026 вместо запрошенной 01/2026."
+    },
+    {
+      "id": "teknos-timantti12",
+      "title": "TIMANTTI 12: техническая спецификация",
+      "pages": 3,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "teknos-biora7",
+      "title": "BIORA 7: техническая спецификация",
+      "pages": 4,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "teknos-katto",
+      "title": "TEKNOSPRO KATTO: спецификация изделия 1531",
+      "pages": 3,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": "Редакция 2016 года; актуальность необходимо проверить."
+    },
+    {
+      "id": "teknos-floor",
+      "title": "TEKNOFLOOR AQUA: техническая спецификация",
+      "pages": 4,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "litokol-catalog-2026",
+      "title": "Каталог продукции LITOKOL 2026",
+      "pages": 285,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "litokol-waterproofing",
+      "title": "Гидроизоляция: каталог-навигатор",
+      "pages": 13,
+      "emptyPages": [
+        1
+      ],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "litokol-adhesives",
+      "title": "Каталог клеевых составов",
+      "pages": 17,
+      "emptyPages": [
+        1
+      ],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "litokol-adhesive-comparison",
+      "title": "Карта характеристик клеевых составов",
+      "pages": 1,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "litokol-adhesive-selection",
+      "title": "Область применения цементных клеевых смесей",
+      "pages": 4,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "schneider-etude-ip44-open",
+      "title": "Розетки серии Этюд IP44 открытой установки: инструкция и паспорт PA16-044",
+      "pages": 3,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": "Дата выпуска страницы и дата создания PDF различаются; актуальность требует проверки."
+    },
+    {
+      "id": "tarkett-laminate",
+      "title": "Tarkett ламинат: укладка и уход",
+      "pages": 9,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "tarkett-spc",
+      "title": "Tarkett SPC Art Vinyl: укладка и уход",
+      "pages": 10,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "tarkett-vinyl",
+      "title": "Tarkett Art Vinyl клеевой: укладка и уход",
+      "pages": 8,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "quickstep-heating",
+      "title": "Quick-Step: укладка на тёплый пол",
+      "pages": 6,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    },
+    {
+      "id": "applico-wallpaper",
+      "title": "Апплико: инструкция для дизайнерских обоев",
+      "pages": 2,
+      "emptyPages": [],
+      "reviewStatus": "draft",
+      "rightsStatus": "not_assessed",
+      "versionNote": ""
+    }
+  ]
+}

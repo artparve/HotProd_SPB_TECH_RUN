@@ -1,3 +1,4 @@
+import { knowledgeBundleSchema, knowledgeReleaseSchema } from '../domain/knowledge'
 import {
   classificationJobSchema,
   reviewOptionsSchema,
@@ -80,6 +81,28 @@ async function request<T>(
 }
 
 export const admin = {
+  async publishKnowledge(bundle: unknown) {
+    return (
+      await request(
+        '/knowledge-releases',
+        knowledgeReleaseSchema,
+        'POST',
+        knowledgeBundleSchema.parse(bundle),
+      )
+    ).data
+  },
+  async activateKnowledge(id: string) {
+    return (
+      await request(
+        `/knowledge-releases/${encodeURIComponent(id)}/activate`,
+        knowledgeReleaseSchema,
+        'POST',
+      )
+    ).data
+  },
+  async revokeKnowledge(id: string) {
+    await request(`/knowledge-releases/${encodeURIComponent(id)}/revoke`, z.null(), 'POST')
+  },
   async classifications(id: string) {
     return (
       await request(

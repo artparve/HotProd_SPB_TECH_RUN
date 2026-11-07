@@ -29,6 +29,7 @@ public class MongoSchema {
     index("admin_product", "updatedAt", "id");
     index("admin_audit_event", "productId", "createdAt");
     index("inspiration", "id");
+    store.mongo.indexOps("material_recommendation").ensureIndex(new Index().on("expiresAt", Direction.ASC).expire(java.time.Duration.ZERO));
   }
 
   private void unique(String collection, String... fields) {

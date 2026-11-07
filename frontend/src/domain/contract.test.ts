@@ -1,3 +1,8 @@
+import {
+  materialRecommendationRequestSchema,
+  materialRecommendationsSchema,
+} from './materialRecommendations'
+import { knowledgeBundleSchema, knowledgeReleaseSchema } from './knowledge'
 // @vitest-environment node
 import SwaggerParser from '@apidevtools/swagger-parser'
 import { resolve } from 'node:path'
@@ -50,11 +55,28 @@ describe('OpenAPI contract', () => {
       )
     }
   })
+  it('documents the material retrieval and reviewed knowledge contracts', async () => {
+    const api = await SwaggerParser.validate(contractPath)
+    if (!('components' in api)) throw new Error('Expected OpenAPI 3 document')
+    for (const [name, shape] of Object.entries({
+      MaterialRecommendationRequest: materialRecommendationRequestSchema.shape,
+      MaterialRecommendations: materialRecommendationsSchema.shape,
+      KnowledgeBundle: knowledgeBundleSchema.shape,
+      KnowledgeRelease: knowledgeReleaseSchema.shape,
+    })) {
+      const schema = api.components!.schemas![name]
+      if ('$ref' in schema) throw new Error(`Unresolved schema: ${name}`)
+      expect(Object.keys(schema.properties!).sort(), name).toEqual(Object.keys(shape).sort())
+    }
+  })
   it('is a valid OpenAPI document with resolvable references and all client endpoints', async () => {
     const api = await SwaggerParser.validate(contractPath)
     if (!('openapi' in api)) throw new Error('Expected OpenAPI 3 document')
     expect(api.openapi).toBe('3.0.3')
     expect(Object.keys(api.paths!).sort()).toEqual([
+      '/admin/knowledge-releases',
+      '/admin/knowledge-releases/{id}/activate',
+      '/admin/knowledge-releases/{id}/revoke',
       '/admin/login',
       '/admin/logout',
       '/admin/products',
@@ -67,6 +89,8 @@ describe('OpenAPI contract', () => {
       '/admin/review-options',
       '/admin/session',
       '/estimate',
+      '/material-recommendations',
+      '/material-recommendations/{id}/estimate',
       '/materials/calculate',
       '/materials/estimate',
       '/plans/extract',

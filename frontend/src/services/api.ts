@@ -18,6 +18,11 @@ import type { Product, ProductInput, Project, Room, RoomType } from '../domain/t
 import { apiErrorSchema, materialEstimateSchema, materialRequestSchema } from '../domain/materials'
 import { planResultSchema } from '../domain/plans'
 import {
+  materialRecommendationRequestSchema,
+  materialRecommendationsSchema,
+  type MaterialRecommendationRequest,
+} from '../domain/materialRecommendations'
+import {
   inspirationMatchesRoom,
   roomInspirationFeedSchema,
   roomInspirationRequestSchema,
@@ -39,6 +44,7 @@ const apiTimeout = timeoutSetting(import.meta.env.VITE_API_TIMEOUT_MS, 15000)
 const llmTimeout = timeoutSetting(import.meta.env.VITE_LLM_TIMEOUT_MS, 1260000)
 const planTimeout = timeoutSetting(import.meta.env.VITE_PLAN_TIMEOUT_MS, 660000)
 const imageTimeout = timeoutSetting(import.meta.env.VITE_INSPIRATION_TIMEOUT_MS, 120000)
+const referenceTimeout = timeoutSetting(import.meta.env.VITE_REFERENCE_TIMEOUT_MS, 110000)
 
 async function request<T>(
   path: string,
@@ -191,6 +197,29 @@ export const service = {
     if (import.meta.env.DEV && dataMode === 'demo')
       return (await import('./demo')).estimateDemo(project, selections)
     return request('/estimate', estimateSchema, { project, selections }, apiTimeout, signal)
+  },
+  async materialRecommendations(body: MaterialRecommendationRequest, signal?: AbortSignal) {
+    return request(
+      '/material-recommendations',
+      materialRecommendationsSchema,
+      materialRecommendationRequestSchema.parse(body),
+      body.referenceSearch && body.explain ? referenceTimeout : 45000,
+      signal,
+    )
+  },
+  async applyMaterialRecommendations(
+    id: string,
+    project: Project,
+    selections: Record<string, string>,
+    signal?: AbortSignal,
+  ) {
+    return request(
+      `/material-recommendations/${encodeURIComponent(id)}/estimate`,
+      estimateSchema,
+      { project, selections },
+      apiTimeout,
+      signal,
+    )
   },
   async recommendations(room: Room) {
     if (import.meta.env.DEV && dataMode === 'demo')

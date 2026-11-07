@@ -2,6 +2,7 @@
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import AppIcon from '../components/AppIcon.vue'
 import RoomEditor from '../components/RoomEditor.vue'
+import MaterialRecommendations from '../components/MaterialRecommendations.vue'
 import RoomPlan from '../components/RoomPlan.vue'
 import ProductSwatch from '../components/ProductSwatch.vue'
 import EstimateResult from '../components/EstimateResult.vue'
@@ -380,6 +381,7 @@ async function replace(key: string, event: Event) {
             </button>
           </div>
         </form>
+        <MaterialRecommendations :project="inspirationProject" />
       </template>
 
       <template v-else-if="step === 2">

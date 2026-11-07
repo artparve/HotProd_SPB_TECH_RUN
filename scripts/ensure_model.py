@@ -14,8 +14,8 @@ def ensure_model(pull=False):
     base = os.environ["OLLAMA_URL"].rstrip("/")
     model = os.environ["OLLAMA_MODEL"]
 
-    def request(path, body, timeout=600):
-        req = Request(base + path, data=json.dumps(body).encode(),
+    def request(path, body=None, timeout=600):
+        req = Request(base + path, data=json.dumps(body).encode() if body is not None else None,
                       headers={"Content-Type": "application/json"})
         return urlopen(req, timeout=timeout)
 
@@ -41,13 +41,23 @@ def ensure_model(pull=False):
             metadata = json.load(response)
     if not isinstance(metadata, dict) or "details" not in metadata:
         raise RuntimeError("Invalid model metadata")
-    # Empty generate loads weights without an arbitrary prompt or model answer.
+    context = int(os.environ.get("OLLAMA_CONTEXT_LENGTH", "16384"))
+    if context < 1024:
+        raise ValueError("Invalid context length")
+    # Empty generate loads weights; /api/ps verifies the actual allocated context.
     with request("/api/generate", {"model": model, "stream": False, "keep_alive": "5m",
-                                  "options": {"num_ctx": int(os.environ.get("OLLAMA_CONTEXT_LENGTH", "16384"))}}) as response:
+                                  "options": {"num_ctx": context}}) as response:
         loaded = json.load(response)
     if not isinstance(loaded, dict) or loaded.get("done") is not True or loaded.get("error"):
         raise RuntimeError("Configured model could not load")
-    print(json.dumps({"model": model, "status": "ready"}))
+    with request("/api/ps") as response:
+        running = json.load(response)
+    if not isinstance(running, dict) or not any(
+        item.get("name", item.get("model")) == model and item.get("context_length", 0) >= context
+        for item in running.get("models", []) if isinstance(item, dict)
+    ):
+        raise RuntimeError("Configured model context was not allocated")
+    print(json.dumps({"model": model, "status": "ready", "contextLength": context}))
 
 
 if __name__ == "__main__":
