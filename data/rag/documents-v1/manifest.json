@@ -293,5 +293,31 @@
     "pages": 4,
     "text_extraction_sample_chars": 8754,
     "text_extraction_sample_status": "ok"
+  },
+  {
+    "id": "schneider-etude-ip44-open",
+    "title": "Розетки серии Этюд IP44 открытой установки: инструкция и паспорт PA16-044",
+    "publisher": "Schneider Electric",
+    "source_page_url": "https://www.se.com/kz/ru/download/document/ROSTK_ETUDE_IP44_OPEN/",
+    "source_url": null,
+    "acquisition": "provided_by_user",
+    "retrieved_on": "2026-11-07",
+    "document_version": "PDF metadata 2015-11-02; source page release 2017-07-26",
+    "version_note": "Дата выпуска страницы и дата создания PDF различаются; актуальность требует проверки.",
+    "tags": [
+      "socket",
+      "electrical",
+      "ip44"
+    ],
+    "rights_status": "not_assessed",
+    "review_status": "draft",
+    "production_index_approved": false,
+    "status": "downloaded",
+    "file": "files/Rosetki_Etude_IP44_open.pdf",
+    "sha256": "9c3b32a05d1ba1e71e893dacc0074002f76beca7d86cd0424899f82f4dc43efc",
+    "bytes": 1459593,
+    "pages": 3,
+    "text_extraction_sample_chars": 4373,
+    "text_extraction_sample_status": "ok"
   }
 ]
