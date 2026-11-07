@@ -30,9 +30,13 @@ class ReferenceIndexTest(unittest.TestCase):
                 corpus = json.loads((path / 'corpus.json').read_text())
                 self.assertEqual([c['page'] for c in corpus['chunks']], [1, 2])
                 self.assertIsNone(corpus['documents'][0]['url'])
+                self.assertEqual(path.stat().st_mode & 0o777, 0o755)
+                self.assertEqual((path / 'corpus.json').stat().st_mode & 0o777, 0o644)
                 activate(path)
                 self.assertEqual((root / 'index/current').resolve(), path)
+                path.chmod(0o700)
                 self.assertEqual(build([manifest], root / 'index', True)[0], path)
+                self.assertEqual(path.stat().st_mode & 0o777, 0o755)
                 pdf.write_bytes(b'%PDF-changed')
                 with self.assertRaises(ValueError):
                     build([manifest], root / 'index', True)

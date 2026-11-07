@@ -103,13 +103,23 @@ def build(manifests, output, allow_draft=False):
     if version.exists():
         if (version / "corpus.json").read_bytes() != payload or (version / "manifest.json").read_bytes() != canonical(manifest):
             raise ValueError("Existing index does not match checksum")
+        make_readable(version)
         return version, manifest
     with tempfile.TemporaryDirectory(prefix=".build-", dir=output) as temporary:
         staged = Path(temporary)
         (staged / "corpus.json").write_bytes(payload)
         (staged / "manifest.json").write_bytes(canonical(manifest))
+        make_readable(staged)
         staged.rename(version)
     return version, manifest
+
+
+def make_readable(version):
+    # TemporaryDirectory starts at 0700. The builder is root, Java is UID 10001.
+    # Only public research artifacts are shared; the backend mounts them read-only.
+    for name in ("corpus.json", "manifest.json"):
+        (version / name).chmod(0o644)
+    version.chmod(0o755)
 
 
 def activate(version):

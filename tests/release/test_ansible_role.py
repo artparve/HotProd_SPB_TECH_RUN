@@ -18,6 +18,15 @@ ANSIBLE = shutil.which("ansible-playbook")
 
 
 class HealthHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        self.rfile.read(int(self.headers.get("Content-Length", "0")))
+        content = json.dumps({"references": {"status": self.server.reference_status}}).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(content)))
+        self.end_headers()
+        self.wfile.write(content)
+
     def do_GET(self):
         content = b'[ {"id":"synthetic"} ]' if self.path == "/api/v1/products" else b"ok"
         self.send_response(200)
@@ -43,6 +52,7 @@ class AnsibleRoleTests(unittest.TestCase):
             probe.bind(("127.0.0.1", 0))
             self.frontend_port = probe.getsockname()[1]
         self.server = None
+        self.reference_status = "deterministic"
         self.server_error = None
         self.frontend_requested = self.directory / "frontend-requested"
         self.frontend_ready = self.directory / "frontend-ready"
@@ -160,6 +170,7 @@ elif "up" in args:
                 continue
             try:
                 self.server = ThreadingHTTPServer(("127.0.0.1", self.frontend_port), HealthHandler)
+                self.server.reference_status = self.reference_status
                 if self.frontend_stop.is_set():
                     self.server.server_close()
                     return
@@ -267,6 +278,15 @@ elif "up" in args:
         self.assertFalse(any("up" in c["args"] or "stop" in c["args"] for c in commands))
         self.assertIn("Server PDF index build failed", result.stdout)
         self.assertNotIn("private-test", result.stdout + result.stderr)
+
+    def test_unreadable_reference_index_does_not_accept_ai_release(self):
+        self.variables["release_llm_enabled"] = True
+        (self.directory / "vars.json").write_text(json.dumps(self.variables))
+        self.reference_status = "unavailable"
+        result = self.deploy()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse((self.directory / "stand/current").exists())
+        self.assert_cleaned()
 
     def test_missing_or_unloadable_model_does_not_accept_ai_release(self):
         self.variables["release_llm_enabled"] = True

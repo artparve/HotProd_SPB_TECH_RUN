@@ -256,6 +256,25 @@
           changed_when: false
           no_log: true
 
+        - name: Verify Java can read the generated reference index through the frontend API proxy
+          ansible.builtin.uri:
+            url: "http://{{ release_frontend_health_address }}:{{ release_frontend_port }}/api/v1/material-recommendations"
+            method: POST
+            body_format: json
+            body:
+              works: [floor]
+              conditions: {}
+              query: "ламинат"
+              referenceSearch: true
+              explain: false
+            status_code: 200
+            return_content: true
+            use_proxy: false
+          when: release_llm_enabled | default(false) | bool
+          register: reference_index_check
+          failed_when: reference_index_check.status != 200 or (reference_index_check.json | default({})).get('references', {}).get('status') not in ['deterministic', 'empty', 'disabled']
+          no_log: true
+
         - name: Check Java catalog through the frontend API proxy
           ansible.builtin.uri:
             url: "http://{{ release_frontend_health_address }}:{{ release_frontend_port }}/api/v1/products"
