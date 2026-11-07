@@ -1,0 +1,117 @@
+[
+  {
+    "id": "tarkett-laminate",
+    "title": "Tarkett ламинат: укладка и уход",
+    "publisher": "Tarkett",
+    "url": "https://prod-tarkett-ru.storage.yandexcloud.net/iblock/7ea/7ea360269f1d7e065c84a69e4d5322d1/ID_RU_Laminate_02.10.25.pdf",
+    "tags": [
+      "laminate"
+    ],
+    "retrieved_on": "2026-11-07",
+    "rights_status": "not_assessed",
+    "review_status": "draft",
+    "production_index_approved": false,
+    "status": "downloaded",
+    "file": "files/tarkett-laminate.pdf",
+    "sha256": "ce580482d3db9663becc91e4aec6323b37e7bc8e3819742f942be0fcf3cb524a",
+    "bytes": 2360551,
+    "pages": 9,
+    "text_extraction_sample_chars": 8425
+  },
+  {
+    "id": "tarkett-spc",
+    "title": "Tarkett SPC Art Vinyl: укладка и уход",
+    "publisher": "Tarkett",
+    "url": "https://prod-tarkett-ru.storage.yandexcloud.net/medialibrary/119/1190cdbea7479a0a286cff7edb9f035f/ID_RU_ArtVinyl_Click_2026.10.pdf",
+    "tags": [
+      "vinyl",
+      "spc"
+    ],
+    "retrieved_on": "2026-11-07",
+    "rights_status": "not_assessed",
+    "review_status": "draft",
+    "production_index_approved": false,
+    "status": "downloaded",
+    "file": "files/tarkett-spc.pdf",
+    "sha256": "2278ff81cb9415a0368b4816f67399c13fbf241e0b73eb41dfa4e0a94e9dcf98",
+    "bytes": 458567,
+    "pages": 10,
+    "text_extraction_sample_chars": 8877
+  },
+  {
+    "id": "tarkett-vinyl",
+    "title": "Tarkett Art Vinyl клеевой: укладка и уход",
+    "publisher": "Tarkett",
+    "url": "https://prod-tarkett-ru.storage.yandexcloud.net/medialibrary/191/1910417fd34f12a21db8cff07c7a9898/ID_RU_ArtVinyl_Glue_2025.pdf",
+    "tags": [
+      "vinyl"
+    ],
+    "retrieved_on": "2026-11-07",
+    "rights_status": "not_assessed",
+    "review_status": "draft",
+    "production_index_approved": false,
+    "status": "downloaded",
+    "file": "files/tarkett-vinyl.pdf",
+    "sha256": "94b8af597f9efad85b102e9f9cc65866a0ea12896f3dd2f1223fdbc803941d0c",
+    "bytes": 311294,
+    "pages": 8,
+    "text_extraction_sample_chars": 9013
+  },
+  {
+    "id": "quickstep-heating",
+    "title": "Quick-Step: укладка на тёплый пол",
+    "publisher": "Quick-Step",
+    "url": "https://www.quick-step.ru/upload/iblock/b65/mx6ui006580nqeiqcnqupi3taav3e2aw/Instruktsiya-po-montazhu-na-teplyy-pol.pdf",
+    "tags": [
+      "laminate",
+      "vinyl",
+      "heated_floor"
+    ],
+    "retrieved_on": "2026-11-07",
+    "rights_status": "not_assessed",
+    "review_status": "draft",
+    "production_index_approved": false,
+    "status": "downloaded",
+    "file": "files/quickstep-heating.pdf",
+    "sha256": "441260238d908e3fa5ea36f66d2c68ef8bf93e5e7bdb2d746ced83cc17b10af4",
+    "bytes": 502194,
+    "pages": 6,
+    "text_extraction_sample_chars": 6526
+  },
+  {
+    "id": "applico-wallpaper",
+    "title": "Апплико: инструкция для дизайнерских обоев",
+    "publisher": "Апплико",
+    "url": "https://applico.ru/upload/iblock/80f/petvj5h5h4vgcsnx1viti28mf5ycjjlc.pdf",
+    "tags": [
+      "wallpaper",
+      "design"
+    ],
+    "retrieved_on": "2026-11-07",
+    "rights_status": "not_assessed",
+    "review_status": "draft",
+    "production_index_approved": false,
+    "status": "downloaded",
+    "file": "files/applico-wallpaper.pdf",
+    "sha256": "09b3e5e2c067483b3a79c54823a7c497952f7d085236752a2ec99861a8906c45",
+    "bytes": 100065,
+    "pages": 2,
+    "text_extraction_sample_chars": 9483
+  },
+  {
+    "id": "metylan-adhesive",
+    "title": "Метилан Флизелин Экстра Комфорт с индикатором",
+    "publisher": "Metylan",
+    "url": "https://www.metylan.ru/upload/iblock/b8c/2zihik7qep1nkibtat94tf1fhlx09ipl/TDS-Metilan-Flizelin-Ekstra-Komfort-s-indikatorom.pdf",
+    "tags": [
+      "wallpaper",
+      "adhesive"
+    ],
+    "retrieved_on": "2026-11-07",
+    "rights_status": "not_assessed",
+    "review_status": "draft",
+    "production_index_approved": false,
+    "status": "failed",
+    "error": "<urlopen error [Errno 111] Connection refused>"
+  }
+]

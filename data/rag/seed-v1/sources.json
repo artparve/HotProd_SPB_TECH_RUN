@@ -1,0 +1,56 @@
+[
+  {
+    "id": "betogrund",
+    "publisher": "КНАУФ",
+    "url": "https://www.knauf.ru/catalog/gruntovki/knauf-betogrund/",
+    "accessed_on": "2026-11-07",
+    "document_version": null,
+    "rights_status": "not_assessed",
+    "review_status": "draft"
+  },
+  {
+    "id": "rotband",
+    "publisher": "КНАУФ",
+    "url": "https://www.knauf.ru/catalog/sukhie-stroitelnye-smesi-i-gotovye-sostavy/shtukaturki/knauf-rotband/",
+    "accessed_on": "2026-11-07",
+    "document_version": null,
+    "rights_status": "not_assessed",
+    "review_status": "draft"
+  },
+  {
+    "id": "flaechendicht",
+    "publisher": "КНАУФ",
+    "url": "https://www.knauf.ru/upload/iblock/178/hwzmpn7ndzqcuvrvjffck33qxs8m2o82/Katalog-SSS-i-GS-KNAUF-A4-_19_02_2026_-v01-Preview.pdf",
+    "accessed_on": "2026-11-07",
+    "document_version": "2026-02-19 catalog",
+    "rights_status": "not_assessed",
+    "review_status": "draft"
+  },
+  {
+    "id": "fliesen",
+    "publisher": "КНАУФ",
+    "url": "https://www.knauf.ru/catalog/sukhie-stroitelnye-smesi-i-gotovye-sostavy/knauf-flizen/",
+    "accessed_on": "2026-11-07",
+    "document_version": null,
+    "rights_status": "not_assessed",
+    "review_status": "draft"
+  },
+  {
+    "id": "band",
+    "publisher": "КНАУФ",
+    "url": "https://www.knauf.ru/catalog/komplektuyushchie/komplektuyushchie-dlya-gidroizolyatsii/knauf-flekhendikhtband/",
+    "accessed_on": "2026-11-07",
+    "document_version": null,
+    "rights_status": "not_assessed",
+    "review_status": "draft"
+  },
+  {
+    "id": "Tiefengrund",
+    "publisher": "КНАУФ",
+    "url": "https://www.knauf.ru/catalog/gruntovki/knauf-tifengrund/",
+    "accessed_on": "2026-11-07",
+    "document_version": null,
+    "rights_status": "not_assessed",
+    "review_status": "draft"
+  }
+]
