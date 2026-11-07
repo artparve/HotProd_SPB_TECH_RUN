@@ -49,11 +49,29 @@ class InferenceTests(unittest.TestCase):
         self.assertNotIn("estimate", result)
         self.assertEqual(calculation["estimate"]["total"], "34560.00")
 
+    def test_project_explanation_uses_java_values_and_rejects_replacement_totals(self):
+        calculation = {"lines": [{"name": "Товар", "quantity": 2, "unitPrice": "100.10", "saleUnit": "уп.",
+                                  "total": "200.20", "formula": "ceil(need / package)"}],
+                       "materials": "200.20", "labor": "50.00", "total": "250.20", "warnings": ["Предварительно"]}
+        before = json.dumps(calculation, sort_keys=True)
+        def transport(url, body, timeout):
+            self.assertEqual(json.loads(body["messages"][1]["content"]), calculation)
+            self.assertIn("НЕ подтверждены", body["messages"][0]["content"])
+            return {"done": True, "message": {"content": json.dumps({"explanation": "Предварительная стоимость рассчитана Java."})}}
+        result = Inference(Settings(TOKEN), transport).execute("project/explain", calculation)
+        self.assertIn("Java", result["explanation"])
+        self.assertEqual(json.dumps(calculation, sort_keys=True), before)
+        for response in ({"explanation": "Ответ", "total": "0.00"}, {"explanation": ""}):
+            with self.subTest(response=response), self.assertRaises(ServiceError):
+                Inference(Settings(TOKEN), lambda *_: {"done": True, "message": {"content": json.dumps(response)}}).execute("project/explain", calculation)
+        with self.assertRaises(ServiceError):
+            Inference(Settings(TOKEN), transport).execute("project/explain", {**calculation, "total": 250.20})
+
     def test_one_gate_is_shared_between_all_operations_and_released_after_errors(self):
         inference = Inference(Settings(TOKEN))
         inference.gate.acquire()
         try:
-            for operation in ("classify", "explain", "plans/extract", "inspirations/analyze", "materials/explain", "references/explain"):
+            for operation in ("classify", "explain", "plans/extract", "inspirations/analyze", "materials/explain", "references/explain", "project/explain"):
                 with self.assertRaises(ServiceError) as caught:
                     inference.execute(operation, {})
                 self.assertEqual(caught.exception.status, 429)

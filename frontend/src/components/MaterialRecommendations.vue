@@ -10,6 +10,8 @@ import { service } from '../services/api'
 import EstimateResult from './EstimateResult.vue'
 import ProductSwatch from './ProductSwatch.vue'
 import { money } from '../domain/format'
+import MarkdownText from './MarkdownText.vue'
+import type { EstimateExplanation } from '../domain/materialRecommendations'
 
 const props = defineProps<{ project: Project; products?: Product[] }>()
 const loadedProducts = ref<Product[]>([])
@@ -44,9 +46,9 @@ function sourceLabel(chunkIds: string[]) {
   ].join('; ')
 }
 const conditions = reactive<MaterialRecommendationRequest['conditions']>({
-  humidity: null,
-  load: null,
-  heated: null,
+  humidity: props.project.rooms[0]!.humidity,
+  load: props.project.rooms[0]!.load,
+  heated: props.project.rooms[0]!.heated,
   substrate: null,
   waterContact: null,
   floorHeating: null,
@@ -61,6 +63,31 @@ const busy = ref(false)
 const error = ref('')
 const result = ref<MaterialRecommendations | null>(null)
 const estimate = ref<Estimate | null>(null)
+const estimateComment = ref<EstimateExplanation | null>(null)
+const commentBusy = ref(false)
+let commentController: AbortController | null = null
+let commentGeneration = 0
+function clearEstimateComment() {
+  commentGeneration++
+  commentController?.abort()
+  estimateComment.value = null
+  commentBusy.value = false
+}
+const visibleCategories = computed(() => {
+  const family = catalog.value.get(
+    selected.value[`${room.value.id}:covering`] || '',
+  )?.materialFamily
+  return (result.value?.categories || []).filter(
+    (category) => !category.coveringFamily || category.coveringFamily === family,
+  )
+})
+const completeSelection = computed(
+  () =>
+    visibleCategories.value.length > 0 &&
+    visibleCategories.value.every((category) =>
+      Boolean(selected.value[`${room.value.id}:${category.kind}`]),
+    ),
+)
 const selected = ref<Record<string, string>>({})
 const confirmed = ref(false)
 const stale = ref(false)
@@ -101,10 +128,22 @@ function invalidate() {
   selected.value = {}
   confirmed.value = false
   estimate.value = null
+  clearEstimateComment()
 }
 watch(() => props.project, invalidate, { deep: true })
 watch([conditions, query, design, explain, referenceSearch], invalidate, { deep: true })
-onBeforeUnmount(() => controller?.abort())
+onBeforeUnmount(() => {
+  controller?.abort()
+  commentController?.abort()
+})
+watch(
+  () => [room.value.id, room.value.humidity, room.value.load, room.value.heated],
+  () => {
+    conditions.humidity = room.value.humidity
+    conditions.load = room.value.load
+    conditions.heated = room.value.heated
+  },
+)
 async function search() {
   controller?.abort()
   controller = new AbortController()
@@ -113,6 +152,7 @@ async function search() {
   error.value = ''
   result.value = null
   estimate.value = null
+  clearEstimateComment()
   selected.value = {}
   confirmed.value = false
   try {
@@ -150,7 +190,7 @@ async function search() {
   }
 }
 async function apply() {
-  if (!result.value || stale.value || !confirmed.value) return
+  if (!result.value || stale.value || !confirmed.value || !completeSelection.value) return
   controller = new AbortController()
   const current = ++generation
   busy.value = true
@@ -169,13 +209,35 @@ async function apply() {
       throw new Error(
         'Условия подбора отличаются от параметров комнаты. Исправьте параметры комнаты и повторите подбор.',
       )
-    const response = await service.applyMaterialRecommendations(
+    const chosen = { ...selected.value }
+    const response = await service.previewMaterialRecommendations(
       result.value.requestId,
       project,
-      selected.value,
+      chosen,
       controller.signal,
     )
-    if (current === generation) estimate.value = response
+    if (current !== generation) return
+    estimate.value = response
+    busy.value = false
+    if (explain.value) {
+      const token = ++commentGeneration
+      commentController = new AbortController()
+      commentBusy.value = true
+      try {
+        const comment = await service.explainMaterialPreview(
+          result.value.requestId,
+          project,
+          chosen,
+          commentController.signal,
+        )
+        if (current === generation && token === commentGeneration) estimateComment.value = comment
+      } catch {
+        if (current === generation && token === commentGeneration)
+          estimateComment.value = { status: 'unavailable', model: null, explanation: null }
+      } finally {
+        if (token === commentGeneration) commentBusy.value = false
+      }
+    }
   } catch (e) {
     if (current === generation)
       error.value = e instanceof Error ? e.message : 'Не удалось применить выбор.'
@@ -188,6 +250,10 @@ watch(
   () => {
     confirmed.value = false
     estimate.value = null
+    clearEstimateComment()
+    const visibleKinds = new Set(visibleCategories.value.map((category) => category.kind))
+    for (const key of Object.keys(selected.value))
+      if (!visibleKinds.has(key.slice(key.lastIndexOf(':') + 1))) delete selected.value[key]
   },
   { deep: true },
 )
@@ -268,14 +334,14 @@ watch(
         </div>
         <span class="result-count"
           >{{
-            result.categories.reduce((total, category) => total + category.candidates.length, 0)
+            visibleCategories.reduce((total, category) => total + category.candidates.length, 0)
           }}
           товаров</span
         >
       </div>
       <p v-if="hasUnconfirmed" class="selection-notice">
-        Это предварительный подбор. Совместимость товаров ещё нужно проверить — до этого они
-        недоступны для расчёта.
+        Можно рассчитать предварительную стоимость выбранных товаров. Их применимость и
+        совместимость по документам пока не подтверждены.
       </p>
       <div v-if="result.questions.length" class="clarifications">
         <strong>Уточните условия комнаты</strong>
@@ -287,7 +353,7 @@ watch(
         Подходящие категории не найдены. Уточните задачу.
       </p>
       <section
-        v-for="category in result.categories"
+        v-for="category in visibleCategories"
         :key="`${category.work}:${category.kind}:${category.coveringFamily}`"
         class="product-category"
         :aria-label="kindLabels[category.kind] || 'Материалы'"
@@ -336,11 +402,7 @@ watch(
                     type="radio"
                     :name="`${room.id}:${category.kind}`"
                     :value="candidate.productId"
-                    :disabled="
-                      busy ||
-                      candidate.compatibility !== 'pass' ||
-                      candidate.calculationReadiness !== 'ready'
-                    "
+                    :disabled="busy"
                   />{{ candidate.name }}</label
                 >
                 <p v-if="catalog.get(candidate.productId)" class="product-price">
@@ -389,7 +451,7 @@ watch(
           ><p>
             {{
               hasUnconfirmed
-                ? 'Итоговую стоимость можно рассчитать после проверки применимости и выбора товаров. Цены в карточках указаны за единицу продажи по каталогу.'
+                ? 'Это предварительный расчёт по каталожным ценам и расчётным профилям. Применимость товаров по документам не подтверждена.'
                 : 'Выберите товары и подтвердите условия — рассчитаем количество упаковок и общую стоимость для этой комнаты.'
             }}
           </p>
@@ -397,19 +459,38 @@ watch(
             ><input
               v-model="confirmed"
               type="checkbox"
-              :disabled="busy || !Object.keys(selected).length"
-            />Подтверждаю условия и явно выбранные товары для расчёта этой комнаты</label
+              :disabled="busy || !completeSelection"
+            />Подтверждаю выбранные товары и предварительный расчёт без подтверждения их
+            применимости по документам</label
           >
           <button
             type="button"
             class="button primary"
-            :disabled="busy || !confirmed"
+            :disabled="busy || !confirmed || !completeSelection"
             @click="apply"
           >
-            Рассчитать выбранные товары
+            Рассчитать предварительную смету
           </button>
         </template>
-        <EstimateResult v-else :estimate="estimate" />
+        <template v-else>
+          <p class="selection-notice">
+            Предварительная смета. Применимость и совместимость выбранных товаров по документам не
+            подтверждены.
+          </p>
+          <EstimateResult :estimate="estimate" />
+          <section v-if="explain" class="estimate-comment" aria-label="Пояснение к смете">
+            <h4>Пояснение к смете</h4>
+            <p v-if="commentBusy" role="status">Модель готовит пояснение. Смета уже рассчитана.</p>
+            <template v-else-if="estimateComment?.status === 'unverified_model_text'">
+              <MarkdownText :text="estimateComment.explanation || ''" />
+              <p class="muted">
+                Текст создан ИИ и может содержать ошибки. Количество и стоимость определены
+                Java-калькулятором в смете выше.
+              </p>
+            </template>
+            <p v-else role="status">Смета рассчитана, но пояснение модели сейчас недоступно.</p>
+          </section>
+        </template>
       </section>
       <section v-if="hasModelComment" class="model-comment" aria-label="Комментарий модели">
         <header>
@@ -437,7 +518,7 @@ watch(
           <small v-if="sourceLabel(item.chunkIds)">{{ sourceLabel(item.chunkIds) }}</small>
         </div>
       </section>
-      <p v-else-if="explain" class="muted" role="status">
+      <p v-else-if="explain && !estimate" class="muted" role="status">
         Комментарий модели пока недоступен. Найденные товары и результаты проверок сохранены.
       </p>
       <details v-if="referenceSearch && result.references" class="sources-panel">

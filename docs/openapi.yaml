@@ -331,6 +331,70 @@ paths:
           $ref: '#/components/responses/Unavailable'
         default:
           $ref: '#/components/responses/Error'
+  /material-recommendations/{id}/preview:
+    post:
+      operationId: previewMaterialRecommendations
+      tags: [Estimates]
+      summary: Предварительный расчёт явно выбранных товаров без подтверждения применимости
+      description: Требуются явное согласие acceptUnverified=true, исходная комната и выбор всех строк. Проверяются серверный список кандидатов, часовой срок, версии каталога и правил. База знаний не считается подтверждённой. Для пояснения Java повторно проверяет и рассчитывает те же выбранные товары; текст модели не изменяет смету.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialPreviewRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/Estimate'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/NeedsClarification'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        default:
+          $ref: '#/components/responses/Error'
+  /material-recommendations/{id}/preview/explanation:
+    post:
+      operationId: explainMaterialPreview
+      tags: [Estimates]
+      summary: Пояснение модели к предварительной Java-смете
+      description: Требуются явное согласие acceptUnverified=true, исходная комната и выбор всех строк. Проверяются серверный список кандидатов, часовой срок, версии каталога и правил. База знаний не считается подтверждённой. Для пояснения Java повторно проверяет и рассчитывает те же выбранные товары; текст модели не изменяет смету.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialPreviewRequest'
+      responses:
+        '200':
+          description: Непроверенное пояснение или unavailable; Java-смета остаётся действительной
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstimateExplanation'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/NeedsClarification'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+        default:
+          $ref: '#/components/responses/Error'
   /admin/knowledge-releases:
     post:
       operationId: publishKnowledge
@@ -650,6 +714,34 @@ components:
     AdminCsrf:
       $ref: ./admin-catalog-api.json#/components/securitySchemes/AdminCsrf
   schemas:
+    MaterialPreviewRequest:
+      type: object
+      required: [project, selections, acceptUnverified]
+      properties:
+        project:
+          $ref: '#/components/schemas/Project'
+        selections:
+          type: object
+          maxProperties: 7
+          additionalProperties:
+            type: string
+        acceptUnverified:
+          type: boolean
+          enum: [true]
+    EstimateExplanation:
+      type: object
+      required: [status, model, explanation]
+      properties:
+        status:
+          type: string
+          enum: [unverified_model_text, unavailable]
+        model:
+          type: string
+          nullable: true
+        explanation:
+          type: string
+          nullable: true
+          maxLength: 6000
     RoomInspiration:
       type: object
       required:

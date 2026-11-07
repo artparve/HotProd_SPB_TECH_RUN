@@ -9,7 +9,8 @@ vi.mock('../services/api', () => ({
   service: {
     catalog: vi.fn(),
     materialRecommendations: vi.fn(),
-    applyMaterialRecommendations: vi.fn(),
+    previewMaterialRecommendations: vi.fn(),
+    explainMaterialPreview: vi.fn(),
   },
 }))
 const id = '00000000-0000-0000-0000-000000000001'
@@ -96,18 +97,23 @@ async function setup(confirmed: boolean) {
 beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(service.catalog).mockResolvedValue([])
+  vi.mocked(service.explainMaterialPreview).mockResolvedValue({
+    status: 'unavailable',
+    model: null,
+    explanation: null,
+  })
 })
 describe('Material recommendations', () => {
-  it('prevents applying unknown compatibility and renders model text as plain text', async () => {
+  it('allows manual choice without claiming verified compatibility and renders model text as plain text', async () => {
     const { wrapper } = await setup(false)
-    expect(wrapper.find('input[type=radio]').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('input[type=radio]').attributes('disabled')).toBeUndefined()
     expect(wrapper.find('script').exists()).toBe(false)
     expect(wrapper.text()).toContain('Непроверенный текст модели')
     expect(wrapper.text()).toContain('<script>unsafe()</script>')
     expect(wrapper.find('.product-price').text()).toMatch(/1\s*290,5/)
     expect(wrapper.find('.product-price').text()).toContain('банка')
-    expect(wrapper.text()).toContain('Итоговую стоимость можно рассчитать после проверки')
-    expect(service.applyMaterialRecommendations).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('Применимость товаров по документам не подтверждена')
+    expect(service.previewMaterialRecommendations).not.toHaveBeenCalled()
   })
   it('requires explicit selection and confirmation before requesting the Java estimate', async () => {
     const { wrapper, snapshot } = await setup(true)
@@ -116,19 +122,19 @@ describe('Material recommendations', () => {
     await wrapper.find('input[type=radio]').setValue()
     const confirmation = wrapper.findAll('input[type=checkbox]').at(-1)!
     await confirmation.setValue(true)
-    vi.mocked(service.applyMaterialRecommendations).mockResolvedValue({
+    vi.mocked(service.previewMaterialRecommendations).mockResolvedValue({
       lines: [],
     } as unknown as Estimate)
     await apply.trigger('click')
     await flushPromises()
-    expect(service.applyMaterialRecommendations).toHaveBeenCalledWith(
+    expect(service.previewMaterialRecommendations).toHaveBeenCalledWith(
       requestId,
       snapshot,
       { [`${snapshot.rooms[0]!.id}:paint`]: id },
       expect.any(AbortSignal),
     )
   })
-  it('shows draft PDF references without enabling an unknown SKU', async () => {
+  it('shows draft PDF references without turning an unknown SKU into verified compatibility', async () => {
     const response = result(false)
     vi.mocked(service.catalog).mockResolvedValue([pricedProduct])
     response.references = {
@@ -184,8 +190,53 @@ describe('Material recommendations', () => {
     expect(wrapper.text()).not.toContain('Черновой фрагмент')
     expect(wrapper.find('.model-comment').text()).toContain('Инструкция производителя · стр. 1')
     expect(wrapper.find('.sources-panel').attributes('open')).toBeUndefined()
-    expect(wrapper.find('input[type=radio]').attributes('disabled')).toBeDefined()
-    expect(service.applyMaterialRecommendations).not.toHaveBeenCalled()
+    expect(wrapper.find('input[type=radio]').attributes('disabled')).toBeUndefined()
+    expect(service.previewMaterialRecommendations).not.toHaveBeenCalled()
+  })
+  it('keeps Java estimate visible while the model runs and after a model failure', async () => {
+    const { wrapper } = await setup(false)
+    let rejectComment!: (reason: Error) => void
+    vi.mocked(service.explainMaterialPreview).mockReturnValue(
+      new Promise((_, reject) => {
+        rejectComment = reject
+      }),
+    )
+    vi.mocked(service.previewMaterialRecommendations).mockResolvedValue({
+      lines: [],
+      total: '250.20',
+    } as unknown as Estimate)
+    await wrapper.find('input[type=radio]').setValue()
+    await wrapper.find('.confirmation input').setValue(true)
+    await wrapper.find('.cost-panel button').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('estimate-result-stub').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Смета уже рассчитана')
+    rejectComment(new Error('model busy'))
+    await flushPromises()
+    expect(wrapper.find('estimate-result-stub').exists()).toBe(true)
+    expect(wrapper.text()).toContain('пояснение модели сейчас недоступно')
+  })
+  it('renders the estimate explanation safely and clears it when the room changes', async () => {
+    const { wrapper } = await setup(false)
+    vi.mocked(service.previewMaterialRecommendations).mockResolvedValue({
+      lines: [],
+    } as unknown as Estimate)
+    vi.mocked(service.explainMaterialPreview).mockResolvedValue({
+      status: 'unverified_model_text',
+      model: 'test',
+      explanation: '**По смете Java**\n\n<script>unsafe()</script>',
+    })
+    await wrapper.find('input[type=radio]').setValue()
+    await wrapper.find('.confirmation input').setValue(true)
+    await wrapper.find('.cost-panel button').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[aria-label="Пояснение к смете"] strong').text()).toBe('По смете Java')
+    expect(wrapper.find('script').exists()).toBe(false)
+    await wrapper.setProps({
+      project: { ...project(), rooms: [{ ...project().rooms[0]!, length: 8 }] },
+    })
+    expect(wrapper.find('estimate-result-stub').exists()).toBe(false)
+    expect(wrapper.find('[aria-label="Пояснение к смете"]').exists()).toBe(false)
   })
   it('invalidates results after room changes', async () => {
     const { wrapper, snapshot } = await setup(true)
@@ -194,6 +245,6 @@ describe('Material recommendations', () => {
     })
     expect(wrapper.text()).toContain('Параметры изменились')
     expect(wrapper.find('input[type=radio]').exists()).toBe(false)
-    expect(service.applyMaterialRecommendations).not.toHaveBeenCalled()
+    expect(service.previewMaterialRecommendations).not.toHaveBeenCalled()
   })
 })

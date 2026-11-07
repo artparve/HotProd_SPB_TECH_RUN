@@ -746,6 +746,38 @@ class MongoWorkflowIT {
   }
 
   @Test
+  void preliminaryEstimateRequiresAcknowledgmentCompleteChoiceAndFreshServerContext() {
+    var target = room("preview-room", List.of("paint"));
+    var project = new ProjectInput("apartment", "cosmetic", List.of(target));
+    var request = new MaterialRecommendationService.Request(List.of("paint"),
+        new MaterialRecommendationService.Conditions("normal", "normal", true), "краска", target, null, false, "cosmetic", "apartment");
+    var recommendation = materials.recommend(request);
+    var selected = new HashMap<String, String>();
+    recommendation.categories().forEach(category -> selected.put(target.id() + ":" + category.kind(), category.candidates().getFirst().productId().toString()));
+    var expected = projects.estimate(project, selected);
+    var preview = materialSelections.preliminary(recommendation.requestId(), new MaterialSelectionService.Preview(project, selected, true));
+    assertThat(preview.total()).isEqualTo(expected.total());
+    assertThat(preview.lines().stream().map(ProductEstimate.Line::total)).containsExactlyElementsOf(expected.lines().stream().map(ProductEstimate.Line::total).toList());
+    assertThat(preview.warnings()).anyMatch(w -> w.contains("ПРЕДВАРИТЕЛЬНЫЙ"));
+    assertThat(recommendation.knowledgeReleaseId()).isNull();
+    assertThatThrownBy(() -> materialSelections.preliminary(recommendation.requestId(), new MaterialSelectionService.Preview(project, selected, false)))
+        .isInstanceOf(ru.repaircalc.common.web.ApiStatusException.class);
+    assertThatThrownBy(() -> materialSelections.apply(recommendation.requestId(), new MaterialSelectionService.Apply(project, selected)))
+        .isInstanceOf(ru.repaircalc.common.web.ApiStatusException.class);
+    assertThatThrownBy(() -> materialSelections.preliminary(recommendation.requestId(), new MaterialSelectionService.Preview(project, Map.of(target.id() + ":paint", selected.get(target.id() + ":paint")), true)))
+        .isInstanceOf(ru.repaircalc.common.web.ApiStatusException.class);
+    assertThatThrownBy(() -> materialSelections.preliminary(recommendation.requestId(), new MaterialSelectionService.Preview(project, Map.of(target.id() + ":paint", UUID.randomUUID().toString()), true)))
+        .isInstanceOf(ru.repaircalc.common.web.ApiStatusException.class);
+    var otherRoom = room("other-room", List.of("paint"));
+    assertThatThrownBy(() -> materialSelections.preliminary(recommendation.requestId(), new MaterialSelectionService.Preview(new ProjectInput("apartment", "cosmetic", List.of(otherRoom)), selected, true)))
+        .isInstanceOf(ru.repaircalc.common.web.ApiStatusException.class);
+    store.mongo.getCollection("material_recommendation").updateOne(new Document("_id", recommendation.requestId().toString()),
+        new Document("$set", new Document("expires", "2000-01-01T00:00:00Z")));
+    assertThatThrownBy(() -> materialSelections.preliminary(recommendation.requestId(), new MaterialSelectionService.Preview(project, selected, true)))
+        .isInstanceOf(ru.repaircalc.common.web.ApiStatusException.class);
+  }
+
+  @Test
   void reviewedKnowledgeRetrievalSelectionRollbackAndRevocationUseImmutableVersions() {
     var snapshot = snapshots.resolve();
     var target = room("rag-room", List.of("paint"));

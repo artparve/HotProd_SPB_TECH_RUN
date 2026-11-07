@@ -13,11 +13,13 @@ public class ProjectCalculationController {
   private final ProjectCalculationService service;
   private final MaterialRecommendationService materialRecommendations;
   private final MaterialSelectionService materialSelections;
+  private final ru.repaircalc.materials.EstimateExplanationService estimateExplanations;
 
-  public ProjectCalculationController(ProjectCalculationService service, MaterialRecommendationService materialRecommendations, MaterialSelectionService materialSelections) {
+  public ProjectCalculationController(ProjectCalculationService service, MaterialRecommendationService materialRecommendations, MaterialSelectionService materialSelections, ru.repaircalc.materials.EstimateExplanationService estimateExplanations) {
     this.service = service;
     this.materialRecommendations = materialRecommendations;
     this.materialSelections = materialSelections;
+    this.estimateExplanations = estimateExplanations;
   }
 
   @PostMapping("/material-recommendations")
@@ -35,6 +37,18 @@ public class ProjectCalculationController {
   @PostMapping("/estimate")
   public ProductEstimate estimate(@Valid @RequestBody EstimateRequest request) {
     return service.estimate(request.project(), request.selections());
+  }
+
+  @PostMapping("/material-recommendations/{id}/preview")
+  public ProductEstimate previewMaterials(@PathVariable UUID id,
+      @Valid @RequestBody MaterialSelectionService.Preview request) {
+    return materialSelections.preliminary(id, request);
+  }
+
+  @PostMapping("/material-recommendations/{id}/preview/explanation")
+  public ru.repaircalc.materials.EstimateExplanationService.Explanation previewExplanation(@PathVariable UUID id,
+      @Valid @RequestBody MaterialSelectionService.Preview request) {
+    return estimateExplanations.explain(materialSelections.preliminary(id, request));
   }
 
   @PostMapping("/recommendations")

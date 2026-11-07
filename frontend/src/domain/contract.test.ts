@@ -1,4 +1,5 @@
 import {
+  estimateExplanationSchema,
   materialRecommendationRequestSchema,
   materialRecommendationsSchema,
 } from './materialRecommendations'
@@ -91,6 +92,8 @@ describe('OpenAPI contract', () => {
       '/estimate',
       '/material-recommendations',
       '/material-recommendations/{id}/estimate',
+      '/material-recommendations/{id}/preview',
+      '/material-recommendations/{id}/preview/explanation',
       '/materials/calculate',
       '/materials/estimate',
       '/plans/extract',
@@ -116,6 +119,7 @@ describe('OpenAPI contract', () => {
       EstimateLine: lineSchema.shape,
       Estimate: estimateSchema.shape,
       Recommendations: recommendationSchema.shape,
+      EstimateExplanation: estimateExplanationSchema.shape,
       MaterialRequest: materialRequestSchema.shape,
       MaterialEstimate: materialEstimateSchema.innerType().shape,
       RoomInspiration: roomInspirationSchema.shape,

@@ -20,6 +20,7 @@ import { planResultSchema } from '../domain/plans'
 import {
   materialRecommendationRequestSchema,
   materialRecommendationsSchema,
+  estimateExplanationSchema,
   type MaterialRecommendationRequest,
 } from '../domain/materialRecommendations'
 import {
@@ -230,6 +231,34 @@ export const service = {
       if (!unavailable(error)) throw error
       return { products: [], warnings: ['Подбор временно недоступен. Повторите позже.'] }
     }
+  },
+  async previewMaterialRecommendations(
+    id: string,
+    project: Project,
+    selections: Record<string, string>,
+    signal?: AbortSignal,
+  ) {
+    return request(
+      `/material-recommendations/${encodeURIComponent(id)}/preview`,
+      estimateSchema,
+      { project, selections, acceptUnverified: true },
+      apiTimeout,
+      signal,
+    )
+  },
+  async explainMaterialPreview(
+    id: string,
+    project: Project,
+    selections: Record<string, string>,
+    signal?: AbortSignal,
+  ) {
+    return request(
+      `/material-recommendations/${encodeURIComponent(id)}/preview/explanation`,
+      estimateExplanationSchema,
+      { project, selections, acceptUnverified: true },
+      75000,
+      signal,
+    )
   },
   async product(product: Product, input: ProductInput) {
     if (import.meta.env.DEV && dataMode === 'demo')

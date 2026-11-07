@@ -106,3 +106,9 @@ export const materialRecommendationsSchema = z.object({
 })
 export type MaterialRecommendations = z.infer<typeof materialRecommendationsSchema>
 export type MaterialRecommendationRequest = z.infer<typeof materialRecommendationRequestSchema>
+export const estimateExplanationSchema = z.object({
+  status: z.enum(['unverified_model_text', 'unavailable']),
+  model: z.string().nullable(),
+  explanation: z.string().nullable(),
+})
+export type EstimateExplanation = z.infer<typeof estimateExplanationSchema>

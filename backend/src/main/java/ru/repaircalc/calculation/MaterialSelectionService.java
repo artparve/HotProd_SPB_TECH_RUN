@@ -90,7 +90,49 @@ public class MaterialSelectionService {
         estimate.materials(), estimate.labor(), estimate.total(), warnings, estimate.versions());
   }
   private static ApiStatusException stale() { return new ApiStatusException(409, "stale_recommendation", "Подбор устарел. Повторите подбор для текущих условий и версий."); }
+  /** Explicit manual estimate. It never upgrades unknown evidence to verified compatibility. */
+  public ProductEstimate preliminary(UUID id, Preview request) {
+    if (!request.acceptUnverified()) throw new ApiStatusException(422, "confirmation_required", "Подтвердите предварительный расчёт без проверки применимости по документам.");
+    var document = store.id("material_recommendation", id);
+    if (document == null) throw stale();
+    document.remove("expiresAt");
+    var saved = store.read(document, Saved.class);
+    if (!java.time.Instant.parse(saved.expires()).isAfter(clock.instant())) throw stale();
+    var project = request.project();
+    project.validate();
+    if (project.rooms().size() != 1 || !project.rooms().getFirst().equals(saved.request().room())
+        || !Objects.equals(project.renovation(), saved.request().renovation())
+        || !Objects.equals(project.object(), saved.request().object())) throw stale();
+    var room = project.rooms().getFirst();
+    var conditions = saved.request().conditions();
+    if (conditions == null || !Objects.equals(conditions.humidity(), room.humidity())
+        || !Objects.equals(conditions.load(), room.load()) || !Objects.equals(conditions.heated(), room.heated())
+        || !new HashSet<>(saved.request().works()).equals(new HashSet<>(room.works()))) throw stale();
+    var snapshot = snapshots.resolve();
+    if (!snapshot.catalog().releaseId().equals(saved.result().catalogReleaseId())
+        || !snapshot.rules().id().equals(saved.result().ruleSetId())) throw stale();
+    if (request.selections().isEmpty()) throw missing();
+    for (var entry : request.selections().entrySet()) {
+      boolean allowed = saved.result().categories().stream()
+          .filter(c -> entry.getKey().equals(room.id() + ":" + c.kind()))
+          .flatMap(c -> c.candidates().stream())
+          .anyMatch(c -> c.productId().toString().equals(entry.getValue()));
+      if (!allowed) throw new ApiStatusException(422, "invalid_selection", "Выберите товары из текущего подбора для этой комнаты.");
+    }
+    var estimate = calculations.estimate(project, request.selections(), snapshot);
+    // The ordinary calculator may supply defaults. This path requires explicit choice for every line.
+    for (var line : estimate.lines())
+      if (!line.product().id().toString().equals(request.selections().get(line.roomId() + ":" + line.product().kind())))
+        throw new ApiStatusException(422, "incomplete_selection", "Выберите товар для каждой категории, необходимой выбранной технологии.");
+    var warnings = new ArrayList<>(estimate.warnings());
+    warnings.add("ПРЕДВАРИТЕЛЬНЫЙ расчёт по явно выбранным товарам. Применимость и совместимость по документам не подтверждены; справочный RAG не является проверкой товаров.");
+    return new ProductEstimate(estimate.id(), estimate.createdAt(), estimate.mode(), estimate.lines(),
+        estimate.materials(), estimate.labor(), estimate.total(), warnings, estimate.versions());
+  }
   private static ApiStatusException missing() { return new ApiStatusException(422, "needs_clarification", "Явно выберите подтверждённый товар для каждой рассчитываемой категории."); }
   public record Apply(@NotNull @Valid ProjectInput project, @NotNull @Size(max = 7) Map<@NotBlank String, @NotBlank String> selections) {}
   public record Saved(MaterialRecommendationService.Request request, MaterialRecommendationService.Result result, String expires) {}
+  public record Preview(@NotNull @Valid ProjectInput project,
+      @NotNull @Size(max = 7) Map<@NotBlank String, @NotBlank String> selections,
+      @AssertTrue boolean acceptUnverified) {}
 }
